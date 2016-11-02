@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="DSrcReporting">
+      <rd:DataSourceID>3930a7ea-1570-4e2e-8886-a598370bea0d</rd:DataSourceID>
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString>Data Source=srv11.rabota.ua;Initial Catalog=Reporting</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
+      </ConnectionProperties>
+    </DataSource>
+  </DataSources>
+  <InteractiveHeight>29.7cm</InteractiveHeight>
+  <ReportParameters>
+    <ReportParameter Name="ParamManager">
+      <DataType>String</DataType>
+      <Prompt>Выберите менеджера:</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStManagers</DataSetName>
+          <ValueField>ManagerName</ValueField>
+          <LabelField>ManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>21cm</InteractiveWidth>
+  <rd:GridSpacing>0.25cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <RightMargin>2.5cm</RightMargin>
+  <LeftMargin>2.5cm</LeftMargin>
+  <BottomMargin>2.5cm</BottomMargin>
+  <rd:ReportID>f0d36bdd-1222-48f9-afec-2bf13d203d0a</rd:ReportID>
+  <EmbeddedImages>
+    <EmbeddedImage Name="card_red">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAqSURBVDhPY3wro/KfgcqACUpTFYwaSn0waij1waih1AejhlIfjGhDGRgAuYYCVti5w6oAAAAASUVORK5CYII=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="card_green">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAIAAAAmdTLBAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAA3SURBVDhPpcexCQAwEAMxj/6jp79OBNRouz+96lWvetWrXvWqV73qVa961ate9apXvepVr3pye/ce3IE3WH9bAAAAAElFTkSuQmCC</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="card_yellow">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAArSURBVDhPY/z/n+E/A5UBE5SmKhg1lPpg1FDqg1FDqQ9GDaU+GNGGMjAAAGm9AyfFRXeOAAAAAElFTkSuQmCC</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="card_lime">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAApSURBVDhPY2T4D4RUBkxQmqpg1FDqg1FDqQ9GDaU+GDWU+mBEG8rAAAB4TAIoGo72+wAAAABJRU5ErkJggg==</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <PageWidth>21cm</PageWidth>
+  <DataSets>
+    <DataSet Name="DStCompaniesForm">
+      <Fields>
+        <Field Name="Company_key">
+          <DataField>Company_key</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CompanyName">
+          <DataField>CompanyName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="WeekNum">
+          <DataField>WeekNum</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="WeekName">
+          <DataField>WeekName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CardColor">
+          <DataField>CardColor</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>dbo.usp_ssrs_ReportCompaniesForm</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="DStManagers">
+      <Fields>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>SELECT 
+  M.[Name] AS ManagerName
+FROM SRV12.RabotaUA2.dbo.Manager M
+WHERE M.Name NOT IN ('QA','Дмитрий','telesales','Вадим','Иван')
+ AND EXISTS (SELECT * FROM SRV12.RabotaUA2.dbo.NotebookCompany NC WHERE ManagerId = M.Id 
+				AND NOT EXISTS (SELECT * FROM SRV12.RabotaUA2.dbo.NotebookCompanyMerged NCM WHERE NC.NotebookId = NCM.SourceNotebookId))
+ORDER BY Surname</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Width>12.5cm</Width>
+  <Body>
+    <ColumnSpacing>1cm</ColumnSpacing>
+    <ReportItems>
+      <Rectangle Name="rectangle2">
+        <ZIndex>2</ZIndex>
+        <RepeatWith>matrix1</RepeatWith>
+        <ReportItems>
+          <Textbox Name="textbox6">
+            <Top>2.30291cm</Top>
+            <Style>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>8pt</FontSize>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>7</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.75cm</Left>
+            <Value>Нет платных публикаций на счету и нет опубликованных платных вакансий</Value>
+          </Textbox>
+          <Image Name="image8">
+            <Sizing>Fit</Sizing>
+            <Top>2.39418cm</Top>
+            <Width>0.3cm</Width>
+            <Source>Embedded</Source>
+            <Style />
+            <ZIndex>6</ZIndex>
+            <Left>0.25cm</Left>
+            <Height>0.3cm</Height>
+            <Value>card_red</Value>
+          </Image>
+          <Textbox Name="textbox5">
+            <Top>1.61772cm</Top>
+            <Style>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>8pt</FontSize>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>5</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.75cm</Left>
+            <Height>0.5cm</Height>
+            <Value>Нет платных публикаций на счету, но есть опубликованные платные вакансии</Value>
+          </Textbox>
+          <Image Name="image7">
+            <Sizing>Fit</Sizing>
+            <Top>1.69709cm</Top>
+            <Width>0.3cm</Width>
+            <Source>Embedded</Source>
+            <Style />
+            <ZIndex>4</ZIndex>
+            <Left>0.25cm</Left>
+            <Height>0.3cm</Height>
+            <Value>card_yellow</Value>
+          </Image>
+          <Textbox Name="textbox4">
+            <Top>0.92063cm</Top>
+            <Style>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>8pt</FontSize>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>3</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.75cm</Left>
+            <Height>0.5cm</Height>
+            <Value>Есть платные публикации на счету, но нет опубликованных платных вакансий</Value>
+          </Textbox>
+          <Image Name="image6">
+            <Sizing>Fit</Sizing>
+            <Top>1.02646cm</Top>
+            <Width>0.3cm</Width>
+            <Source>Embedded</Source>
+            <Style />
+            <ZIndex>2</ZIndex>
+            <Left>0.25cm</Left>
+            <Height>0.3cm</Height>
+            <Value>card_lime</Value>
+          </Image>
+          <Textbox Name="textbox3">
+            <rd:DefaultName>textbox3</rd:DefaultName>
+            <Top>0.25cm</Top>
+            <Style>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>8pt</FontSize>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>1</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.75cm</Left>
+            <Height>0.5cm</Height>
+            <Value>Есть платные публикации на счету и опубликованные платные вакансии</Value>
+          </Textbox>
+          <Image Name="image5">
+            <Sizing>Fit</Sizing>
+            <Top>0.32937cm</Top>
+            <Width>0.3cm</Width>
+            <Source>Embedded</Source>
+            <Style />
+            <Left>0.25cm</Left>
+            <Height>0.3cm</Height>
+            <Value>card_green</Value>
+          </Image>
+        </ReportItems>
+        <Top>0.75cm</Top>
+        <Height>2.80291cm</Height>
+      </Rectangle>
+      <Textbox Name="textbox2">
+        <rd:DefaultName>textbox2</rd:DefaultName>
+        <RepeatWith>matrix1</RepeatWith>
+        <Style>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>12pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>1</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Height>0.75cm</Height>
+        <Value>Форма компаний за последние 15 недель</Value>
+      </Textbox>
+      <Matrix Name="matrix1">
+        <MatrixColumns>
+          <MatrixColumn>
+            <Width>1.4cm</Width>
+          </MatrixColumn>
+        </MatrixColumns>
+        <DataSetName>DStCompaniesForm</DataSetName>
+        <RowGroupings>
+          <RowGrouping>
+            <Width>6.55291cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix1_CompanyName">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!CompanyName.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=Fields!Company_key.Value</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <ReportItems>
+                <Textbox Name="CompanyName">
+                  <rd:DefaultName>CompanyName</rd:DefaultName>
+                  <Style>
+                    <BorderColor>
+                      <Default>LightGrey</Default>
+                    </BorderColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <FontFamily>Tahoma</FontFamily>
+                    <TextAlign>Left</TextAlign>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>2</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!CompanyName.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+          <RowGrouping>
+            <Width>4cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix1_ManagerName">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!ManagerName.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=Fields!ManagerName.Value</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <ReportItems>
+                <Textbox Name="ManagerName">
+                  <rd:DefaultName>ManagerName</rd:DefaultName>
+                  <Style>
+                    <BorderColor>
+                      <Default>LightGrey</Default>
+                    </BorderColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <FontFamily>Tahoma</FontFamily>
+                    <TextAlign>Left</TextAlign>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>1</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!ManagerName.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+        </RowGroupings>
+        <Filters>
+          <Filter>
+            <FilterExpression>=Fields!ManagerName.Value</FilterExpression>
+            <Operator>In</Operator>
+            <FilterValues>
+              <FilterValue>=Parameters!ParamManager.Value</FilterValue>
+            </FilterValues>
+          </Filter>
+        </Filters>
+        <Top>3.7619cm</Top>
+        <ColumnGroupings>
+          <ColumnGrouping>
+            <Height>0.63492cm</Height>
+            <DynamicColumns>
+              <Grouping Name="matrix1_WeekName">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=Fields!WeekNum.Value</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <ReportItems>
+                <Textbox Name="WeekName">
+                  <rd:DefaultName>WeekName</rd:DefaultName>
+                  <Style>
+                    <BorderColor>
+                      <Default>LightGrey</Default>
+                    </BorderColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <FontFamily>Tahoma</FontFamily>
+                    <TextAlign>Center</TextAlign>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!WeekName.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicColumns>
+          </ColumnGrouping>
+        </ColumnGroupings>
+        <Width>11.95291cm</Width>
+        <Corner>
+          <ReportItems>
+            <Textbox Name="textbox1">
+              <rd:DefaultName>textbox1</rd:DefaultName>
+              <Style>
+                <BorderColor>
+                  <Default>LightGrey</Default>
+                </BorderColor>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+              <ZIndex>4</ZIndex>
+              <CanGrow>true</CanGrow>
+              <Value />
+            </Textbox>
+          </ReportItems>
+        </Corner>
+        <MatrixRows>
+          <MatrixRow>
+            <Height>0.63492cm</Height>
+            <MatrixCells>
+              <MatrixCell>
+                <ReportItems>
+                  <Rectangle Name="rectangle1">
+                    <ReportItems>
+                      <Image Name="image4">
+                        <Sizing>Fit</Sizing>
+                        <Visibility>
+                          <Hidden>=IIf(Fields!CardColor.Value = "lime",False,True)</Hidden>
+                        </Visibility>
+                        <Top>0.17063cm</Top>
+                        <Width>0.3cm</Width>
+                        <Source>Embedded</Source>
+                        <Style />
+                        <ZIndex>3</ZIndex>
+                        <Left>0.5119cm</Left>
+                        <Height>0.3cm</Height>
+                        <Value>card_lime</Value>
+                      </Image>
+                      <Image Name="image3">
+                        <Sizing>Fit</Sizing>
+                        <Visibility>
+                          <Hidden>=IIf(Fields!CardColor.Value="yellow", False, True)</Hidden>
+                        </Visibility>
+                        <Top>0.17063cm</Top>
+                        <Width>0.3cm</Width>
+                        <Source>Embedded</Source>
+                        <Style />
+                        <ZIndex>2</ZIndex>
+                        <Left>0.5119cm</Left>
+                        <Height>0.3cm</Height>
+                        <Value>card_yellow</Value>
+                      </Image>
+                      <Image Name="image2">
+                        <Sizing>Fit</Sizing>
+                        <Visibility>
+                          <Hidden>=IIf(Fields!CardColor.Value="red",False,True)</Hidden>
+                        </Visibility>
+                        <Top>0.17063cm</Top>
+                        <Width>0.3cm</Width>
+                        <Source>Embedded</Source>
+                        <Style />
+                        <ZIndex>1</ZIndex>
+                        <Left>0.5119cm</Left>
+                        <Height>0.3cm</Height>
+                        <Value>card_red</Value>
+                      </Image>
+                      <Image Name="image1">
+                        <Sizing>Clip</Sizing>
+                        <Visibility>
+                          <Hidden>=IIf(Fields!CardColor.Value="green", False, True)</Hidden>
+                        </Visibility>
+                        <Top>0.17063cm</Top>
+                        <Width>0.3cm</Width>
+                        <Source>Embedded</Source>
+                        <Style />
+                        <Left>0.5119cm</Left>
+                        <Height>0.3cm</Height>
+                        <Value>card_green</Value>
+                      </Image>
+                    </ReportItems>
+                    <Style>
+                      <BorderColor>
+                        <Default>LightGrey</Default>
+                      </BorderColor>
+                      <BorderStyle>
+                        <Default>Solid</Default>
+                      </BorderStyle>
+                    </Style>
+                  </Rectangle>
+                </ReportItems>
+              </MatrixCell>
+            </MatrixCells>
+          </MatrixRow>
+        </MatrixRows>
+      </Matrix>
+    </ReportItems>
+    <Height>5.03174cm</Height>
+  </Body>
+  <Language>en-US</Language>
+  <TopMargin>2.5cm</TopMargin>
+  <PageHeight>29.7cm</PageHeight>
+</Report>

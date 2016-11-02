@@ -1,0 +1,1725 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DSrcReporting">
+      <DataSourceReference>DSrcReporting</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>c2670151-ad09-40e2-80f2-ac1873fa8191</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DStRecognizedRevenue">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
+DECLARE @ReportDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = @TodayDate);
+DECLARE @StartDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
+DECLARE @EndDate DATE = (SELECT LastMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
+DECLARE @StartDateKey INT = (SELECT Date_key FROM dbo.DimDate WHERE FullDate = @StartDate);
+DECLARE @EndDateKey INT = (SELECT Date_key FROM dbo.DimDate WHERE FullDate = @EndDate);
+
+SELECT 
+   M.Name AS ManagerName
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN '0 - 6 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN '6 - 12 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN '12 - 18 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN '18 - 24 months'
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN '2 - 5 years'
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN '5 years +'
+   END AS ManagerAgeGroup
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN 1
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN 2
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN 3
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN 4
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN 5
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN 6
+   END AS ManagerAgeGroupOrderNum
+ , SUM(RecognizedRevenue) SumRR
+FROM Reporting.dbo.FactRecognizedRevenueNotebook RRN
+ JOIN Analytics.dbo.NotebookCompany NC ON RRN.NotebookID = NC.NotebookId
+ JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+WHERE Date_key BETWEEN @StartDateKey AND @EndDateKey
+ AND M.DepartmentID = 2 AND IsTatarovaGroup = 0 AND IsLoyaltyGroup = 0 AND IsForTesting = 0 AND IsReportExcluding = 0
+GROUP BY
+   M.Name
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN '0 - 6 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN '6 - 12 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN '12 - 18 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN '18 - 24 months'
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN '2 - 5 years'
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN '5 years +'
+   END
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN 1
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN 2
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN 3
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN 4
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN 5
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN 6
+   END</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerAgeGroup">
+          <DataField>ManagerAgeGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerAgeGroupOrderNum">
+          <DataField>ManagerAgeGroupOrderNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="SumRR">
+          <DataField>SumRR</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DStPaidClientsEndOfMonth">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
+DECLARE @ReportDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = @TodayDate);
+DECLARE @StartDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
+DECLARE @EndDate DATE = (SELECT LastMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
+DECLARE @StartDateKey INT = (SELECT Date_key FROM dbo.DimDate WHERE FullDate = @StartDate);
+DECLARE @EndDateKey INT = (SELECT Date_key FROM dbo.DimDate WHERE FullDate = @EndDate);
+
+SELECT 
+   M.Name AS ManagerName
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN '0 - 6 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN '6 - 12 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN '12 - 18 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN '18 - 24 months'
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN '2 - 5 years'
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN '5 years +'
+   END AS ManagerAgeGroup
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN 1
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN 2
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN 3
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN 4
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN 5
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN 6
+   END AS ManagerAgeGroupOrderNum
+ , COUNT(DISTINCT FCS.Company_key) AS NotebookCount
+FROM Reporting.dbo.FactCompanyStatuses FCS
+ JOIN Reporting.dbo.DimDate D ON FCS.Date_key = D.Date_key
+ JOIN Reporting.dbo.DimCompany C ON FCS.Company_key = C.Company_key
+ JOIN Analytics.dbo.NotebookCompany NC ON C.NotebookID = NC.NotebookId
+ JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+WHERE FCS.HasPaidServices = 1
+ AND D.Date_key = @EndDateKey
+ AND M.DepartmentID = 2 AND IsTatarovaGroup = 0 AND IsLoyaltyGroup = 0 AND IsForTesting = 0 AND IsReportExcluding = 0
+GROUP BY 
+   M.Name
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN '0 - 6 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN '6 - 12 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN '12 - 18 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN '18 - 24 months'
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN '2 - 5 years'
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN '5 years +'
+   END
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN 1
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN 2
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN 3
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN 4
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN 5
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN 6
+   END;</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerAgeGroup">
+          <DataField>ManagerAgeGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerAgeGroupOrderNum">
+          <DataField>ManagerAgeGroupOrderNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="NotebookCount">
+          <DataField>NotebookCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DStActiveClients">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
+DECLARE @ReportDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = @TodayDate);
+DECLARE @StartDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
+DECLARE @EndDate DATE = (SELECT LastMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
+DECLARE @StartDateKey INT = (SELECT Date_key FROM dbo.DimDate WHERE FullDate = @StartDate);
+DECLARE @EndDateKey INT = (SELECT Date_key FROM dbo.DimDate WHERE FullDate = @EndDate);
+
+SELECT 
+   M.Name AS ManagerName
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN '0 - 6 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN '6 - 12 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN '12 - 18 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN '18 - 24 months'
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN '2 - 5 years'
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN '5 years +'
+   END AS ManagerAgeGroup
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN 1
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN 2
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN 3
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN 4
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN 5
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN 6
+   END AS ManagerAgeGroupOrderNum
+ , COUNT(DISTINCT FCS.Company_key) AS NotebookCount
+FROM Reporting.dbo.FactCompanyStatuses FCS
+ JOIN Reporting.dbo.DimDate D ON FCS.Date_key = D.Date_key
+ JOIN Reporting.dbo.DimCompany C ON FCS.Company_key = C.Company_key
+ JOIN Analytics.dbo.NotebookCompany NC ON C.NotebookID = NC.NotebookId
+ JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+WHERE D.Date_key = @EndDateKey
+ AND EXISTS (SELECT * 
+	    	 FROM dbo.FactRecognizedRevenueNotebook RRN 
+			  JOIN dbo.DimDate DD0 ON RRN.Date_key = DD0.Date_key
+			 WHERE C.NotebookId = RRN.NotebookID
+			  AND DD0.FullDate BETWEEN DATEADD(YEAR, -1, D.FullDate) AND D.FullDate)
+ AND M.DepartmentID = 2 AND IsTatarovaGroup = 0 AND IsLoyaltyGroup = 0 AND IsForTesting = 0 AND IsReportExcluding = 0
+GROUP BY 
+   M.Name
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN '0 - 6 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN '6 - 12 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN '12 - 18 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN '18 - 24 months'
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN '2 - 5 years'
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN '5 years +'
+   END
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN 1
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN 2
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN 3
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN 4
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN 5
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN 6
+   END;</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerAgeGroup">
+          <DataField>ManagerAgeGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerAgeGroupOrderNum">
+          <DataField>ManagerAgeGroupOrderNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="NotebookCount">
+          <DataField>NotebookCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DStNewClients">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
+DECLARE @ReportDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = @TodayDate);
+DECLARE @StartDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
+DECLARE @EndDate DATE = (SELECT LastMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
+DECLARE @StartDateKey INT = (SELECT Date_key FROM dbo.DimDate WHERE FullDate = @StartDate);
+DECLARE @EndDateKey INT = (SELECT Date_key FROM dbo.DimDate WHERE FullDate = @EndDate);
+
+SELECT 
+   M.Name AS ManagerName
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN '0 - 6 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN '6 - 12 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN '12 - 18 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN '18 - 24 months'
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN '2 - 5 years'
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN '5 years +'
+   END AS ManagerAgeGroup
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN 1
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN 2
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN 3
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN 4
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN 5
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN 6
+   END AS ManagerAgeGroupOrderNum
+ , COUNT(DISTINCT FCS.Company_key) AS NotebookCount
+FROM Reporting.dbo.FactCompanyStatuses FCS
+ JOIN Reporting.dbo.DimDate D ON FCS.Date_key = D.Date_key
+ JOIN Reporting.dbo.DimCompany C ON FCS.Company_key = C.Company_key
+ JOIN Analytics.dbo.NotebookCompany NC ON C.NotebookID = NC.NotebookId
+ JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+WHERE D.Date_key = @EndDateKey
+ AND EXISTS (SELECT * 
+	    	 FROM dbo.FactRecognizedRevenueNotebook RRN 
+			  JOIN dbo.DimDate DD0 ON RRN.Date_key = DD0.Date_key
+			 WHERE C.NotebookId = RRN.NotebookID
+			  AND DD0.FullDate BETWEEN DATEADD(YEAR, -1, D.FullDate) AND D.FullDate)
+ AND NOT EXISTS (SELECT * 
+				 FROM dbo.FactRecognizedRevenueNotebook RRN 
+				  JOIN dbo.DimDate DD0 ON RRN.Date_key = DD0.Date_key
+				 WHERE C.NotebookId = RRN.NotebookID
+				  AND DD0.FullDate &lt; DATEADD(YEAR, -1, D.FullDate))
+ AND M.DepartmentID = 2 AND IsTatarovaGroup = 0 AND IsLoyaltyGroup = 0 AND IsForTesting = 0 AND IsReportExcluding = 0
+GROUP BY 
+   M.Name
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN '0 - 6 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN '6 - 12 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN '12 - 18 months'
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN '18 - 24 months'
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN '2 - 5 years'
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN '5 years +'
+   END
+ , CASE
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -6, @TodayDate) THEN 1
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -12, @TodayDate) THEN 2
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -18, @TodayDate) THEN 3
+	WHEN M.AddDate &gt;= DATEADD(MONTH, -24, @TodayDate) THEN 4
+	WHEN M.AddDate &gt;= DATEADD(YEAR, -5, @TodayDate) THEN 5
+	WHEN M.AddDate &lt; DATEADD(YEAR, -5, @TodayDate) THEN 6
+   END;</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerAgeGroup">
+          <DataField>ManagerAgeGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerAgeGroupOrderNum">
+          <DataField>ManagerAgeGroupOrderNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="NotebookCount">
+          <DataField>NotebookCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Chart Name="Chart1">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label />
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart1_SeriesGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!ManagerAgeGroup.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!ManagerAgeGroupOrderNum.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                  </SortExpressions>
+                  <Label>=Fields!ManagerAgeGroup.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="ManagerName">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Count(Fields!ManagerName.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <FontWeight>Bold</FontWeight>
+                          <Color>White</Color>
+                        </Style>
+                        <Label>=Format(Count(Fields!ManagerName.Value) / Count(Fields!ManagerName.Value, "DStRecognizedRevenue"), "# %")</Label>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Bar</Type>
+                  <Subtype>PercentStacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>=Count(Fields!ManagerName.Value)</Caption>
+                      <Style>
+                        <FontSize>11pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Enabled>False</Enabled>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartTitles>
+              <ChartTitle Name="Default">
+                <Caption>People</Caption>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>11pt</FontSize>
+                  <FontWeight>Bold</FontWeight>
+                  <TextAlign>General</TextAlign>
+                  <VerticalAlign>Top</VerticalAlign>
+                </Style>
+                <Position>TopLeft</Position>
+              </ChartTitle>
+            </ChartTitles>
+            <Palette>BrightPastel</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStRecognizedRevenue</DataSetName>
+            <Height>4cm</Height>
+            <Width>32cm</Width>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
+          <Chart Name="Chart2">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label />
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart1_SeriesGroup2">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!ManagerAgeGroup.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!ManagerAgeGroupOrderNum.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                  </SortExpressions>
+                  <Label>=Fields!ManagerAgeGroup.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="ManagerName">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!SumRR.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <FontWeight>Bold</FontWeight>
+                          <Color>WhiteSmoke</Color>
+                        </Style>
+                        <Label>=Format(Sum(Fields!SumRR.Value) / Sum(Fields!SumRR.Value, "DStRecognizedRevenue"), "# %")</Label>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Bar</Type>
+                  <Subtype>PercentStacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>=Format(Sum(Fields!SumRR.Value), "### ### ###")</Caption>
+                      <Style>
+                        <FontSize>11pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Enabled>False</Enabled>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartTitles>
+              <ChartTitle Name="Default">
+                <Caption>Revenue</Caption>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>11pt</FontSize>
+                  <FontWeight>Bold</FontWeight>
+                  <TextAlign>General</TextAlign>
+                  <VerticalAlign>Top</VerticalAlign>
+                </Style>
+                <Position>TopLeft</Position>
+              </ChartTitle>
+            </ChartTitles>
+            <Palette>BrightPastel</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStRecognizedRevenue</DataSetName>
+            <Top>4cm</Top>
+            <Height>4cm</Height>
+            <Width>32cm</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
+          <Chart Name="Chart3">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label />
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart1_SeriesGroup3">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!ManagerAgeGroup.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!ManagerAgeGroupOrderNum.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                  </SortExpressions>
+                  <Label>=Fields!ManagerAgeGroup.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="ManagerName">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!NotebookCount.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <FontWeight>Bold</FontWeight>
+                          <Color>WhiteSmoke</Color>
+                        </Style>
+                        <Label>=Format(Sum(Fields!NotebookCount.Value) / Sum(Fields!NotebookCount.Value, "DStPaidClientsEndOfMonth"), "# %")</Label>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Bar</Type>
+                  <Subtype>PercentStacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>=Format(Sum(Fields!NotebookCount.Value), "### ### ###")</Caption>
+                      <Style>
+                        <FontSize>11pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Enabled>False</Enabled>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartTitles>
+              <ChartTitle Name="Default">
+                <Caption>Clients with Revenue last month</Caption>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>11pt</FontSize>
+                  <FontWeight>Bold</FontWeight>
+                  <TextAlign>General</TextAlign>
+                  <VerticalAlign>Top</VerticalAlign>
+                </Style>
+                <Position>TopLeft</Position>
+              </ChartTitle>
+            </ChartTitles>
+            <Palette>BrightPastel</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStPaidClientsEndOfMonth</DataSetName>
+            <Top>8cm</Top>
+            <Height>4cm</Height>
+            <Width>32cm</Width>
+            <ZIndex>2</ZIndex>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
+          <Chart Name="Chart4">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label />
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart1_SeriesGroup4">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!ManagerAgeGroup.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!ManagerAgeGroupOrderNum.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                  </SortExpressions>
+                  <Label>=Fields!ManagerAgeGroup.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="ManagerName">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!NotebookCount.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <FontWeight>Bold</FontWeight>
+                          <Color>WhiteSmoke</Color>
+                        </Style>
+                        <Label>=Format(Sum(Fields!NotebookCount.Value) / Sum(Fields!NotebookCount.Value, "DStActiveClients"), "# %")</Label>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Bar</Type>
+                  <Subtype>PercentStacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>=Format(Sum(Fields!NotebookCount.Value), "### ### ###")</Caption>
+                      <Style>
+                        <FontSize>11pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Enabled>False</Enabled>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartTitles>
+              <ChartTitle Name="Default">
+                <Caption>Clients with Revenue in last 12 months</Caption>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>11pt</FontSize>
+                  <FontWeight>Bold</FontWeight>
+                  <TextAlign>General</TextAlign>
+                  <VerticalAlign>Top</VerticalAlign>
+                </Style>
+                <Position>TopLeft</Position>
+              </ChartTitle>
+            </ChartTitles>
+            <Palette>BrightPastel</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStActiveClients</DataSetName>
+            <Top>12cm</Top>
+            <Height>4cm</Height>
+            <Width>32cm</Width>
+            <ZIndex>3</ZIndex>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
+          <Chart Name="Chart5">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label />
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart1_SeriesGroup5">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!ManagerAgeGroup.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!ManagerAgeGroupOrderNum.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                  </SortExpressions>
+                  <Label>=Fields!ManagerAgeGroup.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="ManagerName">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!NotebookCount.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <FontWeight>Bold</FontWeight>
+                          <Color>WhiteSmoke</Color>
+                        </Style>
+                        <Label>=Format(Sum(Fields!NotebookCount.Value) / Sum(Fields!NotebookCount.Value, "DStNewClients"), "# %")</Label>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Bar</Type>
+                  <Subtype>PercentStacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>=Format(Sum(Fields!NotebookCount.Value), "### ### ###")</Caption>
+                      <Style>
+                        <FontSize>11pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Enabled>False</Enabled>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Weight, %</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartLegends>
+              <ChartLegend Name="Default">
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <Position>BottomCenter</Position>
+                <ChartLegendTitle>
+                  <Caption />
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                    <FontWeight>Bold</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </ChartLegendTitle>
+                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
+                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
+              </ChartLegend>
+            </ChartLegends>
+            <ChartTitles>
+              <ChartTitle Name="Default">
+                <Caption>New Clients</Caption>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>11pt</FontSize>
+                  <FontWeight>Bold</FontWeight>
+                  <TextAlign>General</TextAlign>
+                  <VerticalAlign>Top</VerticalAlign>
+                </Style>
+                <Position>TopLeft</Position>
+              </ChartTitle>
+            </ChartTitles>
+            <Palette>BrightPastel</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStNewClients</DataSetName>
+            <Top>16cm</Top>
+            <Height>5.5cm</Height>
+            <Width>32cm</Width>
+            <ZIndex>4</ZIndex>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
+        </ReportItems>
+        <Height>8.46457in</Height>
+        <Style />
+      </Body>
+      <Width>12.59843in</Width>
+      <Page>
+        <PageHeight>29.7cm</PageHeight>
+        <PageWidth>21cm</PageWidth>
+        <LeftMargin>2cm</LeftMargin>
+        <RightMargin>2cm</RightMargin>
+        <TopMargin>2cm</TopMargin>
+        <BottomMargin>2cm</BottomMargin>
+        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <Language>uk-UA</Language>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportID>48a32518-f03e-414d-94d5-bebb7f13a037</rd:ReportID>
+</Report>

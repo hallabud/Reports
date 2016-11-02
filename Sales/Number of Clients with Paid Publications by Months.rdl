@@ -1,0 +1,884 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2008/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <Body>
+    <ReportItems>
+      <Textbox Name="Textbox1">
+        <CanGrow>true</CanGrow>
+        <KeepTogether>true</KeepTogether>
+        <Paragraphs>
+          <Paragraph>
+            <TextRuns>
+              <TextRun>
+                <Value>Number of Clients with Paid Publications by Months</Value>
+                <Style>
+                  <FontSize>12pt</FontSize>
+                  <FontWeight>Bold</FontWeight>
+                </Style>
+              </TextRun>
+            </TextRuns>
+            <Style />
+          </Paragraph>
+        </Paragraphs>
+        <rd:DefaultName>Textbox1</rd:DefaultName>
+        <Top>0.18203cm</Top>
+        <Height>0.6cm</Height>
+        <Width>14.03583cm</Width>
+        <Style>
+          <Border>
+            <Style>None</Style>
+          </Border>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+      </Textbox>
+      <Chart Name="Chart1">
+        <ChartCategoryHierarchy>
+          <ChartMembers>
+            <ChartMember>
+              <Group Name="Chart1_CategoryGroup">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!YearNum.Value</GroupExpression>
+                </GroupExpressions>
+              </Group>
+              <Label>=Fields!YearNum.Value</Label>
+              <SortExpressions>
+                <SortExpression>
+                  <Value>=Fields!YearNum.Value</Value>
+                </SortExpression>
+              </SortExpressions>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart1_CategoryGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!MonthNameRus.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <Label>=Fields!MonthNameRus.Value</Label>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!MonthNum.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                </ChartMember>
+              </ChartMembers>
+            </ChartMember>
+          </ChartMembers>
+        </ChartCategoryHierarchy>
+        <ChartSeriesHierarchy>
+          <ChartMembers>
+            <ChartMember>
+              <Group Name="Chart1_SeriesGroup">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!CompanyGroup.Value</GroupExpression>
+                </GroupExpressions>
+              </Group>
+              <Label>=Fields!CompanyGroup.Value</Label>
+              <SortExpressions>
+                <SortExpression>
+                  <Value>=IIf(Fields!CardColor.Value = "green", 1, IIf(Fields!CardColor.Value = "lime", 2, IIf(Fields!CardColor.Value = "yellow", 3, 4)))</Value>
+                </SortExpression>
+              </SortExpressions>
+            </ChartMember>
+          </ChartMembers>
+        </ChartSeriesHierarchy>
+        <ChartData>
+          <ChartSeriesCollection>
+            <ChartSeries Name="Company_key">
+              <ChartDataPoints>
+                <ChartDataPoint>
+                  <ChartDataPointValues>
+                    <Y>=CountDistinct(Fields!Company_key.Value)</Y>
+                  </ChartDataPointValues>
+                  <ChartDataLabel>
+                    <Style />
+                    <UseValueAsLabel>true</UseValueAsLabel>
+                    <Visible>true</Visible>
+                  </ChartDataLabel>
+                  <Style>
+                    <Color>=Fields!CardColor.Value</Color>
+                    <BackgroundGradientType>None</BackgroundGradientType>
+                  </Style>
+                  <ChartMarker>
+                    <Style />
+                  </ChartMarker>
+                  <DataElementOutput>Output</DataElementOutput>
+                </ChartDataPoint>
+              </ChartDataPoints>
+              <Subtype>Stacked</Subtype>
+              <Style />
+              <ChartEmptyPoints>
+                <Style />
+                <ChartMarker>
+                  <Style />
+                </ChartMarker>
+                <ChartDataLabel>
+                  <Style />
+                </ChartDataLabel>
+              </ChartEmptyPoints>
+              <ValueAxisName>Primary</ValueAxisName>
+              <CategoryAxisName>Primary</CategoryAxisName>
+              <ChartSmartLabel>
+                <CalloutLineColor>Black</CalloutLineColor>
+                <MinMovingDistance>0pt</MinMovingDistance>
+              </ChartSmartLabel>
+            </ChartSeries>
+          </ChartSeriesCollection>
+        </ChartData>
+        <ChartAreas>
+          <ChartArea Name="Default">
+            <ChartCategoryAxes>
+              <ChartAxis Name="Primary">
+                <Style>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <ChartAxisTitle>
+                  <Caption>Год / месяц</Caption>
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                  </Style>
+                </ChartAxisTitle>
+                <Margin>False</Margin>
+                <Interval>1</Interval>
+                <ChartMajorGridLines>
+                  <Enabled>False</Enabled>
+                  <Style>
+                    <Border>
+                      <Color>Gainsboro</Color>
+                    </Border>
+                  </Style>
+                </ChartMajorGridLines>
+                <ChartMinorGridLines>
+                  <Style>
+                    <Border>
+                      <Color>Gainsboro</Color>
+                      <Style>Dotted</Style>
+                    </Border>
+                  </Style>
+                </ChartMinorGridLines>
+                <ChartMinorTickMarks>
+                  <Length>0.5</Length>
+                </ChartMinorTickMarks>
+                <CrossAt>NaN</CrossAt>
+                <Minimum>NaN</Minimum>
+                <Maximum>NaN</Maximum>
+                <ChartAxisScaleBreak>
+                  <Style />
+                </ChartAxisScaleBreak>
+              </ChartAxis>
+              <ChartAxis Name="Secondary">
+                <Style>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <ChartAxisTitle>
+                  <Caption>Axis Title</Caption>
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                  </Style>
+                </ChartAxisTitle>
+                <ChartMajorGridLines>
+                  <Enabled>False</Enabled>
+                  <Style>
+                    <Border>
+                      <Color>Gainsboro</Color>
+                    </Border>
+                  </Style>
+                </ChartMajorGridLines>
+                <ChartMinorGridLines>
+                  <Style>
+                    <Border>
+                      <Color>Gainsboro</Color>
+                      <Style>Dotted</Style>
+                    </Border>
+                  </Style>
+                </ChartMinorGridLines>
+                <ChartMinorTickMarks>
+                  <Length>0.5</Length>
+                </ChartMinorTickMarks>
+                <CrossAt>NaN</CrossAt>
+                <Location>Opposite</Location>
+                <Minimum>NaN</Minimum>
+                <Maximum>NaN</Maximum>
+                <ChartAxisScaleBreak>
+                  <Style />
+                </ChartAxisScaleBreak>
+              </ChartAxis>
+            </ChartCategoryAxes>
+            <ChartValueAxes>
+              <ChartAxis Name="Primary">
+                <Style>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <ChartAxisTitle>
+                  <Caption>Кол-во компаний</Caption>
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                  </Style>
+                </ChartAxisTitle>
+                <ChartMajorGridLines>
+                  <Style>
+                    <Border>
+                      <Color>Gainsboro</Color>
+                    </Border>
+                  </Style>
+                </ChartMajorGridLines>
+                <ChartMinorGridLines>
+                  <Style>
+                    <Border>
+                      <Color>Gainsboro</Color>
+                      <Style>Dotted</Style>
+                    </Border>
+                  </Style>
+                </ChartMinorGridLines>
+                <ChartMinorTickMarks>
+                  <Length>0.5</Length>
+                </ChartMinorTickMarks>
+                <CrossAt>NaN</CrossAt>
+                <Minimum>NaN</Minimum>
+                <Maximum>NaN</Maximum>
+                <ChartAxisScaleBreak>
+                  <Style />
+                </ChartAxisScaleBreak>
+              </ChartAxis>
+              <ChartAxis Name="Secondary">
+                <Style>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <ChartAxisTitle>
+                  <Caption>Axis Title</Caption>
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                  </Style>
+                </ChartAxisTitle>
+                <ChartMajorGridLines>
+                  <Style>
+                    <Border>
+                      <Color>Gainsboro</Color>
+                    </Border>
+                  </Style>
+                </ChartMajorGridLines>
+                <ChartMinorGridLines>
+                  <Style>
+                    <Border>
+                      <Color>Gainsboro</Color>
+                      <Style>Dotted</Style>
+                    </Border>
+                  </Style>
+                </ChartMinorGridLines>
+                <ChartMinorTickMarks>
+                  <Length>0.5</Length>
+                </ChartMinorTickMarks>
+                <CrossAt>NaN</CrossAt>
+                <Location>Opposite</Location>
+                <Minimum>NaN</Minimum>
+                <Maximum>NaN</Maximum>
+                <ChartAxisScaleBreak>
+                  <Style />
+                </ChartAxisScaleBreak>
+              </ChartAxis>
+            </ChartValueAxes>
+            <Style>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </ChartArea>
+        </ChartAreas>
+        <ChartLegends>
+          <ChartLegend Name="Default">
+            <Style>
+              <BackgroundGradientType>None</BackgroundGradientType>
+              <FontSize>8pt</FontSize>
+            </Style>
+            <ChartLegendTitle>
+              <Caption />
+              <Style>
+                <FontSize>8pt</FontSize>
+                <FontWeight>Bold</FontWeight>
+                <TextAlign>Center</TextAlign>
+              </Style>
+            </ChartLegendTitle>
+            <HeaderSeparatorColor>Black</HeaderSeparatorColor>
+            <ColumnSeparatorColor>Black</ColumnSeparatorColor>
+          </ChartLegend>
+        </ChartLegends>
+        <ChartTitles>
+          <ChartTitle Name="Default">
+            <Caption>All Managers</Caption>
+            <Style>
+              <BackgroundGradientType>None</BackgroundGradientType>
+              <FontWeight>Bold</FontWeight>
+              <TextAlign>General</TextAlign>
+              <VerticalAlign>Top</VerticalAlign>
+            </Style>
+          </ChartTitle>
+        </ChartTitles>
+        <Palette>BrightPastel</Palette>
+        <ChartBorderSkin>
+          <Style>
+            <BackgroundColor>Gray</BackgroundColor>
+            <BackgroundGradientType>None</BackgroundGradientType>
+            <Color>White</Color>
+          </Style>
+        </ChartBorderSkin>
+        <ChartNoDataMessage Name="NoDataMessage">
+          <Caption>No Data Available</Caption>
+          <Style>
+            <BackgroundGradientType>None</BackgroundGradientType>
+            <TextAlign>General</TextAlign>
+            <VerticalAlign>Top</VerticalAlign>
+          </Style>
+        </ChartNoDataMessage>
+        <DataSetName>DStMain</DataSetName>
+        <Top>1.05516cm</Top>
+        <Height>16cm</Height>
+        <Width>30cm</Width>
+        <ZIndex>1</ZIndex>
+        <Style>
+          <Border>
+            <Color>LightGrey</Color>
+            <Style>None</Style>
+          </Border>
+          <BackgroundColor>White</BackgroundColor>
+          <BackgroundGradientType>None</BackgroundGradientType>
+        </Style>
+      </Chart>
+      <Tablix Name="Tablix2">
+        <TablixBody>
+          <TablixColumns>
+            <TablixColumn>
+              <Width>30cm</Width>
+            </TablixColumn>
+          </TablixColumns>
+          <TablixRows>
+            <TablixRow>
+              <Height>16cm</Height>
+              <TablixCells>
+                <TablixCell>
+                  <CellContents>
+                    <Chart Name="Chart5">
+                      <ChartCategoryHierarchy>
+                        <ChartMembers>
+                          <ChartMember>
+                            <Group Name="Chart5_CategoryGroup">
+                              <GroupExpressions>
+                                <GroupExpression>=Fields!YearNum.Value</GroupExpression>
+                              </GroupExpressions>
+                            </Group>
+                            <Label>=Fields!YearNum.Value</Label>
+                            <SortExpressions>
+                              <SortExpression>
+                                <Value>=Fields!YearNum.Value</Value>
+                              </SortExpression>
+                            </SortExpressions>
+                            <ChartMembers>
+                              <ChartMember>
+                                <Group Name="Chart5_CategoryGroup1">
+                                  <GroupExpressions>
+                                    <GroupExpression>=Fields!MonthNameRus.Value</GroupExpression>
+                                  </GroupExpressions>
+                                </Group>
+                                <Label>=Fields!MonthNameRus.Value</Label>
+                                <SortExpressions>
+                                  <SortExpression>
+                                    <Value>=Fields!MonthNum.Value</Value>
+                                  </SortExpression>
+                                </SortExpressions>
+                              </ChartMember>
+                            </ChartMembers>
+                          </ChartMember>
+                        </ChartMembers>
+                      </ChartCategoryHierarchy>
+                      <ChartSeriesHierarchy>
+                        <ChartMembers>
+                          <ChartMember>
+                            <Group Name="Chart5_SeriesGroup">
+                              <GroupExpressions>
+                                <GroupExpression>=Fields!CompanyGroup.Value</GroupExpression>
+                              </GroupExpressions>
+                            </Group>
+                            <Label>=Fields!CompanyGroup.Value</Label>
+                            <SortExpressions>
+                              <SortExpression>
+                                <Value>=IIf(Fields!CardColor.Value = "green", 1, IIf(Fields!CardColor.Value = "lime", 2, IIf(Fields!CardColor.Value = "yellow", 3, 4)))</Value>
+                              </SortExpression>
+                            </SortExpressions>
+                          </ChartMember>
+                        </ChartMembers>
+                      </ChartSeriesHierarchy>
+                      <ChartData>
+                        <ChartSeriesCollection>
+                          <ChartSeries Name="Company_key">
+                            <ChartDataPoints>
+                              <ChartDataPoint>
+                                <ChartDataPointValues>
+                                  <Y>=CountDistinct(Fields!Company_key.Value)</Y>
+                                </ChartDataPointValues>
+                                <ChartDataLabel>
+                                  <Style />
+                                  <UseValueAsLabel>true</UseValueAsLabel>
+                                  <Visible>true</Visible>
+                                </ChartDataLabel>
+                                <Style>
+                                  <Color>=First(Fields!CardColor.Value, "Chart5_SeriesGroup")</Color>
+                                </Style>
+                                <ChartMarker>
+                                  <Style />
+                                </ChartMarker>
+                                <DataElementOutput>Output</DataElementOutput>
+                              </ChartDataPoint>
+                            </ChartDataPoints>
+                            <Subtype>Stacked</Subtype>
+                            <Style />
+                            <ChartEmptyPoints>
+                              <Style />
+                              <ChartMarker>
+                                <Style />
+                              </ChartMarker>
+                              <ChartDataLabel>
+                                <Style />
+                              </ChartDataLabel>
+                            </ChartEmptyPoints>
+                            <ValueAxisName>Primary</ValueAxisName>
+                            <CategoryAxisName>Primary</CategoryAxisName>
+                            <ChartSmartLabel>
+                              <CalloutLineColor>Black</CalloutLineColor>
+                              <MinMovingDistance>0pt</MinMovingDistance>
+                            </ChartSmartLabel>
+                          </ChartSeries>
+                        </ChartSeriesCollection>
+                      </ChartData>
+                      <ChartAreas>
+                        <ChartArea Name="Default">
+                          <ChartCategoryAxes>
+                            <ChartAxis Name="Primary">
+                              <Style>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                              <ChartAxisTitle>
+                                <Caption>Год / месяц</Caption>
+                                <Style>
+                                  <FontSize>8pt</FontSize>
+                                </Style>
+                              </ChartAxisTitle>
+                              <Margin>False</Margin>
+                              <Interval>1</Interval>
+                              <ChartMajorGridLines>
+                                <Enabled>False</Enabled>
+                                <Style>
+                                  <Border>
+                                    <Color>Gainsboro</Color>
+                                  </Border>
+                                </Style>
+                              </ChartMajorGridLines>
+                              <ChartMinorGridLines>
+                                <Style>
+                                  <Border>
+                                    <Color>Gainsboro</Color>
+                                    <Style>Dotted</Style>
+                                  </Border>
+                                </Style>
+                              </ChartMinorGridLines>
+                              <ChartMinorTickMarks>
+                                <Length>0.5</Length>
+                              </ChartMinorTickMarks>
+                              <CrossAt>NaN</CrossAt>
+                              <Minimum>NaN</Minimum>
+                              <Maximum>NaN</Maximum>
+                              <ChartAxisScaleBreak>
+                                <Style />
+                              </ChartAxisScaleBreak>
+                            </ChartAxis>
+                            <ChartAxis Name="Secondary">
+                              <Style>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                              <ChartAxisTitle>
+                                <Caption>Axis Title</Caption>
+                                <Style>
+                                  <FontSize>8pt</FontSize>
+                                </Style>
+                              </ChartAxisTitle>
+                              <ChartMajorGridLines>
+                                <Enabled>False</Enabled>
+                                <Style>
+                                  <Border>
+                                    <Color>Gainsboro</Color>
+                                  </Border>
+                                </Style>
+                              </ChartMajorGridLines>
+                              <ChartMinorGridLines>
+                                <Style>
+                                  <Border>
+                                    <Color>Gainsboro</Color>
+                                    <Style>Dotted</Style>
+                                  </Border>
+                                </Style>
+                              </ChartMinorGridLines>
+                              <ChartMinorTickMarks>
+                                <Length>0.5</Length>
+                              </ChartMinorTickMarks>
+                              <CrossAt>NaN</CrossAt>
+                              <Location>Opposite</Location>
+                              <Minimum>NaN</Minimum>
+                              <Maximum>NaN</Maximum>
+                              <ChartAxisScaleBreak>
+                                <Style />
+                              </ChartAxisScaleBreak>
+                            </ChartAxis>
+                          </ChartCategoryAxes>
+                          <ChartValueAxes>
+                            <ChartAxis Name="Primary">
+                              <Style>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                              <ChartAxisTitle>
+                                <Caption>Кол-во компаний</Caption>
+                                <Style>
+                                  <FontSize>8pt</FontSize>
+                                </Style>
+                              </ChartAxisTitle>
+                              <ChartMajorGridLines>
+                                <Style>
+                                  <Border>
+                                    <Color>Gainsboro</Color>
+                                  </Border>
+                                </Style>
+                              </ChartMajorGridLines>
+                              <ChartMinorGridLines>
+                                <Style>
+                                  <Border>
+                                    <Color>Gainsboro</Color>
+                                    <Style>Dotted</Style>
+                                  </Border>
+                                </Style>
+                              </ChartMinorGridLines>
+                              <ChartMinorTickMarks>
+                                <Length>0.5</Length>
+                              </ChartMinorTickMarks>
+                              <CrossAt>NaN</CrossAt>
+                              <Minimum>NaN</Minimum>
+                              <Maximum>NaN</Maximum>
+                              <ChartAxisScaleBreak>
+                                <Style />
+                              </ChartAxisScaleBreak>
+                            </ChartAxis>
+                            <ChartAxis Name="Secondary">
+                              <Style>
+                                <FontSize>8pt</FontSize>
+                              </Style>
+                              <ChartAxisTitle>
+                                <Caption>Axis Title</Caption>
+                                <Style>
+                                  <FontSize>8pt</FontSize>
+                                </Style>
+                              </ChartAxisTitle>
+                              <ChartMajorGridLines>
+                                <Style>
+                                  <Border>
+                                    <Color>Gainsboro</Color>
+                                  </Border>
+                                </Style>
+                              </ChartMajorGridLines>
+                              <ChartMinorGridLines>
+                                <Style>
+                                  <Border>
+                                    <Color>Gainsboro</Color>
+                                    <Style>Dotted</Style>
+                                  </Border>
+                                </Style>
+                              </ChartMinorGridLines>
+                              <ChartMinorTickMarks>
+                                <Length>0.5</Length>
+                              </ChartMinorTickMarks>
+                              <CrossAt>NaN</CrossAt>
+                              <Location>Opposite</Location>
+                              <Minimum>NaN</Minimum>
+                              <Maximum>NaN</Maximum>
+                              <ChartAxisScaleBreak>
+                                <Style />
+                              </ChartAxisScaleBreak>
+                            </ChartAxis>
+                          </ChartValueAxes>
+                          <Style>
+                            <BackgroundGradientType>None</BackgroundGradientType>
+                          </Style>
+                        </ChartArea>
+                      </ChartAreas>
+                      <ChartLegends>
+                        <ChartLegend Name="Default">
+                          <Style>
+                            <BackgroundGradientType>None</BackgroundGradientType>
+                            <FontSize>8pt</FontSize>
+                          </Style>
+                          <ChartLegendTitle>
+                            <Caption />
+                            <Style>
+                              <FontSize>8pt</FontSize>
+                              <FontWeight>Bold</FontWeight>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </ChartLegendTitle>
+                          <HeaderSeparatorColor>Black</HeaderSeparatorColor>
+                          <ColumnSeparatorColor>Black</ColumnSeparatorColor>
+                        </ChartLegend>
+                      </ChartLegends>
+                      <ChartTitles>
+                        <ChartTitle Name="Default">
+                          <Caption>=Fields!ManagerName.Value</Caption>
+                          <Style>
+                            <BackgroundGradientType>None</BackgroundGradientType>
+                            <FontWeight>Bold</FontWeight>
+                            <TextAlign>General</TextAlign>
+                            <VerticalAlign>Top</VerticalAlign>
+                          </Style>
+                        </ChartTitle>
+                      </ChartTitles>
+                      <Palette>BrightPastel</Palette>
+                      <ChartBorderSkin>
+                        <Style>
+                          <BackgroundColor>Gray</BackgroundColor>
+                          <BackgroundGradientType>None</BackgroundGradientType>
+                          <Color>White</Color>
+                        </Style>
+                      </ChartBorderSkin>
+                      <ChartNoDataMessage Name="NoDataMessage">
+                        <Caption>No Data Available</Caption>
+                        <Style>
+                          <BackgroundGradientType>None</BackgroundGradientType>
+                          <TextAlign>General</TextAlign>
+                          <VerticalAlign>Top</VerticalAlign>
+                        </Style>
+                      </ChartNoDataMessage>
+                      <DataSetName>DStMain</DataSetName>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                          <Style>None</Style>
+                        </Border>
+                        <BackgroundColor>White</BackgroundColor>
+                        <BackgroundGradientType>None</BackgroundGradientType>
+                      </Style>
+                    </Chart>
+                  </CellContents>
+                </TablixCell>
+              </TablixCells>
+            </TablixRow>
+          </TablixRows>
+        </TablixBody>
+        <TablixColumnHierarchy>
+          <TablixMembers>
+            <TablixMember />
+          </TablixMembers>
+        </TablixColumnHierarchy>
+        <TablixRowHierarchy>
+          <TablixMembers>
+            <TablixMember>
+              <Group Name="ManagerName">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!ManagerName.Value</GroupExpression>
+                </GroupExpressions>
+              </Group>
+              <SortExpressions>
+                <SortExpression>
+                  <Value>=Fields!ManagerName.Value</Value>
+                </SortExpression>
+              </SortExpressions>
+            </TablixMember>
+          </TablixMembers>
+        </TablixRowHierarchy>
+        <DataSetName>DStMain</DataSetName>
+        <Top>17.05516cm</Top>
+        <Height>16cm</Height>
+        <Width>30cm</Width>
+        <ZIndex>2</ZIndex>
+        <Style>
+          <Border>
+            <Style>None</Style>
+          </Border>
+        </Style>
+      </Tablix>
+    </ReportItems>
+    <Height>13.01384in</Height>
+    <Style>
+      <BackgroundColor>WhiteSmoke</BackgroundColor>
+    </Style>
+  </Body>
+  <Width>11.81102in</Width>
+  <Page>
+    <PageHeight>29.7cm</PageHeight>
+    <PageWidth>21cm</PageWidth>
+    <InteractiveHeight>0cm</InteractiveHeight>
+    <InteractiveWidth>0cm</InteractiveWidth>
+    <LeftMargin>2cm</LeftMargin>
+    <RightMargin>2cm</RightMargin>
+    <TopMargin>2cm</TopMargin>
+    <BottomMargin>2cm</BottomMargin>
+    <ColumnSpacing>0.13cm</ColumnSpacing>
+    <Style>
+      <BackgroundColor>WhiteSmoke</BackgroundColor>
+    </Style>
+  </Page>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DSrcReporting">
+      <DataSourceReference>DSrcReporting</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>3328836b-b891-4cb7-9ef1-5b94f4257055</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DStMain">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ManagerID">
+            <Value>=Parameters!ManagerID.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT
+   CS.Company_key
+ , NC.Name AS 'CompanyName'
+ , M.Name AS 'ManagerName'
+ , DD.YearNum
+ , DD.MonthNameRus
+ , DD.MonthNum
+ , DD.LastMonthDate
+ , CASE 
+    WHEN SUM(CAST(HasPaidPublishedVacs AS INT)) &gt; 0 AND SUM(CAST(HasPaidPublicationsLeft AS INT)) &gt; 0 THEN 'Есть платные публикации на счету и опубликованные платные вакансии'
+    WHEN SUM(CAST(HasPaidPublicationsLeft AS INT)) &gt; 0 THEN 'Есть платные публикации на счету, но нет опубликованных платных вакансий'
+    WHEN SUM(CAST(HasPaidPublishedVacs AS INT)) &gt; 0 THEN 'Нет платных публикаций на счету, но есть опубликованные платные вакансии'
+    ELSE 'Нет платных публикаций на счету и нет опубликованных платных вакансий'
+   END AS 'CompanyGroup'
+ , CASE 
+    WHEN SUM(CAST(HasPaidPublishedVacs AS INT)) &gt; 0 AND SUM(CAST(HasPaidPublicationsLeft AS INT)) &gt; 0 THEN 'green'
+    WHEN SUM(CAST(HasPaidPublicationsLeft AS INT)) &gt; 0 THEN 'lime'
+    WHEN SUM(CAST(HasPaidPublishedVacs AS INT)) &gt; 0 THEN 'yellow'
+    ELSE 'red'
+   END AS 'CardColor'
+FROM Reporting.dbo.DimCompany DC
+ JOIN Analytics.dbo.NotebookCompany NC ON DC.NotebookId = NC.NotebookId
+ JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+ JOIN Reporting.dbo.FactCompanyStatuses CS ON DC.Company_key = CS.Company_key
+ JOIN Reporting.dbo.DimDate DD ON CS.Date_key = DD.Date_key
+WHERE DD.FullDate BETWEEN @StartDate AND @EndDate
+ AND M.DepartmentID = 2
+ AND M.ID IN (@ManagerID)
+ AND EXISTS (SELECT * 
+			 FROM dbo.FactCompanyStatuses CS2
+			  JOIN dbo.DimDate DD2 ON CS2.Date_key = DD2.Date_key
+			 WHERE CS2.Company_key = CS.Company_key 
+			  AND DD2.FullDate BETWEEN @StartDate AND @EndDate
+			  AND (HasPaidPublicationsLeft = 1 OR HasPaidPublishedVacs = 1))
+GROUP BY  
+   CS.Company_key 
+ , NC.Name
+ , M.Name
+ , DD.YearNum
+ , DD.MonthNameRus
+ , DD.MonthNum
+ , DD.LastMonthDate</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="Company_key">
+          <DataField>Company_key</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CompanyName">
+          <DataField>CompanyName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="YearNum">
+          <DataField>YearNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="MonthNameRus">
+          <DataField>MonthNameRus</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="MonthNum">
+          <DataField>MonthNum</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="CompanyGroup">
+          <DataField>CompanyGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="LastMonthDate">
+          <DataField>LastMonthDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="CardColor">
+          <DataField>CardColor</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DStManagers">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>SELECT ID, Name FROM SRV16.RabotaUA2.dbo.Manager WHERE DepartmentID = 2 AND IsForTesting = 0 ORDER BY Name</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ID">
+          <DataField>ID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Name">
+          <DataField>Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportParameters>
+    <ReportParameter Name="StartDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=DateAdd("d", 1 - Day(DateAdd("Q", - 4, Today())), DateAdd("Q", - 4, Today()))</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Укажите начальную дату:</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="EndDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Today</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Укажите конечную дату:</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="ManagerID">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStManagers</DataSetName>
+          <ValueField>ID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Выберите менеджеров:</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStManagers</DataSetName>
+          <ValueField>ID</ValueField>
+          <LabelField>Name</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportID>cd8a48cd-8900-4725-8103-897d2a65a584</rd:ReportID>
+</Report>

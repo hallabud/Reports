@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DSrcReporting">
+      <Transaction>true</Transaction>
+      <DataSourceReference>DSrcReporting</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>37037c74-66d7-4e75-ac6b-6e1b56245adf</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DStTest">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>WITH C AS
+ (
+SELECT COALESCE(DR.OblastCityID, DR.AnalyticsDbId) AS CityID
+ , (SELECT COUNT(*) 
+    FROM Analytics.dbo.VacancyCity VC
+	 JOIN Analytics.dbo.VacancyPublished VP ON VC.VacancyId = VP.ID
+	WHERE VC.CityId = DR.AnalyticsDbId) AS VacancyCount
+FROM dbo.DimRegion DR 
+ )
+SELECT Region_key, AnalyticsDbId, NameRus, GeoLocation
+ , (SELECT SUM(VacancyCount) FROM C WHERE C.CityID = DR.AnalyticsDbId) AS VacancyCount
+FROM dbo.DimRegion DR 
+WHERE OblastCityID IS NULL 
+ AND GeoLocation IS NOT NULL
+ ORDER BY VacancyCount DESC</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="NameRus">
+          <DataField>NameRus</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Region_key">
+          <DataField>Region_key</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="AnalyticsDbId">
+          <DataField>AnalyticsDbId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="GeoLocation">
+          <DataField>GeoLocation</DataField>
+          <rd:TypeName>Microsoft.SqlServer.Types.SqlGeography</rd:TypeName>
+        </Field>
+        <Field Name="VacancyCount">
+          <DataField>VacancyCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Map Name="Map7">
+            <MapViewport>
+              <MapCoordinateSystem>Geographic</MapCoordinateSystem>
+              <MapProjection>Mercator</MapProjection>
+              <ProjectionCenterX>NaN</ProjectionCenterX>
+              <ProjectionCenterY>NaN</ProjectionCenterY>
+              <MapLimits>
+                <MinimumX>NaN</MinimumX>
+                <MinimumY>NaN</MinimumY>
+                <MaximumX>NaN</MaximumX>
+                <MaximumY>NaN</MaximumY>
+              </MapLimits>
+              <MaximumZoom>4000000</MaximumZoom>
+              <MapCustomView>
+                <CenterX>50.3245086669922</CenterX>
+                <CenterY>49.668212890625</CenterY>
+                <Zoom>110.452156066895</Zoom>
+              </MapCustomView>
+              <MapMeridians>
+                <Style>
+                  <Border>
+                    <Color>LightGrey</Color>
+                    <Style>None</Style>
+                  </Border>
+                  <FontFamily>Tahoma</FontFamily>
+                  <FontSize>8pt</FontSize>
+                  <Format>#°E;#°W;0°</Format>
+                  <Color>DarkGray</Color>
+                </Style>
+                <Hidden>true</Hidden>
+                <Interval>NaN</Interval>
+                <ShowLabels>true</ShowLabels>
+              </MapMeridians>
+              <MapParallels>
+                <Style>
+                  <Border>
+                    <Color>LightGrey</Color>
+                    <Style>None</Style>
+                  </Border>
+                  <FontFamily>Tahoma</FontFamily>
+                  <FontSize>8pt</FontSize>
+                  <Format>#°N;#°S;0°</Format>
+                  <Color>DarkGray</Color>
+                </Style>
+                <Hidden>true</Hidden>
+                <Interval>NaN</Interval>
+                <ShowLabels>true</ShowLabels>
+              </MapParallels>
+              <GridUnderContent>false</GridUnderContent>
+              <Style>
+                <Border>
+                  <Color>#728586</Color>
+                  <Style>Solid</Style>
+                </Border>
+                <BackgroundColor>White</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <BackgroundGradientEndColor>WhiteSmoke</BackgroundGradientEndColor>
+                <ShadowOffset>1pt</ShadowOffset>
+              </Style>
+              <LeftMargin>2pt</LeftMargin>
+              <RightMargin>2pt</RightMargin>
+              <TopMargin>2pt</TopMargin>
+              <BottomMargin>2pt</BottomMargin>
+            </MapViewport>
+            <MapDataRegions>
+              <MapDataRegion Name="Map7_PointLayer1_DataRegion">
+                <DataSetName>DStTest</DataSetName>
+                <MapMember>
+                  <Group Name="Map7_PointLayer1_Group" />
+                </MapMember>
+              </MapDataRegion>
+            </MapDataRegions>
+            <MapLayers>
+              <MapTileLayer Name="TileLayer1">
+                <UseSecureConnection>false</UseSecureConnection>
+              </MapTileLayer>
+              <MapPointLayer Name="PointLayer1">
+                <MapMarkerTemplate>
+                  <MapMarker>
+                    <MapMarkerStyle>Circle</MapMarkerStyle>
+                  </MapMarker>
+                  <Size>10pt</Size>
+                  <LabelPlacement>Top</LabelPlacement>
+                  <Style>
+                    <Border>
+                      <Color>Gray</Color>
+                      <Style>Solid</Style>
+                    </Border>
+                    <BackgroundColor>White</BackgroundColor>
+                    <BackgroundGradientType>None</BackgroundGradientType>
+                    <BackgroundGradientEndColor>LightGrey</BackgroundGradientEndColor>
+                    <FontWeight>Bold</FontWeight>
+                  </Style>
+                  <Label>=Sum(Fields!VacancyCount.Value)</Label>
+                </MapMarkerTemplate>
+                <MapPointRules>
+                  <MapSizeRule>
+                    <StartSize>10pt</StartSize>
+                    <EndSize>30pt</EndSize>
+                    <DataValue>=Sum(Fields!VacancyCount.Value)</DataValue>
+                    <DistributionType>Custom</DistributionType>
+                    <BucketCount>10</BucketCount>
+                    <StartValue />
+                    <EndValue />
+                    <MapBuckets>
+                      <MapBucket>
+                        <StartValue>1</StartValue>
+                        <EndValue>50</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>50</StartValue>
+                        <EndValue>150</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>150</StartValue>
+                        <EndValue>500</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>500</StartValue>
+                        <EndValue>1000</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>1000</StartValue>
+                        <EndValue>2000</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>2000</StartValue>
+                        <EndValue>5000</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>5000</StartValue>
+                        <EndValue>1000000</EndValue>
+                      </MapBucket>
+                    </MapBuckets>
+                    <LegendName>Legend1</LegendName>
+                    <LegendText>#FROMVALUE{N0} - #TOVALUE{N0}</LegendText>
+                  </MapSizeRule>
+                  <MapColorRangeRule>
+                    <ShowInColorScale>true</ShowInColorScale>
+                    <DataValue>=Sum(Fields!VacancyCount.Value)</DataValue>
+                    <DistributionType>Custom</DistributionType>
+                    <StartValue />
+                    <EndValue />
+                    <MapBuckets>
+                      <MapBucket>
+                        <StartValue>1</StartValue>
+                        <EndValue>50</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>50</StartValue>
+                        <EndValue>150</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>150</StartValue>
+                        <EndValue>500</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>500</StartValue>
+                        <EndValue>1000</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>1000</StartValue>
+                        <EndValue>2000</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>2000</StartValue>
+                        <EndValue>5000</EndValue>
+                      </MapBucket>
+                      <MapBucket>
+                        <StartValue>5000</StartValue>
+                        <EndValue>1000000</EndValue>
+                      </MapBucket>
+                    </MapBuckets>
+                    <LegendName />
+                    <LegendText>#FROMVALUE{N0} - #TOVALUE{N0}</LegendText>
+                  </MapColorRangeRule>
+                </MapPointRules>
+                <MapDataRegionName>Map7_PointLayer1_DataRegion</MapDataRegionName>
+                <MapSpatialDataRegion>
+                  <VectorData>=Fields!GeoLocation.Value</VectorData>
+                </MapSpatialDataRegion>
+                <Transparency>40</Transparency>
+              </MapPointLayer>
+            </MapLayers>
+            <MapLegends>
+              <MapLegend Name="Legend1">
+                <MapLegendTitle>
+                  <Style>
+                    <BackgroundColor>#00ffffff</BackgroundColor>
+                    <FontFamily>Tahoma</FontFamily>
+                    <FontSize>8pt</FontSize>
+                    <FontWeight>Bold</FontWeight>
+                  </Style>
+                  <Caption>Кол-во вакансий</Caption>
+                </MapLegendTitle>
+                <AutoFitTextDisabled>false</AutoFitTextDisabled>
+                <InterlacedRows>false</InterlacedRows>
+                <EquallySpacedItems>false</EquallySpacedItems>
+                <Position>RightTop</Position>
+                <DockOutsideViewport>false</DockOutsideViewport>
+                <Style>
+                  <Border>
+                    <Color>#728586</Color>
+                    <Style>Solid</Style>
+                  </Border>
+                  <BackgroundColor>White</BackgroundColor>
+                  <BackgroundGradientType>TopBottom</BackgroundGradientType>
+                  <BackgroundGradientEndColor>WhiteSmoke</BackgroundGradientEndColor>
+                  <FontFamily>Tahoma</FontFamily>
+                  <FontSize>8pt</FontSize>
+                  <ShadowOffset>1pt</ShadowOffset>
+                </Style>
+                <LeftMargin>2pt</LeftMargin>
+                <RightMargin>2pt</RightMargin>
+                <TopMargin>2pt</TopMargin>
+                <BottomMargin>2pt</BottomMargin>
+              </MapLegend>
+            </MapLegends>
+            <MapTitles>
+              <MapTitle Name="Title1">
+                <Text>Региональное распределение опубликованных вакансий</Text>
+                <Angle>NaN</Angle>
+                <TextShadowOffset>0pt</TextShadowOffset>
+                <DockOutsideViewport>true</DockOutsideViewport>
+                <Style>
+                  <Border>
+                    <Color>#728586</Color>
+                    <Style>None</Style>
+                  </Border>
+                  <BackgroundColor>#00ffffff</BackgroundColor>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <BackgroundGradientEndColor>Gainsboro</BackgroundGradientEndColor>
+                  <FontFamily>Tahoma</FontFamily>
+                  <FontSize>14pt</FontSize>
+                  <FontWeight>Bold</FontWeight>
+                  <TextAlign>Center</TextAlign>
+                  <ShadowOffset>0pt</ShadowOffset>
+                </Style>
+                <LeftMargin>2pt</LeftMargin>
+                <RightMargin>2pt</RightMargin>
+                <TopMargin>2pt</TopMargin>
+                <BottomMargin>2pt</BottomMargin>
+              </MapTitle>
+            </MapTitles>
+            <MapDistanceScale>
+              <ScaleBorderColor>Gray</ScaleBorderColor>
+              <Position>RightBottom</Position>
+              <DockOutsideViewport>false</DockOutsideViewport>
+              <Style>
+                <Border>
+                  <Color>#728586</Color>
+                  <Style>Solid</Style>
+                </Border>
+                <BackgroundColor>White</BackgroundColor>
+                <BackgroundGradientType>TopBottom</BackgroundGradientType>
+                <BackgroundGradientEndColor>WhiteSmoke</BackgroundGradientEndColor>
+                <FontFamily>Tahoma</FontFamily>
+                <FontSize>8pt</FontSize>
+                <ShadowOffset>1pt</ShadowOffset>
+              </Style>
+              <MapSize>
+                <Width>80</Width>
+                <Height>40</Height>
+                <Unit>Point</Unit>
+              </MapSize>
+              <LeftMargin>2pt</LeftMargin>
+              <RightMargin>2pt</RightMargin>
+              <TopMargin>2pt</TopMargin>
+              <BottomMargin>2pt</BottomMargin>
+            </MapDistanceScale>
+            <MapColorScale>
+              <MapColorScaleTitle>
+                <Style>
+                  <FontFamily>Tahoma</FontFamily>
+                  <FontSize>8pt</FontSize>
+                  <FontWeight>Bold</FontWeight>
+                </Style>
+                <Caption />
+              </MapColorScaleTitle>
+              <ColorBarBorderColor>Gray</ColorBarBorderColor>
+              <LabelFormat>#,##0.##</LabelFormat>
+              <HideEndLabels>false</HideEndLabels>
+              <NoDataText>No data</NoDataText>
+              <Position>LeftBottom</Position>
+              <DockOutsideViewport>false</DockOutsideViewport>
+              <Style>
+                <Border>
+                  <Color>#728586</Color>
+                  <Style>Solid</Style>
+                </Border>
+                <BackgroundColor>White</BackgroundColor>
+                <BackgroundGradientType>TopBottom</BackgroundGradientType>
+                <BackgroundGradientEndColor>WhiteSmoke</BackgroundGradientEndColor>
+                <FontFamily>Tahoma</FontFamily>
+                <FontSize>8pt</FontSize>
+                <ShadowOffset>1pt</ShadowOffset>
+              </Style>
+              <LeftMargin>2pt</LeftMargin>
+              <RightMargin>2pt</RightMargin>
+              <TopMargin>2pt</TopMargin>
+              <BottomMargin>2pt</BottomMargin>
+            </MapColorScale>
+            <MapBorderSkin>
+              <Style>
+                <Border />
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <BackgroundGradientEndColor>White</BackgroundGradientEndColor>
+                <Color>White</Color>
+              </Style>
+              <MapBorderSkinType>Emboss</MapBorderSkinType>
+            </MapBorderSkin>
+            <Height>27.08891cm</Height>
+            <Width>41.19058cm</Width>
+            <Style>
+              <Border>
+                <Color>#728586</Color>
+                <Style>Solid</Style>
+                <Width>2pt</Width>
+              </Border>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+              <BackgroundGradientType>TopBottom</BackgroundGradientType>
+              <BackgroundGradientEndColor>White</BackgroundGradientEndColor>
+            </Style>
+          </Map>
+        </ReportItems>
+        <Height>10.66492in</Height>
+        <Style />
+      </Body>
+      <Width>16.21676in</Width>
+      <Page>
+        <PageHeight>29.7cm</PageHeight>
+        <PageWidth>21cm</PageWidth>
+        <LeftMargin>2cm</LeftMargin>
+        <RightMargin>2cm</RightMargin>
+        <TopMargin>2cm</TopMargin>
+        <BottomMargin>2cm</BottomMargin>
+        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <Language>uk-UA</Language>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportID>cd105e97-8d62-46fc-84cc-9530d3c021b8</rd:ReportID>
+</Report>

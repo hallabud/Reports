@@ -1,0 +1,2861 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DSrcReporting">
+      <DataSourceReference>DSrcReporting</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>5227bfd5-6ca6-4e41-8de3-ae60925dee43</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DStCompanies">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@Managers">
+            <Value>=Parameters!Managers.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@VacancyDiffGroup">
+            <Value>=Parameters!VacancyDiffGroup.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Department">
+            <Value>=Parameters!Department.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@RegionKey">
+            <Value>=Parameters!RegionKey.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Date_key">
+            <Value>=Parameters!Date_key.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@IndexStartValue">
+            <Value>=Parameters!IndexStartValue.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@IndexEndValue">
+            <Value>=Parameters!IndexEndValue.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@AgeGroups">
+            <Value>=Parameters!AgeGroups.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>DECLARE @TodayDateKey INT; SELECT @TodayDateKey = Date_key FROM dbo.DimDate WHERE FullDate = dbo.fnGetDatePart(GETDATE());
+DECLARE @Mnth1DateKey INT; SELECT @Mnth1DateKey = Date_key FROM dbo.DimDate WHERE FullDate = dbo.fnGetDatePart(DATEADD(MONTH, -1, GETDATE()));
+DECLARE @Mnth3DateKey INT; SELECT @Mnth3DateKey = Date_key FROM dbo.DimDate WHERE FullDate = dbo.fnGetDatePart(DATEADD(MONTH, -3, GETDATE()));
+DECLARE @Mnth12DateKey INT; SELECT @Mnth12DateKey = Date_key FROM dbo.DimDate WHERE FullDate = dbo.fnGetDatePart(DATEADD(YEAR, -1, GETDATE()));
+
+--DECLARE @Managers VARCHAR(100) = 'Александр Караванов';
+--DECLARE @VacancyDiffGroup VARCHAR(100) = '0 &lt; R &lt; W';
+--DECLARE @Date_key INT = (SELECT Date_key FROM Reporting.dbo.DimDate WHERE FullDate = '2016-07-18');
+
+SELECT
+   DC.Company_key
+ , DC.CompanyName
+ , DC.NotebookId
+ , DD.FullDate
+ , DC.WorkCompanyID
+ , DC.WorkConnectionGroup
+ , DC.IndexAttraction
+ , DC.AvgLast3Month
+ , CASE 
+    WHEN DATEDIFF(MONTH, DC.FirstPubDate, GETDATE()) &lt; 6 THEN 'меньше 6 месяцев'
+    WHEN DATEDIFF(MONTH, DC.FirstPubDate, GETDATE()) BETWEEN 6  AND 11 THEN 'от 6 до 11 месяцев'
+    WHEN DATEDIFF(MONTH, DC.FirstPubDate, GETDATE()) BETWEEN 12  AND 23 THEN 'от 12 до 23 месяцев'
+    WHEN DATEDIFF(MONTH, DC.FirstPubDate, GETDATE()) &gt;= 24 THEN '24+ месяцев'
+   END AS AgeMonthNumGroup
+ , FCS.VacancyNum
+ , ISNULL(FCS.WorkVacancyNum,0) AS WorkVacancyNum
+ , FCS.VacancyNum - ISNULL(FCS.WorkVacancyNum,0) AS VacancyDiff
+ , FCS.VacancyDiffGroup
+ , CASE 
+    WHEN DC.IndexAttraction BETWEEN 7 AND 10 THEN '*****' 
+    WHEN DC.IndexAttraction BETWEEN 4.5 AND 7 THEN '****' 
+    WHEN DC.IndexAttraction BETWEEN 3 AND 4.5 THEN '***'
+    WHEN DC.IndexAttraction BETWEEN 1 AND 3 THEN '**'
+    WHEN DC.IndexAttraction &gt; 0 THEN '*'
+    ELSE '-'
+   END AS Stars 
+ , CASE WHEN FCS.VacancyDiffGroup = 'R &gt; W = 0' THEN 1 ELSE 0 END AS VacancyDiff1
+ , CASE WHEN FCS.VacancyDiffGroup = 'R &gt; W &gt; 0' THEN 1 ELSE 0 END AS VacancyDiff2
+ , CASE WHEN FCS.VacancyDiffGroup = 'R = W' THEN 1 ELSE 0 END AS VacancyDiff3
+ , CASE WHEN FCS.VacancyDiffGroup = '0 &lt; R &lt; W' THEN 1 ELSE 0 END AS VacancyDiff4
+ , CASE WHEN FCS.VacancyDiffGroup = '0 = R &lt; W' THEN 1 ELSE 0 END AS VacancyDiff5
+ , CASE WHEN FCS.VacancyDiffGroup = 'R = W = 0' THEN 1 ELSE 0 END AS VacancyDiff6
+ , ISNULL((SELECT DISTINCT 1 FROM dbo.FactCompanyStatuses FCS WHERE FCS.Company_key = DC.Company_key AND FCS.Date_key = @TodayDateKey AND HasPaidServices = 1),0) AS Rabota_Paid
+ , ISNULL((SELECT DISTINCT 1 FROM dbo.FactCompanyStatuses FCS WHERE FCS.Company_key = DC.Company_key AND FCS.Date_key = @TodayDateKey AND (HasHotPublishedVacs | HasHotPublicationsLeft = 1)),0) AS Rabota_Hot
+ , /*ISNULL((SELECT DISTINCT 1 FROM dbo.FactSpiderCompanyIndexes FSCI JOIN dbo.DimSpiderCompany DSC ON FSCI.SpiderCompanyID = DSC.SpiderCompanyID WHERE FSCI.Date_key = @TodayDateKey AND DSC.NotebookId = DC.NotebookId AND (Paid | IsPaidByTickets | HotVacancyCount | IsHasLogo | IsBusiness &gt; 0)),0)*/ NULL AS Work_Paid
+ , ISNULL((SELECT DISTINCT 1 FROM dbo.FactSpiderCompanyIndexes FSCI JOIN dbo.DimSpiderCompany DSC ON FSCI.SpiderCompanyID = DSC.SpiderCompanyID WHERE FSCI.Date_key = @TodayDateKey AND DSC.NotebookId = DC.NotebookId AND HotVacancyCount &gt; 0),0) AS Work_Hot   
+ , /*CASE 
+    WHEN EXISTS (SELECT TOP 1 * FROM SRV16.RabotaUA2.dbo.CRM_Action A WHERE A.NotebookID = DC.NotebookId AND TypeID = 1 AND StateID = 2 AND IsNotInterested = 0 AND A.AddDate &gt;= DATEADD(WEEK, -1, GETDATE())) THEN '1 неделю'
+    WHEN EXISTS (SELECT TOP 1 * FROM SRV16.RabotaUA2.dbo.CRM_Action A WHERE A.NotebookID = DC.NotebookId AND TypeID = 1 AND StateID = 2 AND IsNotInterested = 0 AND A.AddDate &gt;= DATEADD(MONTH, -1, GETDATE())) THEN '1 месяц'
+    WHEN EXISTS (SELECT TOP 1 * FROM SRV16.RabotaUA2.dbo.CRM_Action A WHERE A.NotebookID = DC.NotebookId AND TypeID = 1 AND StateID = 2 AND IsNotInterested = 0 AND A.AddDate &gt;= DATEADD(MONTH, -3, GETDATE())) THEN '3 месяца'
+    WHEN EXISTS (SELECT TOP 1 * FROM SRV16.RabotaUA2.dbo.CRM_Action A WHERE A.NotebookID = DC.NotebookId AND TypeID = 1 AND StateID = 2 AND IsNotInterested = 0 AND A.AddDate &lt; DATEADD(MONTH, -3, GETDATE())) THEN 'более, чем 3 месяца'
+    ELSE 'не было контакта' 
+   END*/ NULL AS ContactPeriod
+ , /*(SELECT TOP 1 CompleteDate FROM Analytics.dbo.CRM_Action A WHERE A.NotebookID = DC.NotebookId AND StateID = 2 AND IsNotInterested = 0 ORDER BY CompleteDate DESC)*/  NULL AS LastCompletedDate
+ , /*(SELECT TOP 1 ResultComment FROM Analytics.dbo.CRM_Action A WHERE A.NotebookID = DC.NotebookId AND StateID = 2 AND IsNotInterested = 0 ORDER BY CompleteDate DESC)*/ NULL AS LastCompletedResultComment
+ , /*(SELECT TOP 1 ExecutionDate FROM Analytics.dbo.CRM_Action A WHERE A.NotebookID = DC.NotebookId AND StateID IN (1,4) ORDER BY ExecutionDate ASC)*/ NULL AS NextActionDate
+ , /*(SELECT TOP 1 Subject FROM Analytics.dbo.CRM_Action A WHERE A.NotebookID = DC.NotebookId AND StateID IN (1,4) ORDER BY ExecutionDate ASC)*/ NULL AS NextActionComment
+ , /*CASE
+    WHEN EXISTS (SELECT * FROM dbo.FactCompanyStatuses FCS WHERE FCS.Company_key = DC.Company_key AND FCS.Date_key &gt;= @Mnth1DateKey AND (HasPaidPublishedVacs = 1 OR HasPaidPublicationsLeft = 1 OR HasHotPublishedVacs = 1 OR HasHotPublicationsLeft = 1 OR HasCVDBAccess = 1 OR HasActivatedLogo = 1 OR HasActivatedProfile = 1))
+     OR EXISTS (SELECT * FROM dbo.FactSpiderCompanyIndexes FSCI JOIN dbo.DimSpiderCompany DSC ON FSCI.SpiderCompanyID = DSC.SpiderCompanyID WHERE FSCI.Date_key &gt;= @Mnth1DateKey AND DSC.NotebookId = DC.NotebookId AND (VacancyCount &gt; 6 OR HotVacancyCount = 1 OR IsHasLogo = 1 OR IsBusiness = 1))
+    THEN 'месяц'
+    WHEN EXISTS (SELECT * FROM dbo.FactCompanyStatuses FCS WHERE FCS.Company_key = DC.Company_key AND FCS.Date_key &gt;= @Mnth3DateKey AND (HasPaidPublishedVacs = 1 OR HasPaidPublicationsLeft = 1 OR HasHotPublishedVacs = 1 OR HasHotPublicationsLeft = 1 OR HasCVDBAccess = 1 OR HasActivatedLogo = 1 OR HasActivatedProfile = 1))
+     OR EXISTS (SELECT * FROM dbo.FactSpiderCompanyIndexes FSCI JOIN dbo.DimSpiderCompany DSC ON FSCI.SpiderCompanyID = DSC.SpiderCompanyID WHERE FSCI.Date_key &gt;= @Mnth3DateKey AND DSC.NotebookId = DC.NotebookId AND (VacancyCount &gt; 6 OR HotVacancyCount = 1 OR IsHasLogo = 1 OR IsBusiness = 1))
+    THEN '3 месяца'
+    WHEN EXISTS (SELECT * FROM dbo.FactCompanyStatuses FCS WHERE FCS.Company_key = DC.Company_key AND FCS.Date_key &gt;= @Mnth12DateKey AND (HasPaidPublishedVacs = 1 OR HasPaidPublicationsLeft = 1 OR HasHotPublishedVacs = 1 OR HasHotPublicationsLeft = 1 OR HasCVDBAccess = 1 OR HasActivatedLogo = 1 OR HasActivatedProfile = 1))
+     OR EXISTS (SELECT * FROM dbo.FactSpiderCompanyIndexes FSCI JOIN dbo.DimSpiderCompany DSC ON FSCI.SpiderCompanyID = DSC.SpiderCompanyID WHERE FSCI.Date_key &gt;= @Mnth12DateKey AND DSC.NotebookId = DC.NotebookId AND (VacancyCount &gt; 6 OR HotVacancyCount = 1 OR IsHasLogo = 1 OR IsBusiness = 1))
+    THEN 'год'
+    ELSE 'не платили'
+   END*/ NULL AS PaidPeriod
+FROM dbo.DimCompany DC
+ JOIN dbo.FactCompanyStatuses FCS ON DC.Company_key = FCS.Company_key
+ JOIN dbo.DimDate DD ON FCS.Date_key = DD.Date_key
+WHERE DD.FullDate &gt;= DATEADD(MONTH, -6, GETDATE())
+ AND (DD.DayNum = 1 OR DD.FullDate = dbo.fnGetDatePart(GETDATE()))
+ AND DC.IndexAttraction &gt; 0
+ AND DC.WorkConnectionGroup = 'Привязанные компании'
+ AND DC.ManagerName IN (@Managers)
+ AND DC.DepartmentName IN (@Department)
+ AND DC.Region_key IN (@RegionKey)
+ AND EXISTS (SELECT * FROM dbo.FactCompanyStatuses WHERE Company_key = DC.Company_key AND VacancyDiffGroup = @VacancyDiffGroup AND Date_key = @Date_key)
+ AND DC.IndexAttraction BETWEEN @IndexStartValue AND @IndexEndValue
+ AND DC.AgeGroup IN (@AgeGroups)</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="ContactPeriod">
+          <DataField>ContactPeriod</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="LastCompletedDate">
+          <DataField>LastCompletedDate</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="LastCompletedResultComment">
+          <DataField>LastCompletedResultComment</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="NextActionDate">
+          <DataField>NextActionDate</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="NextActionComment">
+          <DataField>NextActionComment</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="FullDate">
+          <DataField>FullDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="Company_key">
+          <DataField>Company_key</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CompanyName">
+          <DataField>CompanyName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="NotebookId">
+          <DataField>NotebookId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="AgeMonthNumGroup">
+          <DataField>AgeMonthNumGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="WorkCompanyID">
+          <DataField>WorkCompanyID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="WorkConnectionGroup">
+          <DataField>WorkConnectionGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="IndexAttraction">
+          <DataField>IndexAttraction</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="AvgLast3Month">
+          <DataField>AvgLast3Month</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="VacancyNum">
+          <DataField>VacancyNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="WorkVacancyNum">
+          <DataField>WorkVacancyNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="VacancyDiff">
+          <DataField>VacancyDiff</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="VacancyDiffGroup">
+          <DataField>VacancyDiffGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Stars">
+          <DataField>Stars</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="VacancyDiff1">
+          <DataField>VacancyDiff1</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="VacancyDiff2">
+          <DataField>VacancyDiff2</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="VacancyDiff3">
+          <DataField>VacancyDiff3</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="VacancyDiff4">
+          <DataField>VacancyDiff4</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="VacancyDiff5">
+          <DataField>VacancyDiff5</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="VacancyDiff6">
+          <DataField>VacancyDiff6</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Rabota_Paid">
+          <DataField>Rabota_Paid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Rabota_Hot">
+          <DataField>Rabota_Hot</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Work_Paid">
+          <DataField>Work_Paid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Work_Hot">
+          <DataField>Work_Hot</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PaidPeriod">
+          <DataField>PaidPeriod</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IsPaidCompany">
+          <Value>=IIf(Fields!Rabota_Paid.Value = 1, IIf(Fields!Work_Paid.Value = 1, "rabota + work", "rabota"), IIf(Fields!Work_Paid.Value = 1, "work", "не платят"))</Value>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DStContactPeriods">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>SELECT        '1 неделю' AS ContactPeriod
+UNION ALL
+SELECT        '1 месяц' AS Expr1
+UNION ALL
+SELECT        '3 месяца' AS Expr1
+UNION ALL
+SELECT        'более, чем 3 месяца' AS Expr1
+UNION ALL
+SELECT        'не было контакта' AS Expr1</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="ContactPeriod">
+          <DataField>ContactPeriod</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="Tablix5">
+            <TablixCorner>
+              <TablixCornerRows>
+                <TablixCornerRow>
+                  <TablixCornerCell>
+                    <CellContents>
+                      <Textbox Name="Textbox105">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value />
+                                <Style>
+                                  <FontSize>12pt</FontSize>
+                                  <FontWeight>Bold</FontWeight>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox105</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Color>LightGrey</Color>
+                            <Style>Solid</Style>
+                          </Border>
+                          <BottomBorder>
+                            <Color>LightGrey</Color>
+                            <Style>Solid</Style>
+                            <Width>1pt</Width>
+                          </BottomBorder>
+                          <VerticalAlign>Middle</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixCornerCell>
+                  <TablixCornerCell>
+                    <CellContents>
+                      <Textbox Name="Textbox42">
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>Название компании</Value>
+                                <Style>
+                                  <FontSize>12pt</FontSize>
+                                  <FontWeight>Bold</FontWeight>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox42</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Color>LightGrey</Color>
+                            <Style>Solid</Style>
+                          </Border>
+                          <BottomBorder>
+                            <Color>Black</Color>
+                            <Style>Solid</Style>
+                            <Width>1pt</Width>
+                          </BottomBorder>
+                          <VerticalAlign>Middle</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixCornerCell>
+                </TablixCornerRow>
+              </TablixCornerRows>
+            </TablixCorner>
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>2.52391cm</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>1.06974cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle1">
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
+                            <BottomBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>1.05cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox101">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox101</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <TopBorder>
+                              <Width>1pt</Width>
+                            </TopBorder>
+                            <RightBorder>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                            <BackgroundColor>WhiteSmoke</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>1.05cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox104">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox104</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <TopBorder>
+                              <Width>1pt</Width>
+                            </TopBorder>
+                            <RightBorder>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                            <BackgroundColor>WhiteSmoke</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.6cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox74">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!VacancyNum.Value</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox74</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <RightBorder>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.6cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox71">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!WorkVacancyNum.Value</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox71</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <RightBorder>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.75cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle6">
+                          <ReportItems>
+                            <GaugePanel Name="GaugePanel6">
+                              <StateIndicators>
+                                <StateIndicator Name="Indicator1">
+                                  <GaugeInputValue>
+                                    <Value>=Fields!VacancyDiff1.Value</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </GaugeInputValue>
+                                  <TransformationType>None</TransformationType>
+                                  <TransformationScope>Tablix5</TransformationScope>
+                                  <MinimumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MinimumValue>
+                                  <MaximumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MaximumValue>
+                                  <IndicatorStyle>None</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </IndicatorImage>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStates>
+                                    <IndicatorState Name="ThreeSymbolUnCircledCheck">
+                                      <StartValue>
+                                        <Value>1</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </StartValue>
+                                      <EndValue>
+                                        <Value>100</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </EndValue>
+                                      <Color>Green</Color>
+                                      <ScaleFactor>1</ScaleFactor>
+                                      <IndicatorStyle>ThreeSymbolUnCircledCross</IndicatorStyle>
+                                      <IndicatorImage>
+                                        <Source>External</Source>
+                                        <Value />
+                                      </IndicatorImage>
+                                    </IndicatorState>
+                                  </IndicatorStates>
+                                  <Angle>0</Angle>
+                                  <StateDataElementName />
+                                  <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                                  <Style>
+                                    <ShadowOffset>2pt</ShadowOffset>
+                                  </Style>
+                                  <Top>4</Top>
+                                  <Left>4</Left>
+                                  <Height>92</Height>
+                                  <Width>92</Width>
+                                </StateIndicator>
+                              </StateIndicators>
+                              <AutoLayout>true</AutoLayout>
+                              <BackFrame>
+                                <Style>
+                                  <Border>
+                                    <Style>None</Style>
+                                  </Border>
+                                  <BackgroundColor>Gainsboro</BackgroundColor>
+                                  <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                  <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                  <BackgroundHatchType>None</BackgroundHatchType>
+                                  <ShadowOffset>0pt</ShadowOffset>
+                                </Style>
+                                <FrameBackground>
+                                  <Style>
+                                    <BackgroundColor>Silver</BackgroundColor>
+                                    <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                    <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                    <BackgroundHatchType>None</BackgroundHatchType>
+                                  </Style>
+                                </FrameBackground>
+                                <FrameImage>
+                                  <Source>External</Source>
+                                  <Value />
+                                </FrameImage>
+                              </BackFrame>
+                              <TopImage>
+                                <Source>External</Source>
+                                <Value />
+                              </TopImage>
+                              <DataSetName>DStCompanies</DataSetName>
+                              <Left>0.7912cm</Left>
+                              <Height>0.75cm</Height>
+                              <Width>0.87042cm</Width>
+                              <Style>
+                                <Border>
+                                  <Color>LightGrey</Color>
+                                  <Style>None</Style>
+                                </Border>
+                                <BackgroundColor>White</BackgroundColor>
+                              </Style>
+                            </GaugePanel>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <RightBorder>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.75cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle5">
+                          <ReportItems>
+                            <GaugePanel Name="GaugePanel7">
+                              <StateIndicators>
+                                <StateIndicator Name="Indicator1">
+                                  <GaugeInputValue>
+                                    <Value>=Fields!VacancyDiff2.Value</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </GaugeInputValue>
+                                  <TransformationType>None</TransformationType>
+                                  <TransformationScope>Tablix5</TransformationScope>
+                                  <MinimumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MinimumValue>
+                                  <MaximumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MaximumValue>
+                                  <IndicatorStyle>None</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </IndicatorImage>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStates>
+                                    <IndicatorState Name="ThreeSymbolUnCircledCheck">
+                                      <StartValue>
+                                        <Value>1</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </StartValue>
+                                      <EndValue>
+                                        <Value>100</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </EndValue>
+                                      <Color>LimeGreen</Color>
+                                      <ScaleFactor>1</ScaleFactor>
+                                      <IndicatorStyle>ThreeSymbolUnCircledCross</IndicatorStyle>
+                                      <IndicatorImage>
+                                        <Source>External</Source>
+                                        <Value />
+                                      </IndicatorImage>
+                                    </IndicatorState>
+                                  </IndicatorStates>
+                                  <Angle>0</Angle>
+                                  <StateDataElementName />
+                                  <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                                  <Style>
+                                    <ShadowOffset>2pt</ShadowOffset>
+                                  </Style>
+                                  <Top>4</Top>
+                                  <Left>4</Left>
+                                  <Height>92</Height>
+                                  <Width>92</Width>
+                                </StateIndicator>
+                              </StateIndicators>
+                              <AutoLayout>true</AutoLayout>
+                              <BackFrame>
+                                <Style>
+                                  <Border>
+                                    <Style>None</Style>
+                                  </Border>
+                                  <BackgroundColor>Gainsboro</BackgroundColor>
+                                  <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                  <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                  <BackgroundHatchType>None</BackgroundHatchType>
+                                  <ShadowOffset>0pt</ShadowOffset>
+                                </Style>
+                                <FrameBackground>
+                                  <Style>
+                                    <BackgroundColor>Silver</BackgroundColor>
+                                    <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                    <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                    <BackgroundHatchType>None</BackgroundHatchType>
+                                  </Style>
+                                </FrameBackground>
+                                <FrameImage>
+                                  <Source>External</Source>
+                                  <Value />
+                                </FrameImage>
+                              </BackFrame>
+                              <TopImage>
+                                <Source>External</Source>
+                                <Value />
+                              </TopImage>
+                              <DataSetName>DStCompanies</DataSetName>
+                              <Left>0.795cm</Left>
+                              <Height>0.75cm</Height>
+                              <Width>0.87042cm</Width>
+                              <Style>
+                                <Border>
+                                  <Color>LightGrey</Color>
+                                  <Style>None</Style>
+                                </Border>
+                                <BackgroundColor>White</BackgroundColor>
+                              </Style>
+                            </GaugePanel>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <RightBorder>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.75cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle4">
+                          <ReportItems>
+                            <GaugePanel Name="GaugePanel8">
+                              <StateIndicators>
+                                <StateIndicator Name="Indicator1">
+                                  <GaugeInputValue>
+                                    <Value>=Fields!VacancyDiff3.Value</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </GaugeInputValue>
+                                  <TransformationType>None</TransformationType>
+                                  <TransformationScope>Tablix5</TransformationScope>
+                                  <MinimumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MinimumValue>
+                                  <MaximumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MaximumValue>
+                                  <IndicatorStyle>None</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </IndicatorImage>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStates>
+                                    <IndicatorState Name="ThreeSymbolUnCircledCheck">
+                                      <StartValue>
+                                        <Value>1</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </StartValue>
+                                      <EndValue>
+                                        <Value>100</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </EndValue>
+                                      <Color>LightGrey</Color>
+                                      <ScaleFactor>1</ScaleFactor>
+                                      <IndicatorStyle>ThreeSymbolUnCircledCross</IndicatorStyle>
+                                      <IndicatorImage>
+                                        <Source>External</Source>
+                                        <Value />
+                                      </IndicatorImage>
+                                    </IndicatorState>
+                                  </IndicatorStates>
+                                  <Angle>0</Angle>
+                                  <StateDataElementName />
+                                  <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                                  <Style>
+                                    <ShadowOffset>2pt</ShadowOffset>
+                                  </Style>
+                                  <Top>4</Top>
+                                  <Left>4</Left>
+                                  <Height>92</Height>
+                                  <Width>92</Width>
+                                </StateIndicator>
+                              </StateIndicators>
+                              <AutoLayout>true</AutoLayout>
+                              <BackFrame>
+                                <Style>
+                                  <Border>
+                                    <Style>None</Style>
+                                  </Border>
+                                  <BackgroundColor>Gainsboro</BackgroundColor>
+                                  <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                  <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                  <BackgroundHatchType>None</BackgroundHatchType>
+                                  <ShadowOffset>0pt</ShadowOffset>
+                                </Style>
+                                <FrameBackground>
+                                  <Style>
+                                    <BackgroundColor>Silver</BackgroundColor>
+                                    <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                    <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                    <BackgroundHatchType>None</BackgroundHatchType>
+                                  </Style>
+                                </FrameBackground>
+                                <FrameImage>
+                                  <Source>External</Source>
+                                  <Value />
+                                </FrameImage>
+                              </BackFrame>
+                              <TopImage>
+                                <Source>External</Source>
+                                <Value />
+                              </TopImage>
+                              <DataSetName>DStCompanies</DataSetName>
+                              <Left>0.795cm</Left>
+                              <Height>0.75cm</Height>
+                              <Width>0.87042cm</Width>
+                              <Style>
+                                <Border>
+                                  <Color>LightGrey</Color>
+                                  <Style>None</Style>
+                                </Border>
+                                <BackgroundColor>White</BackgroundColor>
+                              </Style>
+                            </GaugePanel>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <RightBorder>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.75cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle9">
+                          <ReportItems>
+                            <GaugePanel Name="GaugePanel11">
+                              <StateIndicators>
+                                <StateIndicator Name="Indicator1">
+                                  <GaugeInputValue>
+                                    <Value>=Fields!VacancyDiff6.Value</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </GaugeInputValue>
+                                  <TransformationType>None</TransformationType>
+                                  <TransformationScope>Tablix5</TransformationScope>
+                                  <MinimumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MinimumValue>
+                                  <MaximumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MaximumValue>
+                                  <IndicatorStyle>None</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </IndicatorImage>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStates>
+                                    <IndicatorState Name="ThreeSymbolUnCircledCheck">
+                                      <StartValue>
+                                        <Value>1</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </StartValue>
+                                      <EndValue>
+                                        <Value>100</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </EndValue>
+                                      <Color>LightGrey</Color>
+                                      <ScaleFactor>1</ScaleFactor>
+                                      <IndicatorStyle>ThreeSymbolUnCircledCross</IndicatorStyle>
+                                      <IndicatorImage>
+                                        <Source>External</Source>
+                                        <Value />
+                                      </IndicatorImage>
+                                    </IndicatorState>
+                                  </IndicatorStates>
+                                  <Angle>0</Angle>
+                                  <StateDataElementName />
+                                  <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                                  <Style>
+                                    <ShadowOffset>2pt</ShadowOffset>
+                                  </Style>
+                                  <Top>4</Top>
+                                  <Left>4</Left>
+                                  <Height>92</Height>
+                                  <Width>92</Width>
+                                </StateIndicator>
+                              </StateIndicators>
+                              <AutoLayout>true</AutoLayout>
+                              <BackFrame>
+                                <Style>
+                                  <Border>
+                                    <Style>None</Style>
+                                  </Border>
+                                  <BackgroundColor>Gainsboro</BackgroundColor>
+                                  <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                  <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                  <BackgroundHatchType>None</BackgroundHatchType>
+                                  <ShadowOffset>0pt</ShadowOffset>
+                                </Style>
+                                <FrameBackground>
+                                  <Style>
+                                    <BackgroundColor>Silver</BackgroundColor>
+                                    <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                    <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                    <BackgroundHatchType>None</BackgroundHatchType>
+                                  </Style>
+                                </FrameBackground>
+                                <FrameImage>
+                                  <Source>External</Source>
+                                  <Value />
+                                </FrameImage>
+                              </BackFrame>
+                              <TopImage>
+                                <Source>External</Source>
+                                <Value />
+                              </TopImage>
+                              <DataSetName>DStCompanies</DataSetName>
+                              <Left>0.795cm</Left>
+                              <Height>0.75cm</Height>
+                              <Width>0.87042cm</Width>
+                              <Style>
+                                <Border>
+                                  <Color>LightGrey</Color>
+                                  <Style>None</Style>
+                                </Border>
+                                <BackgroundColor>White</BackgroundColor>
+                              </Style>
+                            </GaugePanel>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.75cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle3">
+                          <ReportItems>
+                            <GaugePanel Name="GaugePanel9">
+                              <StateIndicators>
+                                <StateIndicator Name="Indicator1">
+                                  <GaugeInputValue>
+                                    <Value>=Fields!VacancyDiff4.Value</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </GaugeInputValue>
+                                  <TransformationType>None</TransformationType>
+                                  <TransformationScope>Tablix5</TransformationScope>
+                                  <MinimumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MinimumValue>
+                                  <MaximumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MaximumValue>
+                                  <IndicatorStyle>None</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </IndicatorImage>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStates>
+                                    <IndicatorState Name="ThreeSymbolUnCircledCheck">
+                                      <StartValue>
+                                        <Value>1</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </StartValue>
+                                      <EndValue>
+                                        <Value>100</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </EndValue>
+                                      <Color>Orange</Color>
+                                      <ScaleFactor>1</ScaleFactor>
+                                      <IndicatorStyle>ThreeSymbolUnCircledCross</IndicatorStyle>
+                                      <IndicatorImage>
+                                        <Source>External</Source>
+                                        <Value />
+                                      </IndicatorImage>
+                                    </IndicatorState>
+                                  </IndicatorStates>
+                                  <Angle>0</Angle>
+                                  <StateDataElementName />
+                                  <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                                  <Style>
+                                    <ShadowOffset>2pt</ShadowOffset>
+                                  </Style>
+                                  <Top>4</Top>
+                                  <Left>4</Left>
+                                  <Height>92</Height>
+                                  <Width>92</Width>
+                                </StateIndicator>
+                              </StateIndicators>
+                              <AutoLayout>true</AutoLayout>
+                              <BackFrame>
+                                <Style>
+                                  <Border>
+                                    <Style>None</Style>
+                                  </Border>
+                                  <BackgroundColor>Gainsboro</BackgroundColor>
+                                  <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                  <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                  <BackgroundHatchType>None</BackgroundHatchType>
+                                  <ShadowOffset>0pt</ShadowOffset>
+                                </Style>
+                                <FrameBackground>
+                                  <Style>
+                                    <BackgroundColor>Silver</BackgroundColor>
+                                    <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                    <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                    <BackgroundHatchType>None</BackgroundHatchType>
+                                  </Style>
+                                </FrameBackground>
+                                <FrameImage>
+                                  <Source>External</Source>
+                                  <Value />
+                                </FrameImage>
+                              </BackFrame>
+                              <TopImage>
+                                <Source>External</Source>
+                                <Value />
+                              </TopImage>
+                              <DataSetName>DStCompanies</DataSetName>
+                              <Left>0.795cm</Left>
+                              <Height>0.75cm</Height>
+                              <Width>0.87042cm</Width>
+                              <Style>
+                                <Border>
+                                  <Color>LightGrey</Color>
+                                  <Style>None</Style>
+                                </Border>
+                                <BackgroundColor>White</BackgroundColor>
+                              </Style>
+                            </GaugePanel>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Width>1pt</Width>
+                            </RightBorder>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.75cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle8">
+                          <ReportItems>
+                            <GaugePanel Name="GaugePanel10">
+                              <StateIndicators>
+                                <StateIndicator Name="Indicator1">
+                                  <GaugeInputValue>
+                                    <Value>=Fields!VacancyDiff5.Value</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </GaugeInputValue>
+                                  <TransformationType>None</TransformationType>
+                                  <TransformationScope>Tablix5</TransformationScope>
+                                  <MinimumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MinimumValue>
+                                  <MaximumValue>
+                                    <Value>NaN</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </MaximumValue>
+                                  <IndicatorStyle>None</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </IndicatorImage>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStates>
+                                    <IndicatorState Name="ThreeSymbolUnCircledCheck">
+                                      <StartValue>
+                                        <Value>1</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </StartValue>
+                                      <EndValue>
+                                        <Value>100</Value>
+                                        <Multiplier>1</Multiplier>
+                                      </EndValue>
+                                      <Color>Red</Color>
+                                      <ScaleFactor>1</ScaleFactor>
+                                      <IndicatorStyle>ThreeSymbolUnCircledCross</IndicatorStyle>
+                                      <IndicatorImage>
+                                        <Source>External</Source>
+                                        <Value />
+                                      </IndicatorImage>
+                                    </IndicatorState>
+                                  </IndicatorStates>
+                                  <Angle>0</Angle>
+                                  <StateDataElementName />
+                                  <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                                  <Style>
+                                    <ShadowOffset>2pt</ShadowOffset>
+                                  </Style>
+                                  <Top>4</Top>
+                                  <Left>4</Left>
+                                  <Height>92</Height>
+                                  <Width>92</Width>
+                                </StateIndicator>
+                              </StateIndicators>
+                              <AutoLayout>true</AutoLayout>
+                              <BackFrame>
+                                <Style>
+                                  <Border>
+                                    <Style>None</Style>
+                                  </Border>
+                                  <BackgroundColor>Gainsboro</BackgroundColor>
+                                  <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                  <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                  <BackgroundHatchType>None</BackgroundHatchType>
+                                  <ShadowOffset>0pt</ShadowOffset>
+                                </Style>
+                                <FrameBackground>
+                                  <Style>
+                                    <BackgroundColor>Silver</BackgroundColor>
+                                    <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                    <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                    <BackgroundHatchType>None</BackgroundHatchType>
+                                  </Style>
+                                </FrameBackground>
+                                <FrameImage>
+                                  <Source>External</Source>
+                                  <Value />
+                                </FrameImage>
+                              </BackFrame>
+                              <TopImage>
+                                <Source>External</Source>
+                                <Value />
+                              </TopImage>
+                              <DataSetName>DStCompanies</DataSetName>
+                              <Left>0.795cm</Left>
+                              <Height>0.75cm</Height>
+                              <Width>0.87042cm</Width>
+                              <Style>
+                                <Border>
+                                  <Color>LightGrey</Color>
+                                  <Style>None</Style>
+                                </Border>
+                                <BackgroundColor>White</BackgroundColor>
+                              </Style>
+                            </GaugePanel>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>Black</Color>
+                            </BottomBorder>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <Group Name="FullDate">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!FullDate.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>0.75cm</Size>
+                        <CellContents>
+                          <Textbox Name="FullDate">
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>=Format(DateAdd("d", -1, Fields!FullDate.Value), "dd.MM.yyyy")</Value>
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>FullDate</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <BottomBorder>
+                                <Color>Black</Color>
+                                <Style>Solid</Style>
+                                <Width>1pt</Width>
+                              </BottomBorder>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
+                </TablixMember>
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <Group Name="CompanyName">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!CompanyName.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!IndexAttraction.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                    <SortExpression>
+                      <Value>=Fields!AvgLast3Month.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.28578cm</Size>
+                        <CellContents>
+                          <Rectangle Name="Rectangle2">
+                            <ReportItems>
+                              <GaugePanel Name="GaugePanel1">
+                                <StateIndicators>
+                                  <StateIndicator Name="Indicator1">
+                                    <GaugeInputValue>
+                                      <Value>=First(Fields!Rabota_Paid.Value)</Value>
+                                      <Multiplier>1</Multiplier>
+                                      <DataElementOutput>NoOutput</DataElementOutput>
+                                    </GaugeInputValue>
+                                    <TransformationType>None</TransformationType>
+                                    <TransformationScope>Tablix5</TransformationScope>
+                                    <MinimumValue>
+                                      <Value>NaN</Value>
+                                      <Multiplier>1</Multiplier>
+                                    </MinimumValue>
+                                    <MaximumValue>
+                                      <Value>NaN</Value>
+                                      <Multiplier>1</Multiplier>
+                                    </MaximumValue>
+                                    <IndicatorStyle>None</IndicatorStyle>
+                                    <IndicatorImage>
+                                      <Source>External</Source>
+                                      <Value />
+                                    </IndicatorImage>
+                                    <ScaleFactor>1</ScaleFactor>
+                                    <IndicatorStates>
+                                      <IndicatorState Name="ThreeSymbolUnCircledCross">
+                                        <StartValue>
+                                          <Value>=Cdbl(0)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </StartValue>
+                                        <EndValue>
+                                          <Value>=Cdbl(0)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </EndValue>
+                                        <Color>#00ffffff</Color>
+                                        <ScaleFactor>1</ScaleFactor>
+                                        <IndicatorStyle>None</IndicatorStyle>
+                                        <IndicatorImage>
+                                          <Source>External</Source>
+                                          <Value />
+                                        </IndicatorImage>
+                                      </IndicatorState>
+                                      <IndicatorState Name="ThreeSymbolUnCircledExclamation">
+                                        <StartValue>
+                                          <Value>=Cdbl(1)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </StartValue>
+                                        <EndValue>
+                                          <Value>=Cdbl(1)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </EndValue>
+                                        <Color>#00ffffff</Color>
+                                        <ScaleFactor>1</ScaleFactor>
+                                        <IndicatorStyle>Image</IndicatorStyle>
+                                        <IndicatorImage>
+                                          <Source>Embedded</Source>
+                                          <Value>r</Value>
+                                        </IndicatorImage>
+                                      </IndicatorState>
+                                    </IndicatorStates>
+                                    <ResizeMode>None</ResizeMode>
+                                    <Angle>0</Angle>
+                                    <StateDataElementName />
+                                    <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                                    <Style>
+                                      <ShadowOffset>0pt</ShadowOffset>
+                                    </Style>
+                                    <Top>4</Top>
+                                    <Left>4</Left>
+                                    <Height>92</Height>
+                                    <Width>92</Width>
+                                  </StateIndicator>
+                                </StateIndicators>
+                                <AutoLayout>true</AutoLayout>
+                                <BackFrame>
+                                  <Style>
+                                    <Border>
+                                      <Style>None</Style>
+                                    </Border>
+                                    <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                    <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                    <BackgroundHatchType>None</BackgroundHatchType>
+                                    <ShadowOffset>0pt</ShadowOffset>
+                                  </Style>
+                                  <FrameBackground>
+                                    <Style>
+                                      <BackgroundColor>Silver</BackgroundColor>
+                                      <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                      <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                      <BackgroundHatchType>None</BackgroundHatchType>
+                                    </Style>
+                                  </FrameBackground>
+                                  <FrameImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </FrameImage>
+                                </BackFrame>
+                                <TopImage>
+                                  <Source>External</Source>
+                                  <Value />
+                                </TopImage>
+                                <DataSetName>DStCompanies</DataSetName>
+                                <Height>1.06974cm</Height>
+                                <Width>1.06974cm</Width>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>None</Style>
+                                  </Border>
+                                  <BackgroundColor>White</BackgroundColor>
+                                </Style>
+                              </GaugePanel>
+                              <GaugePanel Name="GaugePanel2">
+                                <StateIndicators>
+                                  <StateIndicator Name="Indicator1">
+                                    <GaugeInputValue>
+                                      <Value>=First(Fields!Rabota_Hot.Value)</Value>
+                                      <Multiplier>1</Multiplier>
+                                      <DataElementOutput>NoOutput</DataElementOutput>
+                                    </GaugeInputValue>
+                                    <TransformationType>None</TransformationType>
+                                    <TransformationScope>Tablix5</TransformationScope>
+                                    <MinimumValue>
+                                      <Value>NaN</Value>
+                                      <Multiplier>1</Multiplier>
+                                    </MinimumValue>
+                                    <MaximumValue>
+                                      <Value>NaN</Value>
+                                      <Multiplier>1</Multiplier>
+                                    </MaximumValue>
+                                    <IndicatorStyle>None</IndicatorStyle>
+                                    <IndicatorImage>
+                                      <Source>External</Source>
+                                      <Value />
+                                    </IndicatorImage>
+                                    <ScaleFactor>1</ScaleFactor>
+                                    <IndicatorStates>
+                                      <IndicatorState Name="ThreeSymbolUnCircledCross">
+                                        <StartValue>
+                                          <Value>=Cdbl(0)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </StartValue>
+                                        <EndValue>
+                                          <Value>=Cdbl(0)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </EndValue>
+                                        <Color>#00ffffff</Color>
+                                        <ScaleFactor>1</ScaleFactor>
+                                        <IndicatorStyle>None</IndicatorStyle>
+                                        <IndicatorImage>
+                                          <Source>External</Source>
+                                          <Value />
+                                        </IndicatorImage>
+                                      </IndicatorState>
+                                      <IndicatorState Name="ThreeSymbolUnCircledExclamation">
+                                        <StartValue>
+                                          <Value>=Cdbl(1)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </StartValue>
+                                        <EndValue>
+                                          <Value>=Cdbl(1)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </EndValue>
+                                        <Color>#00ffffff</Color>
+                                        <ScaleFactor>1</ScaleFactor>
+                                        <IndicatorStyle>Image</IndicatorStyle>
+                                        <IndicatorImage>
+                                          <Source>Embedded</Source>
+                                          <Value>h</Value>
+                                        </IndicatorImage>
+                                      </IndicatorState>
+                                    </IndicatorStates>
+                                    <ResizeMode>None</ResizeMode>
+                                    <Angle>0</Angle>
+                                    <StateDataElementName />
+                                    <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                                    <Style>
+                                      <ShadowOffset>0pt</ShadowOffset>
+                                    </Style>
+                                    <Top>4</Top>
+                                    <Left>4</Left>
+                                    <Height>92</Height>
+                                    <Width>92</Width>
+                                  </StateIndicator>
+                                </StateIndicators>
+                                <AutoLayout>true</AutoLayout>
+                                <BackFrame>
+                                  <Style>
+                                    <Border>
+                                      <Style>None</Style>
+                                    </Border>
+                                    <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                    <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                    <BackgroundHatchType>None</BackgroundHatchType>
+                                    <ShadowOffset>0pt</ShadowOffset>
+                                  </Style>
+                                  <FrameBackground>
+                                    <Style>
+                                      <BackgroundColor>Silver</BackgroundColor>
+                                      <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                      <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                      <BackgroundHatchType>None</BackgroundHatchType>
+                                    </Style>
+                                  </FrameBackground>
+                                  <FrameImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </FrameImage>
+                                </BackFrame>
+                                <TopImage>
+                                  <Source>External</Source>
+                                  <Value />
+                                </TopImage>
+                                <DataSetName>DStCompanies</DataSetName>
+                                <Left>1.06974cm</Left>
+                                <Height>1.06974cm</Height>
+                                <Width>1.06974cm</Width>
+                                <ZIndex>1</ZIndex>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>None</Style>
+                                  </Border>
+                                  <BackgroundColor>White</BackgroundColor>
+                                </Style>
+                              </GaugePanel>
+                              <GaugePanel Name="GaugePanel3">
+                                <StateIndicators>
+                                  <StateIndicator Name="Indicator1">
+                                    <GaugeInputValue>
+                                      <Value>=First(Fields!Work_Hot.Value)</Value>
+                                      <Multiplier>1</Multiplier>
+                                      <DataElementOutput>NoOutput</DataElementOutput>
+                                    </GaugeInputValue>
+                                    <TransformationType>None</TransformationType>
+                                    <TransformationScope>Tablix5</TransformationScope>
+                                    <MinimumValue>
+                                      <Value>NaN</Value>
+                                      <Multiplier>1</Multiplier>
+                                    </MinimumValue>
+                                    <MaximumValue>
+                                      <Value>NaN</Value>
+                                      <Multiplier>1</Multiplier>
+                                    </MaximumValue>
+                                    <IndicatorStyle>None</IndicatorStyle>
+                                    <IndicatorImage>
+                                      <Source>External</Source>
+                                      <Value />
+                                    </IndicatorImage>
+                                    <ScaleFactor>1</ScaleFactor>
+                                    <IndicatorStates>
+                                      <IndicatorState Name="ThreeSymbolUnCircledCross">
+                                        <StartValue>
+                                          <Value>=Cdbl(0)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </StartValue>
+                                        <EndValue>
+                                          <Value>=Cdbl(0)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </EndValue>
+                                        <Color>#00ffffff</Color>
+                                        <ScaleFactor>1</ScaleFactor>
+                                        <IndicatorStyle>None</IndicatorStyle>
+                                        <IndicatorImage>
+                                          <Source>External</Source>
+                                          <Value />
+                                        </IndicatorImage>
+                                      </IndicatorState>
+                                      <IndicatorState Name="ThreeSymbolUnCircledExclamation">
+                                        <StartValue>
+                                          <Value>=Cdbl(1)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </StartValue>
+                                        <EndValue>
+                                          <Value>=Cdbl(1)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </EndValue>
+                                        <Color>#00ffffff</Color>
+                                        <ScaleFactor>1</ScaleFactor>
+                                        <IndicatorStyle>Image</IndicatorStyle>
+                                        <IndicatorImage>
+                                          <Source>Embedded</Source>
+                                          <Value>h</Value>
+                                        </IndicatorImage>
+                                      </IndicatorState>
+                                    </IndicatorStates>
+                                    <ResizeMode>None</ResizeMode>
+                                    <Angle>0</Angle>
+                                    <StateDataElementName />
+                                    <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                                    <Style>
+                                      <ShadowOffset>0pt</ShadowOffset>
+                                    </Style>
+                                    <Top>4</Top>
+                                    <Left>4</Left>
+                                    <Height>92</Height>
+                                    <Width>92</Width>
+                                  </StateIndicator>
+                                </StateIndicators>
+                                <AutoLayout>true</AutoLayout>
+                                <BackFrame>
+                                  <Style>
+                                    <Border>
+                                      <Style>None</Style>
+                                    </Border>
+                                    <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                    <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                    <BackgroundHatchType>None</BackgroundHatchType>
+                                    <ShadowOffset>0pt</ShadowOffset>
+                                  </Style>
+                                  <FrameBackground>
+                                    <Style>
+                                      <BackgroundColor>Silver</BackgroundColor>
+                                      <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                      <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                      <BackgroundHatchType>None</BackgroundHatchType>
+                                    </Style>
+                                  </FrameBackground>
+                                  <FrameImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </FrameImage>
+                                </BackFrame>
+                                <TopImage>
+                                  <Source>External</Source>
+                                  <Value />
+                                </TopImage>
+                                <DataSetName>DStCompanies</DataSetName>
+                                <Left>4.21604cm</Left>
+                                <Height>1.06974cm</Height>
+                                <Width>1.06974cm</Width>
+                                <ZIndex>2</ZIndex>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>None</Style>
+                                  </Border>
+                                  <BackgroundColor>White</BackgroundColor>
+                                </Style>
+                              </GaugePanel>
+                              <GaugePanel Name="GaugePanel4">
+                                <StateIndicators>
+                                  <StateIndicator Name="Indicator1">
+                                    <GaugeInputValue>
+                                      <Value>=First(Fields!Work_Paid.Value)</Value>
+                                      <Multiplier>1</Multiplier>
+                                      <DataElementOutput>NoOutput</DataElementOutput>
+                                    </GaugeInputValue>
+                                    <TransformationType>None</TransformationType>
+                                    <TransformationScope>Tablix5</TransformationScope>
+                                    <MinimumValue>
+                                      <Value>NaN</Value>
+                                      <Multiplier>1</Multiplier>
+                                    </MinimumValue>
+                                    <MaximumValue>
+                                      <Value>NaN</Value>
+                                      <Multiplier>1</Multiplier>
+                                    </MaximumValue>
+                                    <IndicatorStyle>None</IndicatorStyle>
+                                    <IndicatorImage>
+                                      <Source>External</Source>
+                                      <Value />
+                                    </IndicatorImage>
+                                    <ScaleFactor>1</ScaleFactor>
+                                    <IndicatorStates>
+                                      <IndicatorState Name="ThreeSymbolUnCircledCross">
+                                        <StartValue>
+                                          <Value>=Cdbl(0)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </StartValue>
+                                        <EndValue>
+                                          <Value>=Cdbl(0)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </EndValue>
+                                        <Color>#00ffffff</Color>
+                                        <ScaleFactor>1</ScaleFactor>
+                                        <IndicatorStyle>None</IndicatorStyle>
+                                        <IndicatorImage>
+                                          <Source>External</Source>
+                                          <Value />
+                                        </IndicatorImage>
+                                      </IndicatorState>
+                                      <IndicatorState Name="ThreeSymbolUnCircledExclamation">
+                                        <StartValue>
+                                          <Value>=Cdbl(1)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </StartValue>
+                                        <EndValue>
+                                          <Value>=Cdbl(1)</Value>
+                                          <Multiplier>1</Multiplier>
+                                        </EndValue>
+                                        <Color>#00ffffff</Color>
+                                        <ScaleFactor>1</ScaleFactor>
+                                        <IndicatorStyle>Image</IndicatorStyle>
+                                        <IndicatorImage>
+                                          <Source>Embedded</Source>
+                                          <Value>w</Value>
+                                        </IndicatorImage>
+                                      </IndicatorState>
+                                    </IndicatorStates>
+                                    <ResizeMode>None</ResizeMode>
+                                    <Angle>0</Angle>
+                                    <StateDataElementName />
+                                    <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                                    <Style>
+                                      <ShadowOffset>0pt</ShadowOffset>
+                                    </Style>
+                                    <Top>4</Top>
+                                    <Left>4</Left>
+                                    <Height>92</Height>
+                                    <Width>92</Width>
+                                  </StateIndicator>
+                                </StateIndicators>
+                                <AutoLayout>true</AutoLayout>
+                                <BackFrame>
+                                  <Style>
+                                    <Border>
+                                      <Style>None</Style>
+                                    </Border>
+                                    <BackgroundColor>Gainsboro</BackgroundColor>
+                                    <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                    <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                    <BackgroundHatchType>None</BackgroundHatchType>
+                                    <ShadowOffset>0pt</ShadowOffset>
+                                  </Style>
+                                  <FrameBackground>
+                                    <Style>
+                                      <BackgroundColor>Silver</BackgroundColor>
+                                      <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                      <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                      <BackgroundHatchType>None</BackgroundHatchType>
+                                    </Style>
+                                  </FrameBackground>
+                                  <FrameImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </FrameImage>
+                                </BackFrame>
+                                <TopImage>
+                                  <Source>External</Source>
+                                  <Value />
+                                </TopImage>
+                                <DataSetName>DStCompanies</DataSetName>
+                                <Left>3.1463cm</Left>
+                                <Height>1.06974cm</Height>
+                                <Width>1.06974cm</Width>
+                                <ZIndex>3</ZIndex>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>None</Style>
+                                  </Border>
+                                  <BackgroundColor>White</BackgroundColor>
+                                </Style>
+                              </GaugePanel>
+                            </ReportItems>
+                            <KeepTogether>true</KeepTogether>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>None</Style>
+                              </Border>
+                              <TopBorder>
+                                <Color>Black</Color>
+                                <Style>Solid</Style>
+                                <Width>1pt</Width>
+                              </TopBorder>
+                              <BottomBorder>
+                                <Color>Black</Color>
+                                <Style>Solid</Style>
+                                <Width>1pt</Width>
+                              </BottomBorder>
+                              <BackgroundColor>White</BackgroundColor>
+                            </Style>
+                          </Rectangle>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>11.39cm</Size>
+                            <CellContents>
+                              <Textbox Name="CompanyName">
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>=Fields!CompanyName.Value</Value>
+                                        <Style>
+                                          <FontWeight>Bold</FontWeight>
+                                        </Style>
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style />
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>CompanyName</rd:DefaultName>
+                                <ActionInfo>
+                                  <Actions>
+                                    <Action>
+                                      <Hyperlink>= "javascript:void(window.open('http://admin8.rabota.ua/pages/company/view.aspx?notebookid=" &amp; CStr(Fields!NotebookId.Value) &amp; "','_blank'))"</Hyperlink>
+                                    </Action>
+                                  </Actions>
+                                </ActionInfo>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <TopBorder>
+                                    <Color>Black</Color>
+                                    <Style>Solid</Style>
+                                    <Width>1pt</Width>
+                                  </TopBorder>
+                                  <BottomBorder>
+                                    <Color>Black</Color>
+                                    <Style>Solid</Style>
+                                    <Width>1pt</Width>
+                                  </BottomBorder>
+                                  <BackgroundColor>White</BackgroundColor>
+                                  <VerticalAlign>Middle</VerticalAlign>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                          <TablixMembers>
+                            <TablixMember />
+                          </TablixMembers>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.28578cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox99">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>Последний исходящий звонок:</Value>
+                                    <Style>
+                                      <FontWeight>Bold</FontWeight>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox99</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <TopBorder>
+                                <Width>1pt</Width>
+                              </TopBorder>
+                              <LeftBorder>
+                                <Width>1pt</Width>
+                              </LeftBorder>
+                              <BackgroundColor>WhiteSmoke</BackgroundColor>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                          <rd:Selected>true</rd:Selected>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>11.39cm</Size>
+                            <CellContents>
+                              <Textbox Name="LastCompletedDate">
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>=IIf(IsNothing(Fields!LastCompletedDate.Value) = True, "", Format(Fields!LastCompletedDate.Value, "dd.MM.yyyy hh.mm") &amp; ": " &amp; Fields!LastCompletedResultComment.Value)</Value>
+                                        <Style>
+                                          <FontWeight>Bold</FontWeight>
+                                        </Style>
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style />
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>LastCompletedDate</rd:DefaultName>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                  <VerticalAlign>Middle</VerticalAlign>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.28578cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox102">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>Следующий запланированный звонок:</Value>
+                                    <Style>
+                                      <FontWeight>Bold</FontWeight>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox102</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <TopBorder>
+                                <Width>1pt</Width>
+                              </TopBorder>
+                              <LeftBorder>
+                                <Width>1pt</Width>
+                              </LeftBorder>
+                              <BackgroundColor>WhiteSmoke</BackgroundColor>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>11.39cm</Size>
+                            <CellContents>
+                              <Textbox Name="Textbox103">
+                                <CanGrow>true</CanGrow>
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>= IIf(IsNothing(Fields!NextActionDate.Value) = True, "", Format(Fields!NextActionDate.Value, "dd.MM.yyyy hh.mm") &amp; ": " &amp; Fields!NextActionComment.Value)</Value>
+                                        <Style>
+                                          <FontWeight>Bold</FontWeight>
+                                        </Style>
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style />
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>Textbox103</rd:DefaultName>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <BackgroundColor>WhiteSmoke</BackgroundColor>
+                                  <VerticalAlign>Middle</VerticalAlign>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.28578cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox72">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style>
+                                      <FontWeight>Bold</FontWeight>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Right</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox72</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>11.39cm</Size>
+                            <CellContents>
+                              <Textbox Name="Textbox73">
+                                <CanGrow>true</CanGrow>
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>rabota.ua</Value>
+                                        <Style>
+                                          <FontWeight>Bold</FontWeight>
+                                        </Style>
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style>
+                                      <TextAlign>Center</TextAlign>
+                                    </Style>
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>Textbox73</rd:DefaultName>
+                                <ActionInfo>
+                                  <Actions>
+                                    <Action>
+                                      <Hyperlink>= "javascript:void(window.open('http://rabota.ua/company" &amp; CStr(Fields!NotebookId.Value) &amp; "','_blank'))"</Hyperlink>
+                                    </Action>
+                                  </Actions>
+                                </ActionInfo>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <VerticalAlign>Middle</VerticalAlign>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.28578cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox69">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style>
+                                      <FontWeight>Bold</FontWeight>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Right</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox69</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>11.39cm</Size>
+                            <CellContents>
+                              <Textbox Name="Textbox70">
+                                <CanGrow>true</CanGrow>
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>work.ua</Value>
+                                        <Style>
+                                          <FontWeight>Bold</FontWeight>
+                                        </Style>
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style>
+                                      <TextAlign>Center</TextAlign>
+                                    </Style>
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>Textbox70</rd:DefaultName>
+                                <ActionInfo>
+                                  <Actions>
+                                    <Action>
+                                      <Hyperlink>= "javascript:void(window.open('http://www.work.ua/jobs/by-company/" &amp; CStr(Fields!WorkCompanyID.Value) &amp; "','_blank'))"</Hyperlink>
+                                    </Action>
+                                  </Actions>
+                                </ActionInfo>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <VerticalAlign>Middle</VerticalAlign>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.28578cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox4">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Right</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox4</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>11.39cm</Size>
+                            <CellContents>
+                              <Textbox Name="Textbox51">
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>R &gt; W = 0</Value>
+                                        <Style />
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style>
+                                      <TextAlign>Right</TextAlign>
+                                    </Style>
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>Textbox51</rd:DefaultName>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <VerticalAlign>Middle</VerticalAlign>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                          <TablixMembers>
+                            <TablixMember />
+                          </TablixMembers>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.28578cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox5">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Right</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox5</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>11.39cm</Size>
+                            <CellContents>
+                              <Textbox Name="Textbox57">
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>R &gt; W &gt; 0</Value>
+                                        <Style />
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style>
+                                      <TextAlign>Right</TextAlign>
+                                    </Style>
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>Textbox57</rd:DefaultName>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <VerticalAlign>Middle</VerticalAlign>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.28578cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox6">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Right</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox6</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>11.39cm</Size>
+                            <CellContents>
+                              <Textbox Name="Textbox55">
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>R = W</Value>
+                                        <Style />
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style>
+                                      <TextAlign>Right</TextAlign>
+                                    </Style>
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>Textbox55</rd:DefaultName>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <VerticalAlign>Middle</VerticalAlign>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.28578cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox66">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Right</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox66</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <BottomBorder>
+                                <Style>Solid</Style>
+                                <Width>1pt</Width>
+                              </BottomBorder>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>11.39cm</Size>
+                            <CellContents>
+                              <Textbox Name="Textbox67">
+                                <CanGrow>true</CanGrow>
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>R = W = 0</Value>
+                                        <Style />
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style>
+                                      <TextAlign>Right</TextAlign>
+                                    </Style>
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>Textbox67</rd:DefaultName>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <BottomBorder>
+                                    <Style>Solid</Style>
+                                    <Width>1pt</Width>
+                                  </BottomBorder>
+                                  <VerticalAlign>Middle</VerticalAlign>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.28578cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox7">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Right</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox7</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <BottomBorder>
+                                <Style>Solid</Style>
+                                <Width>1pt</Width>
+                              </BottomBorder>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>11.39cm</Size>
+                            <CellContents>
+                              <Textbox Name="Textbox53">
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>0 &lt; R &lt; W</Value>
+                                        <Style />
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style>
+                                      <TextAlign>Right</TextAlign>
+                                    </Style>
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>Textbox53</rd:DefaultName>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <BottomBorder>
+                                    <Style>Solid</Style>
+                                    <Width>1pt</Width>
+                                  </BottomBorder>
+                                  <VerticalAlign>Middle</VerticalAlign>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.28578cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox46">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Right</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox46</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <BottomBorder>
+                                <Color>Black</Color>
+                                <Style>Solid</Style>
+                                <Width>1pt</Width>
+                              </BottomBorder>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <TablixHeader>
+                            <Size>11.39cm</Size>
+                            <CellContents>
+                              <Textbox Name="Textbox47">
+                                <CanGrow>true</CanGrow>
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>0 = R &lt; W</Value>
+                                        <Style />
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style>
+                                      <TextAlign>Right</TextAlign>
+                                    </Style>
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>Textbox47</rd:DefaultName>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <BottomBorder>
+                                    <Color>Black</Color>
+                                    <Style>Solid</Style>
+                                    <Width>1pt</Width>
+                                  </BottomBorder>
+                                  <VerticalAlign>Middle</VerticalAlign>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <RepeatColumnHeaders>true</RepeatColumnHeaders>
+            <RepeatRowHeaders>true</RepeatRowHeaders>
+            <FixedRowHeaders>true</FixedRowHeaders>
+            <DataSetName>DStCompanies</DataSetName>
+            <Height>9.61974cm</Height>
+            <Width>19.19969cm</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+            </Style>
+          </Tablix>
+        </ReportItems>
+        <Height>3.7873in</Height>
+        <Style />
+      </Body>
+      <Width>7.55893in</Width>
+      <Page>
+        <PageHeader>
+          <Height>0.02646cm</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Textbox Name="Textbox2">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=Globals!TotalPages</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox2</rd:DefaultName>
+              <Height>0cm</Height>
+              <Width>2.5cm</Width>
+              <Visibility>
+                <Hidden>true</Hidden>
+              </Visibility>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageHeader>
+        <PageHeight>29.7cm</PageHeight>
+        <PageWidth>21cm</PageWidth>
+        <InteractiveHeight>89.5cm</InteractiveHeight>
+        <InteractiveWidth>21cm</InteractiveWidth>
+        <LeftMargin>2cm</LeftMargin>
+        <RightMargin>2cm</RightMargin>
+        <TopMargin>2cm</TopMargin>
+        <BottomMargin>2cm</BottomMargin>
+        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="Managers">
+      <DataType>String</DataType>
+      <Prompt>Managers</Prompt>
+      <Hidden>true</Hidden>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="VacancyDiffGroup">
+      <DataType>String</DataType>
+      <Prompt>Vacancy Diff Group</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+    <ReportParameter Name="Date_key">
+      <DataType>Integer</DataType>
+      <Prompt>Date key</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+    <ReportParameter Name="IndexStartValue">
+      <DataType>Float</DataType>
+      <Prompt>Index Start Value</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+    <ReportParameter Name="IndexEndValue">
+      <DataType>Float</DataType>
+      <Prompt>Index End Value</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+    <ReportParameter Name="AgeGroups">
+      <DataType>String</DataType>
+      <Prompt>Age Groups</Prompt>
+      <Hidden>true</Hidden>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="RegionKey">
+      <DataType>Integer</DataType>
+      <Prompt>Region Key</Prompt>
+      <Hidden>true</Hidden>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="Department">
+      <DataType>String</DataType>
+      <Prompt>Department</Prompt>
+      <Hidden>true</Hidden>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+  </ReportParameters>
+  <EmbeddedImages>
+    <EmbeddedImage Name="r">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAIAAADZrBkAAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAADvSURBVHjarJIxS8RAEIXfTAKxtsglYGMtXLjK9rC5GBX8DVb+EivbEwvPPxFYrrI9rgr4B2yEWxv7BOKzSArxkpgEp9lZZj8eb+cJSQwvtzpYftnUZDe3HU9nz4/BVSKOAhCSLMuX6Wm+s3+KeGFw9roVx1EANjV9GAD5ztrU1Grm8GiQseTzXdli4yAMTu7v4o+3ebb5PSZcNHHh9SWAycViPTnen1KgQPMC2pgK1LattTMAqYIxpSNSQkJHiVGJcWr8P28duYlWS5LDvHlh4J8vSLj9PzJ6evCTGK4KKUVRgIAQkDpwdfOj27t+DwCvmWDtL9xQiwAAAABJRU5ErkJggg==</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="h">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAIAAADZrBkAAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAGYSURBVHjanJO9S1tRGIefc7wfGENSNBA/MigttuLXkOCQyUXxTxAki5PiokuXti4traur6OTfIIg4qIso6iAZFAdBQ1CMdzHRm3uTe7oJObnp0MOZDu/D74P3CKUUQNXBLxPUEYQfBbINM4rdCRiogIcDzn5QOqVaQ7bAArANEhNkftI9KZTrsDdD4RSLllLvgh6kJpjelfhlSvkQJoCg8UWABaU8flmifLzXECbWT6w/hPReUb4EoTMKFAwvM/4NAaqJRIQ1UIdkhk85BudJZqmHjMiQ3JE46d/YnQjJ0AK2rVsltO8vS/RN8Vakcs/ALB/nSIxqVqUuZX9g7CvA9SZHOYIq6V98XtQEm9TMKFac0jn5dW4PudqgvYeO3n+aFOA+83TC/Q4vDjacrVK5o7ivtd2kVnvjZIXAxTBQ0NHNzTbXW9qgAaohroDHY5xLIjFch6DKxXc9P0oiTKyITvoVXAcB5YLOWBGEKTGjJEbw0EnxvhONq9w1jBmVWHEyf0hlkQYe1FpcD2QbfVkya1hx8X/f9O8A2B+XdQYdO2sAAAAASUVORK5CYII=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="w">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAIAAADZrBkAAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAJXSURBVHjalFI9TxRRFD33zewwzs6ExFHUAEGzWEAFSDRaqBBNxIQIhkRb0FgSoDP+ADsLEhMKtdXCGIkfoBZuoZjIBihBFsUIiQprXHZ2MszHuxaz7CI0+qr77r3nnvfuOcTM+P+j7rjP5KKxT376e7TiSgANSdF5SLneqLXayvY2KrMVAx6a9u5ng93sBAw0JkaP64ZKf8HckM+/cafWonKrXUUhI+9Xhpzar7w+ZyQTBEDEqcGPXoxRCMPN2pfL5voV6/dVK9trDjdrCgHA1Fo0NO2V2CTzXC469qLIgEJ4fNboqd/54affwr60GzEIyFw02mxVgHEvW3rKYJMWY6Tj5R++23j0XuZdAD316mCTBoCBscWACSSlbB4vzm9IANleM2UJmXd/XrodreYAKLV2zfNbwtSXHXnkiQPgqCUWepOCga9FCaBao5QlADgTszEGQLSaKzzLADhsCruKAKy4EsyCygpuRTsMQFQqhNvSgpnrDAEgt8nLjgRgdbcrtXZcVmpts6sVwFJBxmI0JAUzVABnDojFggQwOu/fadeFqdeM33QmZpnZ6m4Xpg7g7oIfD+o4KACmMApn1qMTk94/CjB9QW+xFQFGm60MpFQAEaMv7Y5kvKWCjAHLjhzJeDEGQH9KbbEVABQEAYBigK63mx/WK+aq1kgl5DYrezi5T7zqrNqTIPCWuYwEJju1/lR5ncj7XMYQcC2lvOzQdJUgmRnk+wHAABGYgblf8sHnMP2DYzHrDHG6hm40qm17FQYIYAIxk+/7YIDiZGygEmUl2nX9MwBQYxmwZRAA5gAAAABJRU5ErkJggg==</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportID>9f28a3ae-6ffb-4b6d-b220-8edf43c2528a</rd:ReportID>
+</Report>

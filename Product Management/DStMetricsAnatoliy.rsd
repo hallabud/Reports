@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SharedDataSet xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/shareddatasetdefinition">
+  <Description />
+  <DataSet Name="DStMetricsAnatoliy">
+    <Query>
+      <DataSourceReference>DSrcReporting</DataSourceReference>
+      <CommandText>WITH C AS
+ (
+SELECT DD.YearNum, DD.WeekNum, DD.WeekName, 'Новые вакансии' AS Metric, COUNT(DISTINCT NCS.VacancyID) AS Value
+FROM Analytics.dbo.NotebookCompany_Spent NCS
+ JOIN Analytics.dbo.VacancyExtra VE ON NCS.VacancyID = VE.VacancyID
+ JOIN Reporting.dbo.DimDate DD ON dbo.fnGetDatePart(NCS.AddDate) = DD.FullDate
+WHERE NCS.AddDate &gt;= '2014-01-01'
+ AND VE.IsModerated = 1 AND VE.IsModeratedRubric = 1
+ AND NOT EXISTS (SELECT * FROM Analytics.dbo.NotebookCompany_Spent WHERE VacancyID = NCS.VacancyID AND AddDate &lt; NCS.AddDate)
+GROUP BY DD.YearNum, DD.WeekNum, DD.WeekName
+
+UNION ALL
+
+SELECT DD.YearNum, DD.WeekNum, DD.WeekName, 'Переопубликованные вакансии' AS Metric, COUNT(DISTINCT NCS.VacancyID) AS Value
+FROM Analytics.dbo.NotebookCompany_Spent NCS
+ JOIN Analytics.dbo.VacancyExtra VE ON NCS.VacancyID = VE.VacancyID
+ JOIN Reporting.dbo.DimDate DD ON dbo.fnGetDatePart(NCS.AddDate) = DD.FullDate
+WHERE NCS.AddDate &gt;= '2014-01-01'
+ AND VE.IsModerated = 1 AND VE.IsModeratedRubric = 1
+ AND EXISTS (SELECT * FROM Analytics.dbo.NotebookCompany_Spent WHERE VacancyID = NCS.VacancyID AND AddDate &lt; NCS.AddDate)
+GROUP BY DD.YearNum, DD.WeekNum, DD.WeekName
+
+UNION ALL
+
+SELECT DD.YearNum, DD.WeekNum, DD.WeekName, 'Сумма потребленного сервиса', SUM(FRRN.RecognizedRevenue)
+FROM Reporting.dbo.FactRecognizedRevenueNotebook FRRN
+ JOIN Reporting.dbo.DimDate DD ON FRRN.Date_key = DD.Date_key
+WHERE DD.FullDate &gt;= '2014-01-01'
+GROUP BY DD.YearNum, DD.WeekNum, DD.WeekName
+ )
+SELECT WeekNum, Metric, SUM([2014]) AS Value2014, SUM([2015]) AS Value2015, (SUM([2015]) - SUM([2014])) / SUM([2014]) AS Gap
+FROM C
+PIVOT 
+(
+Sum(Value)
+FOR YearNum IN ([2014],[2015])
+) AS PivotTable
+GROUP BY WeekNum, Metric
+;
+</CommandText>
+    </Query>
+    <Fields>
+      <Field Name="WeekNum">
+        <DataField>WeekNum</DataField>
+        <rd:TypeName>System.Byte</rd:TypeName>
+      </Field>
+      <Field Name="Value2014">
+        <DataField>Value2014</DataField>
+        <rd:TypeName>System.Decimal</rd:TypeName>
+      </Field>
+      <Field Name="Value2015">
+        <DataField>Value2015</DataField>
+        <rd:TypeName>System.Decimal</rd:TypeName>
+      </Field>
+      <Field Name="Metric">
+        <DataField>Metric</DataField>
+        <rd:TypeName>System.String</rd:TypeName>
+      </Field>
+      <Field Name="Gap">
+        <DataField>Gap</DataField>
+        <rd:TypeName>System.Decimal</rd:TypeName>
+      </Field>
+    </Fields>
+  </DataSet>
+</SharedDataSet>

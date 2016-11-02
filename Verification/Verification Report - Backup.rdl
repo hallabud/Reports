@@ -1,0 +1,1403 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="DSrcReporting">
+      <rd:DataSourceID>eade6374-1658-449f-b119-b0c8b36dc603</rd:DataSourceID>
+      <DataSourceReference>DSrcReporting</DataSourceReference>
+    </DataSource>
+  </DataSources>
+  <InteractiveHeight>29.7cm</InteractiveHeight>
+  <ReportParameters>
+    <ReportParameter Name="StartDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=DateAdd("w",-7,Today)</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Укажите начальную дату:</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="EndDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Today</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Укажите конечную дату:</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>21cm</InteractiveWidth>
+  <rd:GridSpacing>0.25cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <RightMargin>2.5cm</RightMargin>
+  <LeftMargin>2.5cm</LeftMargin>
+  <BottomMargin>2.5cm</BottomMargin>
+  <rd:ReportID>668d2907-e2d5-43df-b72f-028dc9879979</rd:ReportID>
+  <PageWidth>21cm</PageWidth>
+  <DataSets>
+    <DataSet Name="DstVerificationTotals">
+      <Fields>
+        <Field Name="FullDate">
+          <DataField>FullDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="VerificationResult">
+          <DataField>VerificationResult</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="VerificationResultDetails">
+          <DataField>VerificationResultDetails</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CompaniesNum">
+          <DataField>CompaniesNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>WITH C AS
+ (
+SELECT 
+   ROW_NUMBER() OVER(PARTITION BY L1.LogID ORDER BY L2.AddDate) AS AfterConfirmActionNum
+ , L1.*
+ , L2.LogID AS LogID2
+ , L2.EventID AS EventID2
+ , L2.PageID AS PageID2
+ , L2.LoginEmail AS LoginEmail2
+ , L2.AddDate AS AddDate2
+ , L2.ValInt AS ValInt2
+ , L2.ValStr AS ValStr2
+ , L2.ValBit AS ValBit2
+FROM SRV12.RabotaUA2.dbo.NotebookCompany_Log L1
+ LEFT JOIN SRV12.RabotaUA2.dbo.NotebookCompany_Log L2 
+  ON L1.NotebookID = L2.NotebookID 
+   AND L2.EventID &lt;&gt; 1 
+   AND L2.ValInt &lt;&gt; 0
+   AND L2.AddDate &gt; L1.AddDate
+   AND L2.AddDate &lt;= DATEADD(HOUR, 19, DATEADD(DAY,1,dbo.fnGetDatePart(L1.AddDate)))
+WHERE L1.EventID = 1
+ AND L1.AddDate BETWEEN @StartDate AND @EndDate
+ )
+, C_Details AS
+ (
+SELECT 
+   dbo.fnGetDatePart(C.AddDate) AS FullDate
+ , CASE 
+    WHEN EventID2 = 8 THEN 'Присоединение к другому блокноту'
+    WHEN LogID2 IS NULL AND ValInt IN (5,7) THEN 'Проверенный + МП' -- автопроверенный с корпоративным емейлом
+    WHEN ValInt2 IN (5,7) THEN 'Проверенный + МП'
+    WHEN ValInt = 4 OR ValInt2 = 4 THEN 'Черный список'
+    WHEN ValStr2 IS NOT NULL THEN 'Отказ'
+	ELSE 'Необработанные '
+   END AS VerificationResult
+ , CASE 
+    WHEN ValStr2 = '' AND ISNULL(ValBit2,0) = 1 THEN 'Сомнительная компания'
+    WHEN ValStr2 &lt;&gt; '' AND ValStr2 LIKE '%23%' THEN 'По ЕГРПОУ'
+    WHEN ValStr2 &lt;&gt; '' AND ValStr2 LIKE '%20%' THEN 'По контактам'
+    WHEN ValStr2 &lt;&gt; '' AND ValStr2 LIKE '%51%' THEN 'По другой причине'
+    WHEN ValStr2 &lt;&gt; '' THEN 'По неизвестной причине'
+   END AS VerificationResultDetails
+ , *
+FROM C 
+WHERE AfterConfirmActionNum = 1
+ )
+
+SELECT 
+   FullDate
+ , VerificationResult
+ , VerificationResultDetails
+ , COUNT(DISTINCT NotebookId) AS 'CompaniesNum'
+FROM C_Details
+GROUP BY
+   FullDate
+ , VerificationResult
+ , VerificationResultDetails;</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="DStVerificationPart2">
+      <Fields>
+        <Field Name="FullDate">
+          <DataField>FullDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="IsWorkingHours">
+          <DataField>IsWorkingHours</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DayPeriod">
+          <DataField>DayPeriod</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TimePeriod">
+          <DataField>TimePeriod</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CompaniesNum">
+          <DataField>CompaniesNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>WITH C AS
+ (
+SELECT 
+   ROW_NUMBER() OVER(PARTITION BY L1.LogID ORDER BY L2.AddDate) AS AfterConfirmActionNum
+ , L1.*
+ , L2.LogID AS LogID2
+ , L2.EventID AS EventID2
+ , L2.PageID AS PageID2
+ , L2.LoginEmail AS LoginEmail2
+ , L2.AddDate AS AddDate2
+ , L2.ValInt AS ValInt2
+ , L2.ValStr AS ValStr2
+ , L2.ValBit AS ValBit2
+FROM SRV12.RabotaUA2.dbo.NotebookCompany_Log L1
+ LEFT JOIN SRV12.RabotaUA2.dbo.NotebookCompany_Log L2 
+  ON L1.NotebookID = L2.NotebookID 
+   AND L2.EventID &lt;&gt; 1 
+   AND L2.ValInt &lt;&gt; 0
+   AND L2.AddDate &gt; L1.AddDate
+   AND L2.AddDate &lt;= DATEADD(HOUR, 19, DATEADD(DAY,1,dbo.fnGetDatePart(L1.AddDate)))
+WHERE L1.EventID = 1
+ AND L1.AddDate BETWEEN @StartDate AND @EndDate
+ )
+, C_ResultStep1 AS
+ (
+SELECT 
+   dbo.fnGetDatePart(AddDate) AS FullDate
+ , CASE 
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 9 AND 18 THEN 'Рабочее время'
+    ELSE 'Нерабочее время'
+   END AS 'IsWorkingHours'
+ , CASE 
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 9 AND 10 THEN 'с 9-00 до 11-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 11 AND 18 THEN 'с 11-00 до 19-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 19 AND 23 THEN 'с 19-00 до 24-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 0 AND 8 THEN 'с 24-00 до 9-00'
+   END AS 'DayPeriod'
+ , C.NotebookId
+ , MAX(DATEDIFF(MINUTE,AddDate,AddDate2)) AS Minutes
+FROM C
+WHERE AfterConfirmActionNum = 1
+GROUP BY 
+   dbo.fnGetDatePart(AddDate)
+ , CASE 
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 9 AND 18 THEN 'Рабочее время'
+    ELSE 'Нерабочее время'
+   END
+ , CASE 
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 9 AND 10 THEN 'с 9-00 до 11-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 11 AND 18 THEN 'с 11-00 до 19-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 19 AND 23 THEN 'с 19-00 до 24-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 0 AND 8 THEN 'с 24-00 до 9-00'
+   END
+ , C.NotebookId
+ )
+SELECT 
+   FullDate
+ , IsWorkingHours
+ , DayPeriod
+ , CASE 
+    WHEN Minutes &lt; 10 THEN 'до 10 мин.'
+    WHEN Minutes BETWEEN 10 AND 29 THEN 'от 10 мин. до 30 мин.'
+    WHEN Minutes BETWEEN 30 AND 60 THEN 'от 30 мин. до 1 часа'
+    WHEN Minutes &gt; 60 THEN 'более 1 часа'
+   END AS 'TimePeriod'
+ , COUNT(DISTINCT NotebookId) AS CompaniesNum
+FROM C_ResultStep1
+WHERE Minutes IS NOT NULL
+GROUP BY 
+   FullDate
+ , IsWorkingHours
+ , DayPeriod
+ , CASE 
+    WHEN Minutes &lt; 10 THEN 'до 10 мин.'
+    WHEN Minutes BETWEEN 10 AND 29 THEN 'от 10 мин. до 30 мин.'
+    WHEN Minutes BETWEEN 30 AND 60 THEN 'от 30 мин. до 1 часа'
+    WHEN Minutes &gt; 60 THEN 'более 1 часа'
+   END
+;</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="DStVerificationPart3">
+      <Fields>
+        <Field Name="FullDate">
+          <DataField>FullDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="GotMP">
+          <DataField>GotMP</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="IsWorkingHours">
+          <DataField>IsWorkingHours</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DayPeriod">
+          <DataField>DayPeriod</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TimePeriod">
+          <DataField>TimePeriod</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CompaniesNum">
+          <DataField>CompaniesNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>WITH C AS
+ (
+SELECT 
+   ROW_NUMBER() OVER(PARTITION BY L1.LogID ORDER BY L2.AddDate) AS AfterConfirmActionNum
+ , L1.*
+ , L2.LogID AS LogID2
+ , L2.EventID AS EventID2
+ , L2.PageID AS PageID2
+ , L2.LoginEmail AS LoginEmail2
+ , L2.AddDate AS AddDate2
+ , L2.ValInt AS ValInt2
+ , L2.ValStr AS ValStr2
+ , L2.ValBit AS ValBit2
+FROM SRV12.RabotaUA2.dbo.NotebookCompany_Log L1
+ LEFT JOIN SRV12.RabotaUA2.dbo.NotebookCompany_Log L2 
+  ON L1.NotebookID = L2.NotebookID 
+   AND L2.EventID &lt;&gt; 1 
+   AND L2.ValInt &lt;&gt; 0
+   AND L2.AddDate &gt; L1.AddDate
+   AND L2.AddDate &lt;= DATEADD(HOUR, 19, DATEADD(DAY,1,dbo.fnGetDatePart(L1.AddDate)))
+WHERE L1.EventID = 5
+ AND L1.AddDate BETWEEN @StartDate AND @EndDate
+ )
+, C_MaxLogs AS
+ (
+SELECT NotebookId, MAX(LogId2) AS MaxLogId2
+FROM C
+WHERE LogID2 IS NOT NULL
+GROUP BY NotebookId
+ )
+, C_ResultStep1 AS
+ (
+SELECT 
+   dbo.fnGetDatePart(AddDate) AS FullDate
+ , CASE
+    WHEN C.ValInt2 = 7 THEN 'Получили МП'
+	ELSE 'Не получили МП'
+   END AS 'GotMP'
+ , CASE 
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 9 AND 18 THEN 'Рабочее время'
+    ELSE 'Нерабочее время'
+   END AS 'IsWorkingHours'
+ , CASE 
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 9 AND 10 THEN 'с 9-00 до 11-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 11 AND 18 THEN 'с 11-00 до 19-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 19 AND 23 THEN 'с 19-00 до 24-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 0 AND 8 THEN 'с 24-00 до 9-00'
+   END AS 'DayPeriod'
+ , C.NotebookId
+ , MAX(DATEDIFF(MINUTE,AddDate,AddDate2)) AS Minutes
+FROM C
+ JOIN C_MaxLogs ML ON C.NotebookId = ML.NotebookId AND C.LogId2 = ML.MaxLogId2
+GROUP BY 
+   dbo.fnGetDatePart(AddDate)
+ , CASE
+    WHEN C.ValInt2 = 7 THEN 'Получили МП'
+	ELSE 'Не получили МП'
+   END
+ , CASE 
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 9 AND 18 THEN 'Рабочее время'
+    ELSE 'Нерабочее время'
+   END
+ , CASE 
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 9 AND 10 THEN 'с 9-00 до 11-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 11 AND 18 THEN 'с 11-00 до 19-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 19 AND 23 THEN 'с 19-00 до 24-00'
+    WHEN DATEPART(HOUR,AddDate) BETWEEN 0 AND 8 THEN 'с 24-00 до 9-00'
+   END
+ , C.NotebookId
+ )
+SELECT 
+   FullDate
+ , GotMP
+ , IsWorkingHours
+ , DayPeriod
+ , CASE 
+    WHEN Minutes &lt; 10 THEN 'до 10 мин.'
+    WHEN Minutes BETWEEN 10 AND 29 THEN 'от 10 мин. до 30 мин.'
+    WHEN Minutes BETWEEN 30 AND 60 THEN 'от 30 мин. до 1 часа'
+    WHEN Minutes &gt; 60 THEN 'более 1 часа'
+   END AS 'TimePeriod'
+ , COUNT(DISTINCT NotebookId) AS CompaniesNum
+FROM C_ResultStep1
+GROUP BY 
+   FullDate
+ , GotMP
+ , IsWorkingHours
+ , DayPeriod
+ , CASE 
+    WHEN Minutes &lt; 10 THEN 'до 10 мин.'
+    WHEN Minutes BETWEEN 10 AND 29 THEN 'от 10 мин. до 30 мин.'
+    WHEN Minutes BETWEEN 30 AND 60 THEN 'от 30 мин. до 1 часа'
+    WHEN Minutes &gt; 60 THEN 'более 1 часа'
+   END
+;</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Code>Function MinutesToHoursMinutes(ByVal vMins As Integer) As String
+ 
+Dim Mins As Integer
+Dim Hours As Integer
+ 
+vMins = IIF(vMins &lt;= 0, 0, vMins)
+ 
+Hours = Floor(vMins / 60)
+Mins = vMins - (Hours * 60)
+ 
+MinutesToHoursMinutes = IIF(Hours &lt; 9, "0" &amp; CStr(Hours), CStr(Hours)) &amp; " ч. " &amp; IIF(Mins &lt; 9, "0" &amp; CStr(Mins), CStr(Mins))  &amp; " мин." 
+ 
+Return MinutesToHoursMinutes
+ 
+End Function</Code>
+  <Width>20.25582cm</Width>
+  <Body>
+    <ColumnSpacing>1cm</ColumnSpacing>
+    <ReportItems>
+      <Matrix Name="matrix4">
+        <MatrixColumns>
+          <MatrixColumn>
+            <Width>2.22645cm</Width>
+          </MatrixColumn>
+        </MatrixColumns>
+        <ZIndex>3</ZIndex>
+        <DataSetName>DStVerificationPart3</DataSetName>
+        <RowGroupings>
+          <RowGrouping>
+            <Width>15.55292cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix4_GotMP">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!GotMP.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Subtotal>
+                <ReportItems>
+                  <Textbox Name="textbox6">
+                    <rd:DefaultName>textbox6</rd:DefaultName>
+                    <Style>
+                      <BackgroundColor>#548dd4</BackgroundColor>
+                      <BorderStyle>
+                        <Default>Solid</Default>
+                      </BorderStyle>
+                      <FontWeight>700</FontWeight>
+                      <VerticalAlign>Middle</VerticalAlign>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <CanGrow>true</CanGrow>
+                    <Value>Подали заявку на статус МП</Value>
+                  </Textbox>
+                </ReportItems>
+                <Position>Before</Position>
+                <Style>
+                  <FontWeight>700</FontWeight>
+                </Style>
+              </Subtotal>
+              <ReportItems>
+                <Textbox Name="GotMP">
+                  <rd:DefaultName>GotMP</rd:DefaultName>
+                  <Style>
+                    <BackgroundColor>#548dd4</BackgroundColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>2</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!GotMP.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+        </RowGroupings>
+        <Top>5.64683cm</Top>
+        <ColumnGroupings>
+          <ColumnGrouping>
+            <Height>0.63492cm</Height>
+            <DynamicColumns>
+              <Grouping Name="matrix4_ColumnGroup2">
+                <GroupExpressions>
+                  <GroupExpression>="Дата загрузки файла с кодом ЕДРПОУ"</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <ReportItems>
+                <Textbox Name="textbox8">
+                  <rd:DefaultName>textbox8</rd:DefaultName>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>5</ZIndex>
+                  <Value>="Дата загрузки файла с кодом ЕДРПОУ"</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicColumns>
+          </ColumnGrouping>
+          <ColumnGrouping>
+            <Height>0.63492cm</Height>
+            <DynamicColumns>
+              <Grouping Name="matrix4_FullDate">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Subtotal>
+                <ReportItems>
+                  <Textbox Name="textbox13">
+                    <rd:DefaultName>textbox13</rd:DefaultName>
+                    <Style>
+                      <BorderStyle>
+                        <Default>Solid</Default>
+                      </BorderStyle>
+                      <FontWeight>700</FontWeight>
+                      <TextAlign>Center</TextAlign>
+                      <VerticalAlign>Middle</VerticalAlign>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <ZIndex>3</ZIndex>
+                    <CanGrow>true</CanGrow>
+                    <Value>Всего</Value>
+                  </Textbox>
+                </ReportItems>
+                <Position>Before</Position>
+              </Subtotal>
+              <ReportItems>
+                <Textbox Name="FullDate_3">
+                  <rd:DefaultName>FullDate_3</rd:DefaultName>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>4</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Format(Fields!FullDate.Value, "dd.MM.yyyy")</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicColumns>
+          </ColumnGrouping>
+        </ColumnGroupings>
+        <Corner>
+          <ReportItems>
+            <Textbox Name="textbox4">
+              <rd:DefaultName>textbox4</rd:DefaultName>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+                <FontWeight>700</FontWeight>
+                <TextAlign>Center</TextAlign>
+                <VerticalAlign>Middle</VerticalAlign>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+              <ZIndex>6</ZIndex>
+              <CanGrow>true</CanGrow>
+              <Value>Получили / Не получили МП</Value>
+            </Textbox>
+          </ReportItems>
+        </Corner>
+        <MatrixRows>
+          <MatrixRow>
+            <Height>0.63492cm</Height>
+            <MatrixCells>
+              <MatrixCell>
+                <ReportItems>
+                  <Textbox Name="CompaniesNum_3">
+                    <rd:DefaultName>CompaniesNum_3</rd:DefaultName>
+                    <Style>
+                      <BorderStyle>
+                        <Default>Solid</Default>
+                      </BorderStyle>
+                      <TextAlign>Right</TextAlign>
+                      <VerticalAlign>Middle</VerticalAlign>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <ZIndex>1</ZIndex>
+                    <CanGrow>true</CanGrow>
+                    <Value>=IIf(Sum(Fields!CompaniesNum.Value) = Nothing, 0, Sum(Fields!CompaniesNum.Value))</Value>
+                  </Textbox>
+                </ReportItems>
+              </MatrixCell>
+            </MatrixCells>
+          </MatrixRow>
+        </MatrixRows>
+        <Height>2.53968cm</Height>
+        <Left>0.25cm</Left>
+      </Matrix>
+      <Matrix Name="matrix3">
+        <MatrixColumns>
+          <MatrixColumn>
+            <Width>2.22645cm</Width>
+          </MatrixColumn>
+        </MatrixColumns>
+        <ZIndex>2</ZIndex>
+        <DataSetName>DStVerificationPart3</DataSetName>
+        <RowGroupings>
+          <RowGrouping>
+            <Width>5.25cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix3_IsWorkingHours">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!IsWorkingHours.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=IIf(Fields!IsWorkingHours.Value = "Рабочее время", 1, 2)</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <ReportItems>
+                <Textbox Name="IsWorkingHours_1">
+                  <rd:DefaultName>IsWorkingHours_1</rd:DefaultName>
+                  <ToggleImage>
+                    <InitialState>true</InitialState>
+                  </ToggleImage>
+                  <Style>
+                    <BackgroundColor>#548dd4</BackgroundColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!IsWorkingHours.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+          <RowGrouping>
+            <Width>5.25cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix3_DayPeriod">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!DayPeriod.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=IIf(Fields!DayPeriod.Value = "с 9-00 до 11-00", 1, 
+  IIf(Fields!DayPeriod.Value = "с 11-00 до 19-00", 2, 
+   IIf(Fields!DayPeriod.Value = "с 19-00 до 24-00", 3, 4)))</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <Visibility>
+                <ToggleItem>IsWorkingHours_1</ToggleItem>
+              </Visibility>
+              <ReportItems>
+                <Textbox Name="DayPeriod_1">
+                  <rd:DefaultName>DayPeriod_1</rd:DefaultName>
+                  <ToggleImage>
+                    <InitialState>true</InitialState>
+                  </ToggleImage>
+                  <Style>
+                    <BackgroundColor>#95b3d7</BackgroundColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>2</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!DayPeriod.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+          <RowGrouping>
+            <Width>5.05292cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix3_TimePeriod">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!TimePeriod.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=IIf(Fields!TimePeriod.Value = "до 10 мин.", 1,
+  IIf(Fields!TimePeriod.Value = "от 10 мин. до 30 мин.", 2,
+   IIf(Fields!TimePeriod.Value = "от 30 мин. до 1 часа", 3, 4)))</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <Visibility>
+                <ToggleItem>DayPeriod_1</ToggleItem>
+              </Visibility>
+              <ReportItems>
+                <Textbox Name="TimePeriod_1">
+                  <rd:DefaultName>TimePeriod_1</rd:DefaultName>
+                  <Style>
+                    <BackgroundColor>#b8cce4</BackgroundColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>1</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!TimePeriod.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+        </RowGroupings>
+        <Top>8.30291cm</Top>
+        <ColumnGroupings>
+          <ColumnGrouping>
+            <Height>0.63492cm</Height>
+            <DynamicColumns>
+              <Grouping Name="matrix3_ColumnGroup2">
+                <GroupExpressions>
+                  <GroupExpression>Дата загрузки файла с кодом ЕДРПОУ</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Subtotal>
+                <ReportItems>
+                  <Textbox Name="textbox14">
+                    <rd:DefaultName>textbox14</rd:DefaultName>
+                    <Style>
+                      <BorderStyle>
+                        <Default>Solid</Default>
+                      </BorderStyle>
+                      <FontWeight>700</FontWeight>
+                      <TextAlign>Center</TextAlign>
+                      <VerticalAlign>Middle</VerticalAlign>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <ZIndex>5</ZIndex>
+                    <CanGrow>true</CanGrow>
+                    <Value>Всего</Value>
+                  </Textbox>
+                </ReportItems>
+                <Position>Before</Position>
+              </Subtotal>
+              <ReportItems>
+                <Textbox Name="textbox10">
+                  <rd:DefaultName>textbox10</rd:DefaultName>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>6</ZIndex>
+                  <Value>Дата загрузки файла с кодом ЕДРПОУ</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicColumns>
+          </ColumnGrouping>
+          <ColumnGrouping>
+            <Height>0.63492cm</Height>
+            <DynamicColumns>
+              <Grouping Name="matrix3_FullDate">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=Fields!FullDate.Value</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <ReportItems>
+                <Textbox Name="FullDate_2">
+                  <rd:DefaultName>FullDate_2</rd:DefaultName>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>4</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Format(Fields!FullDate.Value, "dd.MM.yyyy")</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicColumns>
+          </ColumnGrouping>
+        </ColumnGroupings>
+        <Corner>
+          <ReportItems>
+            <Textbox Name="textbox5">
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+                <FontWeight>700</FontWeight>
+                <TextAlign>Center</TextAlign>
+                <VerticalAlign>Middle</VerticalAlign>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+              <ZIndex>7</ZIndex>
+              <CanGrow>true</CanGrow>
+              <Value>Время поступления / Время проверки</Value>
+            </Textbox>
+          </ReportItems>
+        </Corner>
+        <MatrixRows>
+          <MatrixRow>
+            <Height>0.63492cm</Height>
+            <MatrixCells>
+              <MatrixCell>
+                <ReportItems>
+                  <Textbox Name="CompaniesNum_2">
+                    <rd:DefaultName>CompaniesNum_2</rd:DefaultName>
+                    <Style>
+                      <BorderStyle>
+                        <Default>Solid</Default>
+                      </BorderStyle>
+                      <TextAlign>Right</TextAlign>
+                      <VerticalAlign>Middle</VerticalAlign>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <CanGrow>true</CanGrow>
+                    <Value>=IIf(Sum(Fields!CompaniesNum.Value) = Nothing, 0, Sum(Fields!CompaniesNum.Value))</Value>
+                  </Textbox>
+                </ReportItems>
+              </MatrixCell>
+            </MatrixCells>
+          </MatrixRow>
+        </MatrixRows>
+        <Left>0.25cm</Left>
+      </Matrix>
+      <Matrix Name="matrix2">
+        <MatrixColumns>
+          <MatrixColumn>
+            <Width>2.22645cm</Width>
+          </MatrixColumn>
+        </MatrixColumns>
+        <ZIndex>1</ZIndex>
+        <DataSetName>DStVerificationPart2</DataSetName>
+        <RowGroupings>
+          <RowGrouping>
+            <Width>5.25cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix2_IsWorkingHours">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!IsWorkingHours.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=IIf(Fields!IsWorkingHours.Value = "Рабочее время", 1, 2)</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <ReportItems>
+                <Textbox Name="IsWorkingHours">
+                  <rd:DefaultName>IsWorkingHours</rd:DefaultName>
+                  <ToggleImage>
+                    <InitialState>true</InitialState>
+                  </ToggleImage>
+                  <Style>
+                    <BackgroundColor>#76923c</BackgroundColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!IsWorkingHours.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+          <RowGrouping>
+            <Width>5.25cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix2_DayPeriod">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!DayPeriod.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=IIf(Fields!DayPeriod.Value = "с 9-00 до 11-00", 1, 
+  IIf(Fields!DayPeriod.Value = "с 11-00 до 19-00", 2, 
+   IIf(Fields!DayPeriod.Value = "с 19-00 до 24-00", 3, 4)))</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <Visibility>
+                <ToggleItem>IsWorkingHours</ToggleItem>
+              </Visibility>
+              <ReportItems>
+                <Textbox Name="DayPeriod">
+                  <rd:DefaultName>DayPeriod</rd:DefaultName>
+                  <ToggleImage>
+                    <InitialState>true</InitialState>
+                  </ToggleImage>
+                  <Style>
+                    <BackgroundColor>#c2d69b</BackgroundColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>2</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!DayPeriod.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+          <RowGrouping>
+            <Width>5.05292cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix2_TimePeriod">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!TimePeriod.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=IIf(Fields!TimePeriod.Value = "до 10 мин.", 1,
+  IIf(Fields!TimePeriod.Value = "от 10 мин. до 30 мин.", 2,
+   IIf(Fields!TimePeriod.Value = "от 30 мин. до 1 часа", 3, 4)))</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <Visibility>
+                <ToggleItem>DayPeriod</ToggleItem>
+              </Visibility>
+              <ReportItems>
+                <Textbox Name="TimePeriod">
+                  <rd:DefaultName>TimePeriod</rd:DefaultName>
+                  <Style>
+                    <BackgroundColor>#d6e3bc</BackgroundColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>1</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!TimePeriod.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+        </RowGroupings>
+        <Top>3.26455cm</Top>
+        <ColumnGroupings>
+          <ColumnGrouping>
+            <Height>0.63492cm</Height>
+            <DynamicColumns>
+              <Grouping Name="matrix2_ColumnGroup2">
+                <GroupExpressions>
+                  <GroupExpression>Дата подтверждения email</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Subtotal>
+                <ReportItems>
+                  <Textbox Name="textbox12">
+                    <rd:DefaultName>textbox12</rd:DefaultName>
+                    <Style>
+                      <BorderStyle>
+                        <Default>Solid</Default>
+                      </BorderStyle>
+                      <FontWeight>700</FontWeight>
+                      <TextAlign>Center</TextAlign>
+                      <VerticalAlign>Middle</VerticalAlign>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <ZIndex>5</ZIndex>
+                    <CanGrow>true</CanGrow>
+                    <Value>Всего</Value>
+                  </Textbox>
+                </ReportItems>
+                <Position>Before</Position>
+              </Subtotal>
+              <ReportItems>
+                <Textbox Name="textbox9">
+                  <rd:DefaultName>textbox9</rd:DefaultName>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>6</ZIndex>
+                  <Value>Дата подтверждения email</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicColumns>
+          </ColumnGrouping>
+          <ColumnGrouping>
+            <Height>0.63492cm</Height>
+            <DynamicColumns>
+              <Grouping Name="matrix2_FullDate">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=Fields!FullDate.Value</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <ReportItems>
+                <Textbox Name="FullDate_1">
+                  <rd:DefaultName>FullDate_1</rd:DefaultName>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>4</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Format(Fields!FullDate.Value, "dd.MM.yyyy")</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicColumns>
+          </ColumnGrouping>
+        </ColumnGroupings>
+        <Corner>
+          <ReportItems>
+            <Textbox Name="textbox3">
+              <rd:DefaultName>textbox3</rd:DefaultName>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+                <FontWeight>700</FontWeight>
+                <TextAlign>Center</TextAlign>
+                <VerticalAlign>Middle</VerticalAlign>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+              <ZIndex>7</ZIndex>
+              <CanGrow>true</CanGrow>
+              <Value>Время поступления / Время проверки</Value>
+            </Textbox>
+          </ReportItems>
+        </Corner>
+        <MatrixRows>
+          <MatrixRow>
+            <Height>0.63492cm</Height>
+            <MatrixCells>
+              <MatrixCell>
+                <ReportItems>
+                  <Textbox Name="CompaniesNum_1">
+                    <rd:DefaultName>CompaniesNum_1</rd:DefaultName>
+                    <Style>
+                      <BorderStyle>
+                        <Default>Solid</Default>
+                      </BorderStyle>
+                      <TextAlign>Right</TextAlign>
+                      <VerticalAlign>Middle</VerticalAlign>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <CanGrow>true</CanGrow>
+                    <Value>=IIf(Sum(Fields!CompaniesNum.Value) = Nothing, 0, Sum(Fields!CompaniesNum.Value))</Value>
+                  </Textbox>
+                </ReportItems>
+              </MatrixCell>
+            </MatrixCells>
+          </MatrixRow>
+        </MatrixRows>
+        <Height>1.90476cm</Height>
+        <Left>0.25cm</Left>
+      </Matrix>
+      <Matrix Name="matrix1">
+        <MatrixColumns>
+          <MatrixColumn>
+            <Width>2.22645cm</Width>
+          </MatrixColumn>
+        </MatrixColumns>
+        <DataSetName>DstVerificationTotals</DataSetName>
+        <RowGroupings>
+          <RowGrouping>
+            <Width>7.77646cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix1_CompanyGroup">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!VerificationResult.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=IIf(Fields!VerificationResult.Value = "Проверенный + МП", 1,
+  IIf(Fields!VerificationResult.Value = "Отказ", 2,
+   IIf(Fields!VerificationResult.Value = "Черный список", 3, 4)))</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <Subtotal>
+                <ReportItems>
+                  <Textbox Name="textbox2">
+                    <rd:DefaultName>textbox2</rd:DefaultName>
+                    <Style>
+                      <BackgroundColor>#76923c</BackgroundColor>
+                      <BorderStyle>
+                        <Default>Solid</Default>
+                      </BorderStyle>
+                      <FontWeight>700</FontWeight>
+                      <VerticalAlign>Middle</VerticalAlign>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <CanGrow>true</CanGrow>
+                    <Value>Подтвердили электронный адрес</Value>
+                  </Textbox>
+                </ReportItems>
+                <Position>Before</Position>
+                <Style>
+                  <FontWeight>700</FontWeight>
+                  <VerticalAlign>Middle</VerticalAlign>
+                </Style>
+              </Subtotal>
+              <ReportItems>
+                <Textbox Name="TboxVerificationResult">
+                  <ToggleImage>
+                    <InitialState>true</InitialState>
+                  </ToggleImage>
+                  <Style>
+                    <BackgroundColor>#c2d69b</BackgroundColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!VerificationResult.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+          <RowGrouping>
+            <Width>7.77646cm</Width>
+            <DynamicRows>
+              <Grouping Name="matrix1_VerificationResultDetails">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!VerificationResultDetails.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Visibility>
+                <ToggleItem>TboxVerificationResult</ToggleItem>
+              </Visibility>
+              <ReportItems>
+                <Textbox Name="VerificationResultDetails">
+                  <rd:DefaultName>VerificationResultDetails</rd:DefaultName>
+                  <Style>
+                    <BackgroundColor>#d6e3bc</BackgroundColor>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>2</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Fields!VerificationResultDetails.Value</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicRows>
+          </RowGrouping>
+        </RowGroupings>
+        <Top>0.5cm</Top>
+        <ColumnGroupings>
+          <ColumnGrouping>
+            <Height>0.63492cm</Height>
+            <DynamicColumns>
+              <Grouping Name="matrix1_ColumnGroup2">
+                <GroupExpressions>
+                  <GroupExpression>""</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Subtotal>
+                <ReportItems>
+                  <Textbox Name="textbox11">
+                    <rd:DefaultName>textbox11</rd:DefaultName>
+                    <Style>
+                      <BorderStyle>
+                        <Default>Solid</Default>
+                      </BorderStyle>
+                      <FontWeight>700</FontWeight>
+                      <TextAlign>Center</TextAlign>
+                      <VerticalAlign>Middle</VerticalAlign>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <ZIndex>5</ZIndex>
+                    <CanGrow>true</CanGrow>
+                    <Value>Всего</Value>
+                  </Textbox>
+                </ReportItems>
+                <Position>Before</Position>
+              </Subtotal>
+              <ReportItems>
+                <Textbox Name="textbox7">
+                  <rd:DefaultName>textbox7</rd:DefaultName>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>6</ZIndex>
+                  <Value>Дата подтверждения email</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicColumns>
+          </ColumnGrouping>
+          <ColumnGrouping>
+            <Height>0.63492cm</Height>
+            <DynamicColumns>
+              <Grouping Name="matrix1_FullDate">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=Fields!FullDate.Value</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <ReportItems>
+                <Textbox Name="FullDate">
+                  <rd:DefaultName>FullDate</rd:DefaultName>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                    <FontWeight>700</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                    <VerticalAlign>Middle</VerticalAlign>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>4</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value>=Format(Fields!FullDate.Value, "dd.MM.yyyy")</Value>
+                </Textbox>
+              </ReportItems>
+            </DynamicColumns>
+          </ColumnGrouping>
+        </ColumnGroupings>
+        <Corner>
+          <ReportItems>
+            <Textbox Name="textbox1">
+              <rd:DefaultName>textbox1</rd:DefaultName>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+                <FontWeight>700</FontWeight>
+                <TextAlign>Center</TextAlign>
+                <VerticalAlign>Middle</VerticalAlign>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+              <ZIndex>7</ZIndex>
+              <CanGrow>true</CanGrow>
+              <Value>Результат проверки / подробности проверки</Value>
+            </Textbox>
+          </ReportItems>
+        </Corner>
+        <MatrixRows>
+          <MatrixRow>
+            <Height>0.63492cm</Height>
+            <MatrixCells>
+              <MatrixCell>
+                <ReportItems>
+                  <Textbox Name="CompaniesNum">
+                    <rd:DefaultName>CompaniesNum</rd:DefaultName>
+                    <Style>
+                      <BorderStyle>
+                        <Default>Solid</Default>
+                      </BorderStyle>
+                      <TextAlign>Right</TextAlign>
+                      <VerticalAlign>Middle</VerticalAlign>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                    <ZIndex>1</ZIndex>
+                    <CanGrow>true</CanGrow>
+                    <Value>=IIf(Sum(Fields!CompaniesNum.Value) = Nothing, 0, Sum(Fields!CompaniesNum.Value))</Value>
+                  </Textbox>
+                </ReportItems>
+              </MatrixCell>
+            </MatrixCells>
+          </MatrixRow>
+        </MatrixRows>
+        <Height>2.53968cm</Height>
+        <Left>0.25cm</Left>
+      </Matrix>
+    </ReportItems>
+    <Height>10.20767cm</Height>
+  </Body>
+  <Language>en-US</Language>
+  <TopMargin>2.5cm</TopMargin>
+  <PageHeight>29.7cm</PageHeight>
+</Report>

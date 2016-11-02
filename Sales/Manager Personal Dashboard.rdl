@@ -1,0 +1,2501 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DSrcReporting">
+      <Transaction>true</Transaction>
+      <DataSourceReference>DSrcReporting</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>136c31e7-1467-4379-b996-4b8fe1cd6fa0</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DStVacancyDiffChanges">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Manager">
+            <Value>=Parameters!Manager.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_ManagerPersonalDashboard</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="FullDate">
+          <DataField>FullDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="NotebookId">
+          <DataField>NotebookId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="WorkCompanyID">
+          <DataField>WorkCompanyID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CompanyName">
+          <DataField>CompanyName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="AgeGroup">
+          <DataField>AgeGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Stars">
+          <DataField>Stars</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IndexAttraction">
+          <DataField>IndexAttraction</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Today">
+          <DataField>Today</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Today_VacancyNum">
+          <DataField>Today_VacancyNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="Yesterday">
+          <DataField>Yesterday</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="LastCompletedDate">
+          <DataField>LastCompletedDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="Today_WorkVacancyNum">
+          <DataField>Today_WorkVacancyNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="Change">
+          <DataField>Change</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="NextActionDate">
+          <DataField>NextActionDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="Yesterday_VacancyNum">
+          <DataField>Yesterday_VacancyNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="Yesterday_WorkVacancyNum">
+          <DataField>Yesterday_WorkVacancyNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="Rabota_Paid">
+          <DataField>Rabota_Paid</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="Rabota_Hot">
+          <DataField>Rabota_Hot</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="Work_Paid">
+          <DataField>Work_Paid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Work_Hot">
+          <DataField>Work_Hot</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IsPaidCompany">
+          <Value>=IIf(Fields!Rabota_Paid.Value = 1, IIf(Fields!Work_Paid.Value = 1, "rabota + work", "rabota"), IIf(Fields!Work_Paid.Value = 1, "work", "не платят"))</Value>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DStActions">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Manager">
+            <Value>=Parameters!Manager.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT FCS.VacancyDiffGroup, COUNT(*) AS ActionNum, COUNT(DISTINCT A.NotebookID) AS NotebookNum
+FROM Analytics.dbo.CRM_Action A
+ JOIN Analytics.dbo.aspnet_Membership U ON A.Responsible = U.Email
+ JOIN Analytics.dbo.Manager M ON U.UserId = M.aspnet_UserUIN
+ JOIN dbo.DimDate D ON dbo.fnGetDatePart(A.CompleteDate) = D.FullDate
+ JOIN dbo.DimCompany C ON A.NotebookID = C.NotebookId
+ JOIN dbo.FactCompanyStatuses FCS ON D.Date_key = FCS.Date_key AND C.Company_key = FCS.Company_key
+WHERE A.CompleteDate BETWEEN @StartDate AND @EndDate
+ AND U.LoweredEmail IN (@Manager)
+GROUP BY FCS.VacancyDiffGroup;</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="VacancyDiffGroup">
+          <DataField>VacancyDiffGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ActionNum">
+          <DataField>ActionNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="NotebookNum">
+          <DataField>NotebookNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DStManagers">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>SELECT M.Name, D.Name AS DepartmentName, AM.LoweredEmail AS Email,
+ 'RABOTA\' + LEFT(AM.EMail, CHARINDEX('@', AM.Email) - 1) AS UserID
+FROM Analytics.dbo.Manager M
+ JOIN Analytics.dbo.Departments D ON M.DepartmentId = D.ID
+ JOIN Analytics.dbo.aspnet_Membership AM ON M.aspnet_UserUIN = AM.UserID
+WHERE D.Name IN ('Sales Force','Telesales','Teleinfo')
+ AND M.IsForTesting = 0
+ORDER BY Name</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="Name">
+          <DataField>Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DepartmentName">
+          <DataField>DepartmentName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Email">
+          <DataField>Email</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="UserID">
+          <DataField>UserID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!DepartmentName.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!Department.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
+    </DataSet>
+    <DataSet Name="DStDepartments">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>SELECT Name 
+FROM Analytics.dbo.Departments 
+WHERE Name IN ('Sales Force','Telesales','Teleinfo')
+ORDER BY Name</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="Name">
+          <DataField>Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="Tablix1">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>8.05625cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.73271cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.05cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.05cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.05cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.05cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>1cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox8">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Дата</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox8</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox10">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Было</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox10</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>2</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox24">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox24</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox31">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Стало</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox31</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>2</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox5">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Название компании</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox5</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox16">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Рейтинг</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox16</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>$ rabota.ua</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>2</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>$ work.ua</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>2</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox12">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Последнее действие</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox12</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox14">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Следущее действие</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox14</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>1cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="FullDate">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!FullDate.Value</Value>
+                                  <Style>
+                                    <Format>d</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>FullDate</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Yesterday1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Yesterday.Value</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Yesterday1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>White</Color>
+                              <Style>Solid</Style>
+                              <Width>5pt</Width>
+                            </Border>
+                            <BackgroundColor>=IIf(Fields!Yesterday.Value = "0 = R &lt; W", "#A32929", IIf(Fields!Yesterday.Value = "0 &lt; R &lt; W", "#BF8C1D", IIf(Fields!Yesterday.Value = "R = W", "#A7C746", IIf(Fields!Yesterday.Value = "R &gt; W &gt; 0", "#74D941", IIf(Fields!Yesterday.Value = "R &gt; W = 0", "#0F8C0F", "LightGrey")))))</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <GaugePanel Name="GaugePanel13">
+                          <StateIndicators>
+                            <StateIndicator Name="Indicator1">
+                              <GaugeInputValue>
+                                <Value>=IIf(Fields!Yesterday.Value = "0 = R &lt; W", 1, IIf(Fields!Yesterday.Value = "0 &lt; R &lt; W", 2, IIf(Fields!Yesterday.Value = "R = W", 3, IIf(Fields!Yesterday.Value = "R &gt; W &gt; 0", 5, IIf(Fields!Yesterday.Value = "R &gt; W = 0", 6, 4)))))</Value>
+                                <Multiplier>1</Multiplier>
+                                <DataElementOutput>NoOutput</DataElementOutput>
+                              </GaugeInputValue>
+                              <TransformationType>None</TransformationType>
+                              <TransformationScope>Tablix1</TransformationScope>
+                              <MinimumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MinimumValue>
+                              <MaximumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MaximumValue>
+                              <IndicatorStyle>None</IndicatorStyle>
+                              <IndicatorImage>
+                                <Source>External</Source>
+                                <Value />
+                              </IndicatorImage>
+                              <ScaleFactor>1</ScaleFactor>
+                              <IndicatorStates>
+                                <IndicatorState Name="StarQuartersNoneFilled">
+                                  <StartValue>
+                                    <Value>1</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>1</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile11</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersOneFilled">
+                                  <StartValue>
+                                    <Value>2</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>2</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile12</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersTwoFilled">
+                                  <StartValue>
+                                    <Value>3</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>3</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile3</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersThreeFilled">
+                                  <StartValue>
+                                    <Value>4</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>4</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile21</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersAllFilled">
+                                  <StartValue>
+                                    <Value>5</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>5</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile4</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="IndicatorState1">
+                                  <StartValue>
+                                    <Value>6</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>6</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile5</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                              </IndicatorStates>
+                              <ResizeMode>None</ResizeMode>
+                              <Angle>0</Angle>
+                              <StateDataElementName />
+                              <rd:IconsSet>FiveStars</rd:IconsSet>
+                              <Style>
+                                <ShadowOffset>0pt</ShadowOffset>
+                              </Style>
+                              <Top>4</Top>
+                              <Left>4</Left>
+                              <Height>92</Height>
+                              <Width>92</Width>
+                            </StateIndicator>
+                          </StateIndicators>
+                          <AutoLayout>true</AutoLayout>
+                          <BackFrame>
+                            <Style>
+                              <Border>
+                                <Style>None</Style>
+                              </Border>
+                              <BackgroundColor>Gainsboro</BackgroundColor>
+                              <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                              <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                              <BackgroundHatchType>None</BackgroundHatchType>
+                              <ShadowOffset>0pt</ShadowOffset>
+                            </Style>
+                            <FrameBackground>
+                              <Style>
+                                <BackgroundColor>Silver</BackgroundColor>
+                                <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                <BackgroundHatchType>None</BackgroundHatchType>
+                              </Style>
+                            </FrameBackground>
+                            <FrameImage>
+                              <Source>External</Source>
+                              <Value />
+                            </FrameImage>
+                          </BackFrame>
+                          <TopImage>
+                            <Source>External</Source>
+                            <Value />
+                          </TopImage>
+                          <DataSetName>DStVacancyDiffChanges</DataSetName>
+                          <Style>
+                            <Border>
+                              <Color>White</Color>
+                              <Style>Solid</Style>
+                              <Width>5pt</Width>
+                            </Border>
+                            <BackgroundColor>=IIf(Fields!Yesterday.Value = "0 = R &lt; W", "#A32929", IIf(Fields!Yesterday.Value = "0 &lt; R &lt; W", "#BF8C1D", IIf(Fields!Yesterday.Value = "R = W", "#A7C746", IIf(Fields!Yesterday.Value = "R &gt; W &gt; 0", "#74D941", IIf(Fields!Yesterday.Value = "R &gt; W = 0", "#0F8C0F", "LightGrey")))))</BackgroundColor>
+                          </Style>
+                        </GaugePanel>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <GaugePanel Name="GaugePanel8">
+                          <StateIndicators>
+                            <StateIndicator Name="Indicator1">
+                              <GaugeInputValue>
+                                <Value>=Fields!Change.Value</Value>
+                                <Multiplier>1</Multiplier>
+                                <DataElementOutput>NoOutput</DataElementOutput>
+                              </GaugeInputValue>
+                              <TransformationType>None</TransformationType>
+                              <TransformationScope>Tablix1</TransformationScope>
+                              <MinimumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MinimumValue>
+                              <MaximumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MaximumValue>
+                              <IndicatorStyle>None</IndicatorStyle>
+                              <IndicatorImage>
+                                <Source>External</Source>
+                                <Value />
+                              </IndicatorImage>
+                              <ScaleFactor>1</ScaleFactor>
+                              <IndicatorStates>
+                                <IndicatorState Name="ArrowSide">
+                                  <StartValue>
+                                    <Value>0</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>1000</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>0.99</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>circul_up</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="IndicatorState1">
+                                  <StartValue>
+                                    <Value>-1000</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>0</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>circul_down</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                              </IndicatorStates>
+                              <Angle>0</Angle>
+                              <StateDataElementName />
+                              <rd:IconsSet>ThreeColoredArrows</rd:IconsSet>
+                              <Style>
+                                <ShadowOffset>0pt</ShadowOffset>
+                              </Style>
+                              <Top>4</Top>
+                              <Left>4</Left>
+                              <Height>92</Height>
+                              <Width>92</Width>
+                            </StateIndicator>
+                          </StateIndicators>
+                          <AutoLayout>true</AutoLayout>
+                          <BackFrame>
+                            <Style>
+                              <Border>
+                                <Style>None</Style>
+                              </Border>
+                              <BackgroundColor>Gainsboro</BackgroundColor>
+                              <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                              <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                              <BackgroundHatchType>None</BackgroundHatchType>
+                              <ShadowOffset>0pt</ShadowOffset>
+                            </Style>
+                            <FrameBackground>
+                              <Style>
+                                <BackgroundColor>Silver</BackgroundColor>
+                                <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                <BackgroundHatchType>None</BackgroundHatchType>
+                              </Style>
+                            </FrameBackground>
+                            <FrameImage>
+                              <Source>External</Source>
+                              <Value />
+                            </FrameImage>
+                          </BackFrame>
+                          <TopImage>
+                            <Source>External</Source>
+                            <Value />
+                          </TopImage>
+                          <DataSetName>DStVacancyDiffChanges</DataSetName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                          </Style>
+                        </GaugePanel>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <GaugePanel Name="GaugePanel14">
+                          <StateIndicators>
+                            <StateIndicator Name="Indicator1">
+                              <GaugeInputValue>
+                                <Value>=Microsoft.VisualBasic.Interaction.IIf(Fields!Today.Value = "0 = R &lt; W", 1, Microsoft.VisualBasic.Interaction.IIf(Fields!Today.Value = "0 &lt; R &lt; W", 2, Microsoft.VisualBasic.Interaction.IIf(Fields!Today.Value = "R = W", 3, Microsoft.VisualBasic.Interaction.IIf(Fields!Today.Value = "R &gt; W &gt; 0", 5, Microsoft.VisualBasic.Interaction.IIf(Fields!Today.Value = "R &gt; W = 0", 6, 4)))))</Value>
+                                <Multiplier>1</Multiplier>
+                                <DataElementOutput>NoOutput</DataElementOutput>
+                              </GaugeInputValue>
+                              <TransformationType>None</TransformationType>
+                              <TransformationScope>Tablix1</TransformationScope>
+                              <MinimumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MinimumValue>
+                              <MaximumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MaximumValue>
+                              <IndicatorStyle>None</IndicatorStyle>
+                              <IndicatorImage>
+                                <Source>External</Source>
+                                <Value />
+                              </IndicatorImage>
+                              <ScaleFactor>1</ScaleFactor>
+                              <IndicatorStates>
+                                <IndicatorState Name="StarQuartersNoneFilled">
+                                  <StartValue>
+                                    <Value>1</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>1</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile11</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersOneFilled">
+                                  <StartValue>
+                                    <Value>2</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>2</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile12</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersTwoFilled">
+                                  <StartValue>
+                                    <Value>3</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>3</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile3</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersThreeFilled">
+                                  <StartValue>
+                                    <Value>4</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>4</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile21</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersAllFilled">
+                                  <StartValue>
+                                    <Value>5</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>5</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile4</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="IndicatorState1">
+                                  <StartValue>
+                                    <Value>6</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>6</Value>
+                                    <Multiplier>1</Multiplier>
+                                    <DataElementOutput>NoOutput</DataElementOutput>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>smile5</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                              </IndicatorStates>
+                              <ResizeMode>None</ResizeMode>
+                              <Angle>0</Angle>
+                              <StateDataElementName />
+                              <rd:IconsSet>FiveStars</rd:IconsSet>
+                              <Style>
+                                <ShadowOffset>0pt</ShadowOffset>
+                              </Style>
+                              <Top>4</Top>
+                              <Left>4</Left>
+                              <Height>92</Height>
+                              <Width>92</Width>
+                            </StateIndicator>
+                          </StateIndicators>
+                          <AutoLayout>true</AutoLayout>
+                          <BackFrame>
+                            <Style>
+                              <Border>
+                                <Style>None</Style>
+                              </Border>
+                              <BackgroundColor>Gainsboro</BackgroundColor>
+                              <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                              <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                              <BackgroundHatchType>None</BackgroundHatchType>
+                              <ShadowOffset>0pt</ShadowOffset>
+                            </Style>
+                            <FrameBackground>
+                              <Style>
+                                <BackgroundColor>Silver</BackgroundColor>
+                                <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                <BackgroundHatchType>None</BackgroundHatchType>
+                              </Style>
+                            </FrameBackground>
+                            <FrameImage>
+                              <Source>External</Source>
+                              <Value />
+                            </FrameImage>
+                          </BackFrame>
+                          <TopImage>
+                            <Source>External</Source>
+                            <Value />
+                          </TopImage>
+                          <DataSetName>DStVacancyDiffChanges</DataSetName>
+                          <Style>
+                            <Border>
+                              <Color>White</Color>
+                              <Style>Solid</Style>
+                              <Width>5pt</Width>
+                            </Border>
+                            <BackgroundColor>=IIf(Fields!Today.Value = "0 = R &lt; W", "#A32929", IIf(Fields!Today.Value = "0 &lt; R &lt; W", "#BF8C1D", IIf(Fields!Today.Value = "R = W", "#A7C746", IIf(Fields!Today.Value = "R &gt; W &gt; 0", "#74D941", IIf(Fields!Today.Value = "R &gt; W = 0", "#0F8C0F", "LightGrey")))))</BackgroundColor>
+                          </Style>
+                        </GaugePanel>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Today">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Today.Value</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Today</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>White</Color>
+                              <Style>Solid</Style>
+                              <Width>5pt</Width>
+                            </Border>
+                            <BackgroundColor>=IIf(Fields!Today.Value = "0 = R &lt; W", "#A32929", IIf(Fields!Today.Value = "0 &lt; R &lt; W", "#BF8C1D", IIf(Fields!Today.Value = "R = W", "#A7C746", IIf(Fields!Today.Value = "R &gt; W &gt; 0", "#74D941", IIf(Fields!Today.Value = "R &gt; W = 0", "#0F8C0F", "LightGrey")))))</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="CompanyName">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!CompanyName.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>CompanyName</rd:DefaultName>
+                          <ActionInfo>
+                            <Actions>
+                              <Action>
+                                <Hyperlink>= "javascript:void(window.open('http://reports.rabota.ua/reportserver?/Sales/Manager Dashboard. List By Id&amp;NotebookID=" &amp; CStr(Fields!NotebookId.Value) &amp; "&amp;Mode=" &amp; "3" &amp; "','_blank'))"</Hyperlink>
+                              </Action>
+                            </Actions>
+                          </ActionInfo>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <rd:Selected>true</rd:Selected>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <GaugePanel Name="GaugePanel11">
+                          <StateIndicators>
+                            <StateIndicator Name="Indicator1">
+                              <GaugeInputValue>
+                                <Value>=Fields!Stars.Value</Value>
+                                <Multiplier>1</Multiplier>
+                                <DataElementOutput>NoOutput</DataElementOutput>
+                              </GaugeInputValue>
+                              <TransformationType>None</TransformationType>
+                              <TransformationScope>Tablix1</TransformationScope>
+                              <MinimumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MinimumValue>
+                              <MaximumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MaximumValue>
+                              <IndicatorStyle>None</IndicatorStyle>
+                              <IndicatorImage>
+                                <Source>External</Source>
+                                <Value />
+                              </IndicatorImage>
+                              <ScaleFactor>1</ScaleFactor>
+                              <IndicatorStates>
+                                <IndicatorState Name="StarQuartersNoneFilled">
+                                  <StartValue>
+                                    <Value>1</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>1</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>star1</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersOneFilled">
+                                  <StartValue>
+                                    <Value>2</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>2</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>star2</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersTwoFilled">
+                                  <StartValue>
+                                    <Value>3</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>3</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>star3</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersThreeFilled">
+                                  <StartValue>
+                                    <Value>4</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>4</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>star4</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="StarQuartersAllFilled">
+                                  <StartValue>
+                                    <Value>5</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>5</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>star5</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                              </IndicatorStates>
+                              <ResizeMode>None</ResizeMode>
+                              <Angle>0</Angle>
+                              <StateDataElementName />
+                              <rd:IconsSet>FiveStars</rd:IconsSet>
+                              <Style>
+                                <ShadowOffset>0pt</ShadowOffset>
+                              </Style>
+                              <Top>4</Top>
+                              <Left>4</Left>
+                              <Height>92</Height>
+                              <Width>92</Width>
+                            </StateIndicator>
+                          </StateIndicators>
+                          <BackFrame>
+                            <Style>
+                              <Border>
+                                <Style>None</Style>
+                              </Border>
+                              <BackgroundColor>Gainsboro</BackgroundColor>
+                              <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                              <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                              <BackgroundHatchType>None</BackgroundHatchType>
+                              <ShadowOffset>0pt</ShadowOffset>
+                            </Style>
+                            <FrameBackground>
+                              <Style>
+                                <BackgroundColor>Silver</BackgroundColor>
+                                <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                <BackgroundHatchType>None</BackgroundHatchType>
+                              </Style>
+                            </FrameBackground>
+                            <FrameImage>
+                              <Source>External</Source>
+                              <Value />
+                            </FrameImage>
+                          </BackFrame>
+                          <TopImage>
+                            <Source>External</Source>
+                            <Value />
+                          </TopImage>
+                          <DataSetName>DStVacancyDiffChanges</DataSetName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                          </Style>
+                        </GaugePanel>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <GaugePanel Name="GaugePanel1">
+                          <StateIndicators>
+                            <StateIndicator Name="Indicator1">
+                              <GaugeInputValue>
+                                <Value>=Fields!Rabota_Paid.Value</Value>
+                                <Multiplier>1</Multiplier>
+                                <DataElementOutput>NoOutput</DataElementOutput>
+                              </GaugeInputValue>
+                              <TransformationType>None</TransformationType>
+                              <TransformationScope>Tablix1</TransformationScope>
+                              <MinimumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MinimumValue>
+                              <MaximumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MaximumValue>
+                              <IndicatorStyle>None</IndicatorStyle>
+                              <IndicatorImage>
+                                <Source>External</Source>
+                                <Value />
+                              </IndicatorImage>
+                              <ScaleFactor>1</ScaleFactor>
+                              <IndicatorStates>
+                                <IndicatorState Name="ThreeSymbolUnCircledCross">
+                                  <StartValue>
+                                    <Value>=Cdbl(1)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>=CDbl(1)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>r</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="ThreeSymbolUnCircledExclamation">
+                                  <StartValue>
+                                    <Value>=Cdbl(0)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>=Cdbl(0)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>None</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </IndicatorImage>
+                                </IndicatorState>
+                              </IndicatorStates>
+                              <ResizeMode>None</ResizeMode>
+                              <Angle>0</Angle>
+                              <StateDataElementName />
+                              <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                              <Style>
+                                <ShadowOffset>0pt</ShadowOffset>
+                              </Style>
+                              <Top>4</Top>
+                              <Left>4</Left>
+                              <Height>92</Height>
+                              <Width>92</Width>
+                            </StateIndicator>
+                          </StateIndicators>
+                          <AutoLayout>true</AutoLayout>
+                          <BackFrame>
+                            <Style>
+                              <Border>
+                                <Style>None</Style>
+                              </Border>
+                              <BackgroundColor>Gainsboro</BackgroundColor>
+                              <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                              <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                              <BackgroundHatchType>None</BackgroundHatchType>
+                              <ShadowOffset>0pt</ShadowOffset>
+                            </Style>
+                            <FrameBackground>
+                              <Style>
+                                <BackgroundColor>Silver</BackgroundColor>
+                                <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                <BackgroundHatchType>None</BackgroundHatchType>
+                              </Style>
+                            </FrameBackground>
+                            <FrameImage>
+                              <Source>External</Source>
+                              <Value />
+                            </FrameImage>
+                          </BackFrame>
+                          <TopImage>
+                            <Source>External</Source>
+                            <Value />
+                          </TopImage>
+                          <DataSetName>DStVacancyDiffChanges</DataSetName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                          </Style>
+                        </GaugePanel>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <GaugePanel Name="GaugePanel2">
+                          <StateIndicators>
+                            <StateIndicator Name="Indicator1">
+                              <GaugeInputValue>
+                                <Value>=Fields!Rabota_Hot.Value</Value>
+                                <Multiplier>1</Multiplier>
+                                <DataElementOutput>NoOutput</DataElementOutput>
+                              </GaugeInputValue>
+                              <TransformationType>None</TransformationType>
+                              <TransformationScope>Tablix1</TransformationScope>
+                              <MinimumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MinimumValue>
+                              <MaximumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MaximumValue>
+                              <IndicatorStyle>None</IndicatorStyle>
+                              <IndicatorImage>
+                                <Source>External</Source>
+                                <Value />
+                              </IndicatorImage>
+                              <ScaleFactor>1</ScaleFactor>
+                              <IndicatorStates>
+                                <IndicatorState Name="ThreeSymbolUnCircledCross">
+                                  <StartValue>
+                                    <Value>=Cdbl(1)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>=Cdbl(1)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>h</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="ThreeSymbolUnCircledExclamation">
+                                  <StartValue>
+                                    <Value>=Cdbl(0)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>=Cdbl(0)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>None</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </IndicatorImage>
+                                </IndicatorState>
+                              </IndicatorStates>
+                              <ResizeMode>None</ResizeMode>
+                              <Angle>0</Angle>
+                              <StateDataElementName />
+                              <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                              <Style>
+                                <ShadowOffset>0pt</ShadowOffset>
+                              </Style>
+                              <Top>4</Top>
+                              <Left>4</Left>
+                              <Height>92</Height>
+                              <Width>92</Width>
+                            </StateIndicator>
+                          </StateIndicators>
+                          <AutoLayout>true</AutoLayout>
+                          <BackFrame>
+                            <Style>
+                              <Border>
+                                <Style>None</Style>
+                              </Border>
+                              <BackgroundColor>Gainsboro</BackgroundColor>
+                              <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                              <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                              <BackgroundHatchType>None</BackgroundHatchType>
+                              <ShadowOffset>0pt</ShadowOffset>
+                            </Style>
+                            <FrameBackground>
+                              <Style>
+                                <BackgroundColor>Silver</BackgroundColor>
+                                <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                <BackgroundHatchType>None</BackgroundHatchType>
+                              </Style>
+                            </FrameBackground>
+                            <FrameImage>
+                              <Source>External</Source>
+                              <Value />
+                            </FrameImage>
+                          </BackFrame>
+                          <TopImage>
+                            <Source>External</Source>
+                            <Value />
+                          </TopImage>
+                          <DataSetName>DStVacancyDiffChanges</DataSetName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                          </Style>
+                        </GaugePanel>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <GaugePanel Name="GaugePanel4">
+                          <StateIndicators>
+                            <StateIndicator Name="Indicator1">
+                              <GaugeInputValue>
+                                <Value>=Fields!Work_Paid.Value</Value>
+                                <Multiplier>1</Multiplier>
+                                <DataElementOutput>NoOutput</DataElementOutput>
+                              </GaugeInputValue>
+                              <TransformationType>None</TransformationType>
+                              <TransformationScope>Tablix1</TransformationScope>
+                              <MinimumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MinimumValue>
+                              <MaximumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MaximumValue>
+                              <IndicatorStyle>None</IndicatorStyle>
+                              <IndicatorImage>
+                                <Source>External</Source>
+                                <Value />
+                              </IndicatorImage>
+                              <ScaleFactor>1</ScaleFactor>
+                              <IndicatorStates>
+                                <IndicatorState Name="ThreeSymbolUnCircledCross">
+                                  <StartValue>
+                                    <Value>=Cdbl(1)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>=Cdbl(1)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>w</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="ThreeSymbolUnCircledExclamation">
+                                  <StartValue>
+                                    <Value>=Cdbl(0)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>=Cdbl(0)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>None</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </IndicatorImage>
+                                </IndicatorState>
+                              </IndicatorStates>
+                              <ResizeMode>None</ResizeMode>
+                              <Angle>0</Angle>
+                              <StateDataElementName />
+                              <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                              <Style>
+                                <ShadowOffset>0pt</ShadowOffset>
+                              </Style>
+                              <Top>4</Top>
+                              <Left>4</Left>
+                              <Height>92</Height>
+                              <Width>92</Width>
+                            </StateIndicator>
+                          </StateIndicators>
+                          <AutoLayout>true</AutoLayout>
+                          <BackFrame>
+                            <Style>
+                              <Border>
+                                <Style>None</Style>
+                              </Border>
+                              <BackgroundColor>Gainsboro</BackgroundColor>
+                              <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                              <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                              <BackgroundHatchType>None</BackgroundHatchType>
+                              <ShadowOffset>0pt</ShadowOffset>
+                            </Style>
+                            <FrameBackground>
+                              <Style>
+                                <BackgroundColor>Silver</BackgroundColor>
+                                <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                <BackgroundHatchType>None</BackgroundHatchType>
+                              </Style>
+                            </FrameBackground>
+                            <FrameImage>
+                              <Source>External</Source>
+                              <Value />
+                            </FrameImage>
+                          </BackFrame>
+                          <TopImage>
+                            <Source>External</Source>
+                            <Value />
+                          </TopImage>
+                          <DataSetName>DStVacancyDiffChanges</DataSetName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                          </Style>
+                        </GaugePanel>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <GaugePanel Name="GaugePanel5">
+                          <StateIndicators>
+                            <StateIndicator Name="Indicator1">
+                              <GaugeInputValue>
+                                <Value>=Fields!Work_Hot.Value</Value>
+                                <Multiplier>1</Multiplier>
+                                <DataElementOutput>NoOutput</DataElementOutput>
+                              </GaugeInputValue>
+                              <TransformationType>None</TransformationType>
+                              <TransformationScope>Tablix1</TransformationScope>
+                              <MinimumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MinimumValue>
+                              <MaximumValue>
+                                <Value>NaN</Value>
+                                <Multiplier>1</Multiplier>
+                              </MaximumValue>
+                              <IndicatorStyle>None</IndicatorStyle>
+                              <IndicatorImage>
+                                <Source>External</Source>
+                                <Value />
+                              </IndicatorImage>
+                              <ScaleFactor>1</ScaleFactor>
+                              <IndicatorStates>
+                                <IndicatorState Name="ThreeSymbolUnCircledCross">
+                                  <StartValue>
+                                    <Value>=Cdbl(1)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>=Cdbl(1)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>Image</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>Embedded</Source>
+                                    <Value>h</Value>
+                                  </IndicatorImage>
+                                </IndicatorState>
+                                <IndicatorState Name="ThreeSymbolUnCircledExclamation">
+                                  <StartValue>
+                                    <Value>=Cdbl(0)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </StartValue>
+                                  <EndValue>
+                                    <Value>=Cdbl(0)</Value>
+                                    <Multiplier>1</Multiplier>
+                                  </EndValue>
+                                  <Color>#00ffffff</Color>
+                                  <ScaleFactor>1</ScaleFactor>
+                                  <IndicatorStyle>None</IndicatorStyle>
+                                  <IndicatorImage>
+                                    <Source>External</Source>
+                                    <Value />
+                                  </IndicatorImage>
+                                </IndicatorState>
+                              </IndicatorStates>
+                              <ResizeMode>None</ResizeMode>
+                              <Angle>0</Angle>
+                              <StateDataElementName />
+                              <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
+                              <Style>
+                                <ShadowOffset>0pt</ShadowOffset>
+                              </Style>
+                              <Top>4</Top>
+                              <Left>4</Left>
+                              <Height>92</Height>
+                              <Width>92</Width>
+                            </StateIndicator>
+                          </StateIndicators>
+                          <AutoLayout>true</AutoLayout>
+                          <BackFrame>
+                            <Style>
+                              <Border>
+                                <Style>None</Style>
+                              </Border>
+                              <BackgroundColor>Gainsboro</BackgroundColor>
+                              <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                              <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                              <BackgroundHatchType>None</BackgroundHatchType>
+                              <ShadowOffset>0pt</ShadowOffset>
+                            </Style>
+                            <FrameBackground>
+                              <Style>
+                                <BackgroundColor>Silver</BackgroundColor>
+                                <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                                <BackgroundGradientEndColor>Gray</BackgroundGradientEndColor>
+                                <BackgroundHatchType>None</BackgroundHatchType>
+                              </Style>
+                            </FrameBackground>
+                            <FrameImage>
+                              <Source>External</Source>
+                              <Value />
+                            </FrameImage>
+                          </BackFrame>
+                          <TopImage>
+                            <Source>External</Source>
+                            <Value />
+                          </TopImage>
+                          <DataSetName>DStVacancyDiffChanges</DataSetName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                          </Style>
+                        </GaugePanel>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="LastCompletedDate">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!LastCompletedDate.Value</Value>
+                                  <Style>
+                                    <Format>d</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>LastCompletedDate</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="NextActionDate">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!NextActionDate.Value</Value>
+                                  <Style>
+                                    <Format>d</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>NextActionDate</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="Details" />
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>DStVacancyDiffChanges</DataSetName>
+            <Top>10.18646cm</Top>
+            <Height>2cm</Height>
+            <Width>29.48896cm</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
+          <Chart Name="Chart1">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label />
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart1_SeriesGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!VacancyDiffGroup.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=IIf(Fields!VacancyDiffGroup.Value = "0 = R &lt; W", "1", IIf(Fields!VacancyDiffGroup.Value = "0 &lt; R &lt; W", "2", IIf(Fields!VacancyDiffGroup.Value = "R = W", "4", IIf(Fields!VacancyDiffGroup.Value = "R &gt; W &gt; 0", "5", IIf(Fields!VacancyDiffGroup.Value = "R &gt; W = 0", "6", "3")))))</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <Label>=Fields!VacancyDiffGroup.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="ActionNum">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!ActionNum.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                        <Label>=CStr(Fields!ActionNum.Value) &amp; " (" &amp; CStr(Fields!NotebookNum.Value) &amp; ")"</Label>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style>
+                        <Color>=IIf(Fields!VacancyDiffGroup.Value = "0 = R &lt; W", "#A32929", IIf(Fields!VacancyDiffGroup.Value = "0 &lt; R &lt; W", "#BF8C1D", IIf(Fields!VacancyDiffGroup.Value = "R = W", "#A7C746", IIf(Fields!VacancyDiffGroup.Value = "R &gt; W &gt; 0", "#74D941", IIf(Fields!VacancyDiffGroup.Value = "R &gt; W = 0", "#0F8C0F", "LightGrey")))))</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Shape</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <ChartThreeDProperties>
+                  <Inclination>45</Inclination>
+                </ChartThreeDProperties>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartLegends>
+              <ChartLegend Name="Default">
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <ChartLegendTitle>
+                  <Caption />
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                    <FontWeight>Bold</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </ChartLegendTitle>
+                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
+                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
+              </ChartLegend>
+            </ChartLegends>
+            <ChartTitles>
+              <ChartTitle Name="Default">
+                <Caption>="Выполнено действий: " &amp; CStr(Sum(Fields!ActionNum.Value)) &amp; " (" &amp; CStr(Sum(Fields!NotebookNum.Value)) &amp; ")"</Caption>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontWeight>Bold</FontWeight>
+                  <TextAlign>General</TextAlign>
+                  <VerticalAlign>Top</VerticalAlign>
+                </Style>
+              </ChartTitle>
+            </ChartTitles>
+            <Palette>BrightPastel</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStActions</DataSetName>
+            <Left>3.4925cm</Left>
+            <Height>10.08063cm</Height>
+            <Width>18.55625cm</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Color>White</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
+        </ReportItems>
+        <Height>4.79782in</Height>
+        <Style>
+          <BackgroundColor>White</BackgroundColor>
+        </Style>
+      </Body>
+      <Width>11.84605in</Width>
+      <Page>
+        <PageHeight>29.7cm</PageHeight>
+        <PageWidth>21cm</PageWidth>
+        <InteractiveHeight>0cm</InteractiveHeight>
+        <InteractiveWidth>0cm</InteractiveWidth>
+        <LeftMargin>2cm</LeftMargin>
+        <RightMargin>2cm</RightMargin>
+        <TopMargin>2cm</TopMargin>
+        <BottomMargin>2cm</BottomMargin>
+        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <Style>
+          <BackgroundColor>White</BackgroundColor>
+        </Style>
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="StartDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=DateAdd("d", -1, Today)</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Начальная дата</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="EndDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Today</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Конечная дата</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="Department">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStDepartments</DataSetName>
+          <ValueField>Name</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Отдел</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStDepartments</DataSetName>
+          <ValueField>Name</ValueField>
+          <LabelField>Name</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="Manager">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=IIf(User!UserID = "RABOTA\nataliyav", Right(User!UserID,Len(User!UserID) - 7) &amp; "@rabota.com.ua"
+ , IIf(User!UserID = "RABOTA\alekasndrk", Right(User!UserID,Len(User!UserID) - 7) &amp; "@rabota.com.ua"
+ , IIf(User!UserID = "RABOTA\romanr", Right(User!UserID,Len(User!UserID) - 7) &amp; "@rabota.com.ua"
+ , IIf(User!UserID = "RABOTA\NataliyaS", Right(User!UserID,Len(User!UserID) - 7) &amp; "@rabota.com.ua"
+ , IIf(User!UserID = "RABOTA\dima", Right(User!UserID,Len(User!UserID) - 7) &amp; "@rabota.com.ua",
+Right(User!UserID,Len(User!UserID) - 7) &amp; "@rabota.ua")))))</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Менеджер</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStManagers</DataSetName>
+          <ValueField>Email</ValueField>
+          <LabelField>Name</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+  </ReportParameters>
+  <EmbeddedImages>
+    <EmbeddedImage Name="ID5star">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAAB8AAAAhCAIAAACuvOezAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVEhL7ZW7SsNgFMcLig5OLr6ADyDi5uYoCqKTT+ALSCuC4CCIF9Sig4NXcFI3rS6ChSqiuHRRBx3sYFvtxbYJJr0l/pOcJjRp831IOwj9EcK5/vk4ycfxqM2khnoh8kAWN/Va7OpKUf5c7MWbfA5cWuzqUvg4Ou2Rwifkc+DSYldP7Y6gNLU3Sj4HLi0eVVHE263M6dT30WRqZzjqbUcp3rARQRxZ1FC5AXeLdvZS9iOxMaBVOB7EkdUlq+BsockoeTG9P2arSx+MI24UOOFpseaOjx6b6TTrYDP/HGaLpV6I3Jt1xsP88ZktlroYXEE6uT2Uf7/DG7YYXKWczs/jIVkVmC2WOkYmXC+rSllzlDLs9OGEntEoC5+x2a6y8EW+jnsLsNRLyTeyKhQTr2ThmCG/drSQn3wd9xZgqbugSJnEWh/UE+v9ipSlKAdu6sL1UnyuG6LOB3EMnerqwzi7eLMZ9bbZpBHRbiMH7MnIL5cxX4cpjZ8aEcqxYKtj0FXH97bxj57j7M8BQze5NWgY8vMF5VjUULfdt1zAF5/vkZ/OYUtPZ7ARMVImf99NwtUCrhI5uFa5OCLk6DhbTOzqrd3U2k3/Zjc5adhuqknDdlNNGrOb/kwz1VX1FzVse8zyfZ+9AAAAAElFTkSuQmCC</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="ID4star">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABsAAAAaCAIAAADJ6rCnAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEVSURBVEhLY/iPCn49PAllEQGwKkYx8d/vHy/blIEklI8X4FKMYuL3CyufFTN8v7AKyscLcClGMfHtHG+gordzfaB8vACXYoYvRyZ/WJ32fnHE29mez0pZgIqAJJANFAGKA2X///sHVfvvHzGKGf58fPq63xgkh4GA4kBZqHFgQIxikK///fzybp4/mop38wOB4mBzUABBxdBwBEbZ83J2uAogG0+M41cMNfHXwxNwFRCEJ2HiVww18cv+LqDEm+mOPx8cA5JA9pf93RApTIBfMdREYEB83tf5/99fEOffXyD73YIgsAwWgF8x1MQ/b+5AGHDw+/VtKAsD4FcMNZGKgPYmjpY9+MFo2TNa9kBNHMRlz///AIjWBSDawY7pAAAAAElFTkSuQmCC</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="ID3star">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABwAAAAZCAIAAACtotlwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHASURBVEhLtZS5SgNBHMYDES2sbHwBH0DEzs5SFEQrn8AXkEQEwUIQDzwwhYVXwErtNNoIEVREsUmTWGhhCnOYwyS7uJtjZ/3i/s3qHjNb6Mcw/I+PHzOzM+vT/0FeoR8PYYo8yBNUk7LpmU5NeqNcJE9Q+WojNeXDTLlIYihTSrnVXkBza31MKVOVK1eoFF3MzHaBZR+oy5fL5HMSb6Xy9WYq4LcQUZFvQuRwkWD76uN5OtjeIqanO1ChnrsEUBzir8UG/F6OVbTSRMTA5UMDRqAmzqjnLgG0Eglm5rrV+CliJX6CGBWjxZEAKl3M4+ZTgldQyaBCibscoLXkPUUe5Gi2QlldzS70YKacKzezFarEDvE1lNgR5Vy5ma3Qws4wfIXdEcq5cjP7dMbwQkrHk+8HE4XtoVSgDT7MiFFBvfl+GCO7N3NzpY3ya269v9m2DdTRNYCGvJhp+6wqF/dGLabi/hjqhuGnhGbzTPER8bRbJsScO8A3m9Ba8q5lMgbnwvLNJhS/SPTyW4PVl1vMiOXLFerZxDebUByKFF3SmdZMmIa4GB7/6jiIbzahjfwzRd+q554osolvNqF/Jl3/BCTaTPLN1BwmAAAAAElFTkSuQmCC</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="ID2star">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABsAAAAQCAIAAABocZPBAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEGSURBVDhPY/iPCn49PAllEQGwKkYx8d/vHy/blIEklI8X4FKMYuL3CyufFTN8v7AKyscLcClGMfHtHG+gordzfaB8vACXYoYvRyZ/WJ32fnHE29mez0pZgIqAJJANFAGKA2X///sHVfvvHzGKGf58fPq63xgkh4GA4kBZqHFgQIxikK///fzybp4/mop38wOB4mBzUABBxdBwBEbZ83J2uAogG0+M41cMNfHXwxNwFRCEJ2HiVww18cv+LqDEm+mOPx8cA5JA9pf93RApTIBfMdREYEB83tf5/99fEOffXyD73YIgsAwWgF8x1MQ/b+5AGHDw+/VtKAsD4FcMNZGKYCSa+P8/ABw2dKXSKNGLAAAAAElFTkSuQmCC</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="ID1star">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAIAAABbzbuTAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADsSURBVDhPY/hPIsCi4dfDk1AWNoCu4d/vHy/blIEklI8B0DV8v7DyWTHD9wuroHwMgK7h7RxvoIa3c32gfAzA8P/fvy9HJn9YnfZ+ccTb2Z7PSlmAGoAkkA0UAYoDZYFqoMohNvz5+PR1vzFIHQYCigNlIUohAOqkfz+/vJvnj6b63fxAoDhEARwg/AAMmefl7HDVQDbWsEJo+PXwBFw1BGGNEISGL/u7gIreTHf8+eAYkASyv+zvhsohAYQGoIs/7+v8/+8viPPvL5D9bkEQWAYFIDT8eXMHyoKB369vQ1lIAKGBSDDoNPz/DwB5j+Gqabnu9wAAAABJRU5ErkJggg==</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="star1">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAFGSURBVEhLY/wPBAwDAJigNN3BqMV0A6MW0w0MPYt/PzoFZZEHyLL4/5+fDO+XRoFpcgFZFv+8upHh79u7QHoTVIR0QJbF384sgtBnITQ5gHAlAZT+emwqw5/nlxn+//jE8O/HR4aft3YzMPz7A3Q2CwO7misDEwc/AyMHHwOLpC4Dt1U20FRGqGbcgKja6e+nZwzv5/kx/H5yFiqCCVhljBkEkzYxMPNJQUXwA6Krxf+/vjJ8WBrN8AMYv+iAQyeQQSBqMQMjGzdUhDAgqT4GpeKXNfwoqZmRhZ1BvOUjmCYFkJS4/jy7gJGFQPw/zy5CecQDkiz+de8QmGZTcWQQzj0GpkEAJk4SAAU1seDd/MD/n/d1/v//7y9EAEiD+O8WBEH4JACSLP7z5g6UhQp+v74NZREPRht7dAOjFtMNjFpMJ8DAAACGs1qmUyX0VwAAAABJRU5ErkJggg==</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="star2">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAFdSURBVEhLY/wPBAwDAJigNN3BqMV0A6MW0w0MTot/PzoFZZEOCOnFafH/Pz8Z3i+NAtOkAmL04rT459WNDH/f3gXSm6AixANi9OK0+NuZRRD6LIQmBRCjF1JJANHXY1MZ/jy/zPD/xyeGfz8+Mvy8tZuB4d8foNNYGNjVXBmYOPgZGDn4GFgkdRm4rbKBOhkhJpCpF147/f30jOH9PD+G30/Ogs3DBlhljBkEkzYxMPNJQUUggBy9KNXi/19fGT4sjWb4AYwjdMChE8ggELWYgZGNGyqCCkjVi1Efg1Liyxp+lBTJyMLOIN7yEUzjA6ToxUhcf55dwMgGIP6fZxehPNyAFL0YFv+6dwhMs6k4MgjnHgPTIAATxwdI0gsKamTwbn7g/8/7Ov////cXIgCkQfx3C4IgfDyAFL0YFv95cwfKQgW/X9+GsnADUvSONvboBkYtphsYtZhOgIEBAAUvrhLwlznHAAAAAElFTkSuQmCC</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="star3">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAJASURBVEhL7ZY9aBNhGMf/ucYkkpIaC4ri0EHEQSe3drGIg4tax7pI19bBwUFw0yWbIK7GD6pbxTg4FCpqLYgtKiKIHy2CRGu1MUljkuvdvb7ve4+l53nXew61iz8Cz/P8yf+e5P14koSQYB0wKP5z/jeOTHP6KmXxiNXYWfqM6tiwjAuk8InVuPn0JoTZkPEGKXzYjUWriuaTos7VcotWTedcIt3jpXsFNCYKcJoVUvwYG/PoPHAG2f2nSQkn8gBpTF5ErXRKbrBNyiqMDuSOXEC2b4SEtWFNrvaru6gUj0LYJinyAck08iduIb37ECnRYO1xqqcPQni/sXAsrXNhNTbnHq4sdaqnV0dVm3OTbs6A13j2AYzOLdg8dAfdI4+QHyrp2py9T+9goPY4KvXxc8Kuz1PlYtc+aZ1LaGPz/WPK+KzlDVxqYbVRGR3UkUsUb2Dj9svbsL++k7FESnSieAMbf5++5sYZN3KI4nUHiHw1pi7B+vhCz15HzuP263F5VSz50ZJI7zoII9OFRCaH5La9yPYOS2fCfUJM78rksmtlVC4fxvKHGf2837Fhxz59hTpy20lxieP1jEz1U/dt9Dhaco9+JbNnAJsGryORypLihev1zWp1EufPdnlOpJrHW89XdQyD4/UdLqv8zHcNVG2Vn1MVDMfra6zGoiK1sx/dJ6d0VPzUw2B51VKvZrE4IOoTBSEc2xVkVPXilWNuHQLH62tsfXlLmZflhTeUBcPxsv4I/EkCJ9ffZp0aAz8AV1/xEG0VsOkAAAAASUVORK5CYII=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="star4">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAFiSURBVEhLY/wPBAwDAJigNN0BXot/PzoFZZEOCOnFafH/Pz8Z3i+NAtOkAmL04rT459WNDH/f3gXSm6AixANi9OK0+NuZRRD6LIQmBRCjF5KqgejrsakMf55fZvj/4xPDvx8fGX7e2s3A8O8P0GksDOxqrgxMHPwMjBx8DCySugzcVtlAnYwQE8jUC89Ofz89Y3g/z4/h95OzYPOwAVYZYwbBpE0MzHxSUBEIIEcvSj7+/+srw4el0Qw/gHGEDjh0AhkEohYzMLJxQ0VQAal6MQoQUEp8WcOPkiIZWdgZxFs+gml8gBS9GInrz7MLGNkAxP/z7CKUhxuQohfD4l/3DoFpNhVHBuHcY2AaBGDi+ABJekFBjQzezQ/8/3lf5/////5CBIA0iP9uQRCEjweQohfD4j9v7kBZqOD369tQFm5Ait7R2gkFjNZOxILR2mm0dgKB0dpptHaCg9HaiTLAwAAA2gVX+w82a/IAAAAASUVORK5CYII=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="star5">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAJ2SURBVEhL7ZZNaBNBFMffbtMksiU1BhQ/DgVFPOhBvLUHFfHgRa3HepHexHoQ8VDwpgi5FYoerR/0oBcxHjwUqtZaUFqIiCB+tCiSGrWNTRqT7Nc4M/uSZpLd7GygB6G/y5v3J/t/2Zk3swPEA/3raxy1TysPFVwgZgVy4wM8toufh2vhyvvHYC19oTGFSnD8PFwL/52958Q5J7aDn4dCbJsUZ26CufgOSDkPdnkFKh8nAGyT/q0QRPYeBzXaDUo0BqHtB0DrvUCfUvBxhBAI6qGwhbbyGcjdPgnG9zl0aqZz1yGID6agI7YDFZGgHrwwE4lehD/jZ6FM16aR6P5+2DxwH5Swhoo7QTxqhRmsA7NXu4VOVEIR2HZ9hUcZZD2E5jIz6ab2Z7mZeYuZP7IeQmF9forH8J6jkLg4wyOjqtdTmr2LIxFpDzbVVZbH+klhMkmIbTkCjSxfvnPGyRGrkCWLwxqNP1FZQ9ZDKGz+/owjEePXJxw5rE6NkMxl4LERWQ+huWQgdI8u3ToMBl2zzp0HIXH+Od+fQZEqvPosCcXJJNilHCrNqJvi0HVsGLQjV1BpjfQbF6dHIZ+6RE8jC5U61A6InRoBrW8IBX8CTXXlw1PIjZ0GYumoOHs0fu4RRPadQEUO14+EF+GePtqM4hsTeh4zPSiBCusLL2tTHe7p5ZHl+sK0Mw6AZ2Hj2xscrcEOAbVrK2wZfAKJoVf8wGe5Pv8CfyHi5lGDrXEjtlEm2Ru7eaynMHGNHx71WPkfXG/Ey6OKa+FS+gE/IErph6gEx8/Ddao3biCMjRuIF7IeQnP9FzcQL9b1BtKKdb2BtELOg5B/McDIwuLNDhIAAAAASUVORK5CYII=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="smile1">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAJcSURBVEhL7ZZLS2pRFMf/PtLUEFGkkY+gnAlNGliJKOIHcCIJDvwCOtKJ8+Z+BgVp5DCyiCDChoI4s3zMVIyQygdqt71dZcfnpVtObj84nPU4Z//32VvX2qLXN7BCxHRfGXMFe70evvLx7J1ut0veNFOCT09PiEajODw8hNvtxunpKWWWw571eDyw2+2IRCJ8rEmm9jAWi+Hs7Iy8txmJxUgmk7BYLBSZTaFQQDAYxHA4pAi4+PHxMXkjBF/48PCA8/Nz8kawAZjgMk5OTgRijIuLC9TrdfJGCATv7u6mXmKw+DLu7+/JGsPGKpfL5I0QCKpUKrKErK+vkzUfhUJBlhClUknWCIHgzs4ONBoNeWMODg7Ims/e3h5ZY9hYk3svEFxbW0M4HIZIJKIIYDAYcHR0RN58/H4/f/YzoVAIMpmMvBEzK83t7S0ymQz0ej18Ph+0Wi1lFvP4+IhUKoVGo8H/Uvv7+5QZ8x+Xtp/iV/Db+RX8dlYu+FeVpt/vo1ar8ZLVarXQ6XR4nHURtVrNS+Dm5iakUimPL2KmIDuTZLNZXF9fI5/Po1qtctFFMDGj0Qir1cqPGDabDXK5nLJjBIK5XA7pdBqXl5dot9sU/RqsPzqdTni9Xuzu7lL0k2A8HkcikeDBdyQSCba3t2EymWA2m6HT6XhDfW+qLy8v/Go2m7yzVyoVFItFDAYDnn8nEAjwtsf4EHQ4HHh+fub74XK5eNNlM5vs2MtgE2ArdXNzw1eK7fvGxgaurq54/kOQzZCdQba2tgQN+F9gQ5dKJX7yYyvEmPmj+TmAPzjw+0pzOW1pAAAAAElFTkSuQmCC</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="smile11">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAGDSURBVEhLvdY9LwRhFMXxVXgLiUYodCqJQiM0KhKhEDqFhs5nUEmUOrVIKFCIDyFaKp1ag4JE5W38z2Z2cp+7V0zI4ya/ZOfMuc9ssclOoyiKfxWGpR50uKwO7fS6rBKFAzjDBx6xhqgXUfce2j2Hzko6yUXpGHa0PIGoa03hHXZOkfSSCwxDD/BzBN/11PGjs0ZQ9eyCzCKaa/iud4Vo5lD17IJMIppL+K53gWimUfXsgnThAX624LveNvzorG5UPbvQso5PtOYWfYi6ln6R6trZQNJLLox5HGAHQ2VWxyC0o92FMku0BbmFYU5hmFMY5hSGOYVhTmGYUxjmFIY5hWFOYRjoxChmsITVkj4r0z11ot1EGELvJCvYxw1e8dOoo652tBu+1/hA3/YQL/jr6Ay9BejM6hn2Ybvw8wb9259A/3eb0IvSckmflemeOupqx4/ObnvgMzR32MMi+mE7dWhHuzpDZ2me0Lxvi2MYx2/eRb+js3Smzm5mvpBdGOZTNL4ALMitHV/WK1kAAAAASUVORK5CYII=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="smile12">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAGDSURBVEhLvdY9LwRhFMXxVXgLiUYodCqJQiM0KhKhEDqFhs5nUEmUOrVIKFCIDyFaKp1ag4JE5W38z2Z2cp+7V0zI4ya/ZOfMuc9ssclOoyiKfxWGpR50uKwO7fS6rBKFAzjDBx6xhqgXUfce2j2Hzko6yUXpGHa0PIGoa03hHXZOkfSSCwxDD/BzBN/11PGjs0ZQ9eyCzCKaa/iud4Vo5lD17IJMIppL+K53gWimUfXsgnThAX624LveNvzorG5UPbvQso5PtOYWfYi6ln6R6trZQNJLLox5HGAHQ2VWxyC0o92FMku0BbmFYU5hmFMY5hSGOYVhTmGYUxjmFIY5hWFOYRjoxChmsITVkj4r0z11ot1EGELvJCvYxw1e8dOoo652tBu+1/hA3/YQL/jr6Ay9BejM6hn2Ybvw8wb9259A/3eb0IvSckmflemeOupqx4/ObnvgMzR32MMi+mE7dWhHuzpDZ2me0Lxvi2MYx2/eRb+js3Smzm5mvpBdGOZTNL4ALMitHV/WK1kAAAAASUVORK5CYII=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="smile2">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAEjSURBVEhLvdY/SgNxEMXxNIqI4E3SKWJtKUoOoOgVRGzE0qNo4QkMegA9hX8qaxtB0PX7AllmZ98WQiYPPsVO3vw2WRLIqGmapbLDSm54hDd84RabcD1H3RtoV2cco9PpXGAfv4h5RO4NmSJGZx2g7cSyPMFlF7mb7cDlGW0vLqziBy7niF3nDC46cw2zXlxYx1CuELvOJYaygVkvL73AZYLczQ7h8o62FxfkAjla0OPO3UydV+Tok7e9uCAr0E9hng9sI/eGbEE789yh82ZjORpjD+2z/wd9F7SrM3qv9wbV7LCSHVayw0p2WMkOK9lhJTusZIeV7LCSHVayw0rx4gT3eFgw/c85Re+Gn6iKzu7d8BrfWHR0ps7u3XAp7LBOM/oDbo+8MCFW8ekAAAAASUVORK5CYII=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="smile21">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAEjSURBVEhLvdY/SgNxEMXxNIqI4E3SKWJtKUoOoOgVRGzE0qNo4QkMegA9hX8qaxtB0PX7AllmZ98WQiYPPsVO3vw2WRLIqGmapbLDSm54hDd84RabcD1H3RtoV2cco9PpXGAfv4h5RO4NmSJGZx2g7cSyPMFlF7mb7cDlGW0vLqziBy7niF3nDC46cw2zXlxYx1CuELvOJYaygVkvL73AZYLczQ7h8o62FxfkAjla0OPO3UydV+Tok7e9uCAr0E9hng9sI/eGbEE789yh82ZjORpjD+2z/wd9F7SrM3qv9wbV7LCSHVayw0p2WMkOK9lhJTusZIeV7LCSHVayw0rx4gT3eFgw/c85Re+Gn6iKzu7d8BrfWHR0ps7u3XAp7LBOM/oDbo+8MCFW8ekAAAAASUVORK5CYII=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="smile3">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAF/SURBVEhLvda/K4VxFMdxURSiRAmDwR9gkKx+/AF2YjMYLQwM8ieIwciibLJZZMYsstgkZSYe78/teZ7Oc+7p6Spfp151v+f7Oee59y73tmVZ9q/CZq4bHa7XinZoNroLH9iPc3zjDSuIcpFlaEaz2qFdlUzlkDuFrS9MIspaM1DW1hkqucoBw/BDqhP4rHcMX/qkYyhzdkBmEdUdfNa7RVQLKHN2QKYQ1TV81rtCVNMoc3ZAOvEKX1vwWW8bvrSrC2XODhSWoO++qEf0IMpafXhAUdqxikqucjDmcIQ9DOa9VgxgF5qdz3sVTY3UwmZKYTOlsJlS2EwpbKYUNlMKmymFzZTCZkr2MI4Jc/4r2qndjbO9KH4lnnGARQzBZlqhGc0eQrtU72jc2+AGPuHrCRfYxw7WsZbTa/V0p4yyvrRTu5seKKPYxA3sT9RvS7PaoV21fzGsEegfm979Je7xgg8Updfq6U4ZZTWj2Whn7QPr9Oaiu1phM6WwmU7W9gPcWKhZV4de6wAAAABJRU5ErkJggg==</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="smile4">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAGXSURBVEhLvda9K4VhGMfxUwYvAwZlYZdJKWWUGSWzP8DLWfwBBjMLkygGBuFfMCgTk1nEYKAMBnl9fH+n53m67vtcccLtqk+5r/t3XYdz1HkqWZb9K7eZktdswyaecIlxeDnPGC6g2W1oV5AJDrkN2HpFH7ysNYBn2NpCkAsO6IJeIC79EnE2pnclLu3qRpmzAzICr84QZ2On8GoUZc4OyBC8OkGcjR3Dq2GUOTsgLXhAXIuIs7ElxKVdrShzdqAwA1s36ICXtfT5K2uriiAXHIxJ7GMNvXmvET1YxQGm8l6grpGa20zJbabkNlNymym5zZTcZkpuMyV7aEaTOf8V7dTu2tle3OIKg6b3W9qlnfdFz14uQ/WICdi7n9CTgnapVlDr24D+9F2oPrCOdthMIzSjWe1Q7aD8qOKwLuwjxjXm0Yk4G1NGWc0UpaeA4P/CDlgLsM8nLziC3vY5TOf0s3q6U6YozWpH3e66htGPQ7yj0VJWM5r1dn75ggV9H85iD+e4w1tOP6unO2W+/e50mym5zXSyyidumatwQPc3HQAAAABJRU5ErkJggg==</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="smile5">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAHfSURBVEhLvdbPSxVRGMbxWwuhdBMlBIqaCZERtHAjCP5YB1GE2KpFLlu4aREE0aZWYiDiRgRFC0SIopURBBUtyvovWrRKJEo0pu8jc4b3nPuCVy+nBz7qvPc5RxmHmakVRfFfucOcvGELnuI7vmIMXs8zik1orfbQXlEnOijNwuYPeuF1rYv4DZs5RL3oAKewgzTzSLspddLsoh1Vzy6QYXj5grSb+gwvOs1Vzy6QQXj5hLSb+ggvQ6h6doGcxDbSPEbaTT1BGu3ViqpnFwT3YPMDZ+B1rbNQ1+Y+ol50YNzBG6ziQjlrRB+WsIHJchapG+TmDnNyhzm5w5zcYU7uMCd70IPb5Xc7b0YnJtARZvpyAgv4C+Um7KJm3IKim7ieHC0azmhS5idOI114VHr6bCFkWsMruIplTchb1D04j0B76I6jPMMNDNhCF35BeYXopntIegi8hKI9u7H/WVq8i5BvuIy0c5BL0NqQKVSf22KwghD9s/XKcR5e19LVrevBvjGs4Riqnl0Q6Nyvw0ZX8Hs8gq68EejtYBwP8Q57sHmBhl6i5DgewHu/OSg6K/ojtEfd3nWDxDksopFfrM5z9MPba587dLThGvSu+RofoFOsnzW7DnW8tRF3mE9R+wdc/sX+Rr+/BwAAAABJRU5ErkJggg==</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="circul_down">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>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
+SUVORK5CYII=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="circul_up">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="r">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAIAAADZrBkAAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAADvSURBVHjarJIxS8RAEIXfTAKxtsglYGMtXLjK9rC5GBX8DVb+EivbEwvPPxFYrrI9rgr4B2yEWxv7BOKzSArxkpgEp9lZZj8eb+cJSQwvtzpYftnUZDe3HU9nz4/BVSKOAhCSLMuX6Wm+s3+KeGFw9roVx1EANjV9GAD5ztrU1Grm8GiQseTzXdli4yAMTu7v4o+3ebb5PSZcNHHh9SWAycViPTnen1KgQPMC2pgK1LattTMAqYIxpSNSQkJHiVGJcWr8P28duYlWS5LDvHlh4J8vSLj9PzJ6evCTGK4KKUVRgIAQkDpwdfOj27t+DwCvmWDtL9xQiwAAAABJRU5ErkJggg==</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="h">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAIAAADZrBkAAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAGYSURBVHjanJO9S1tRGIefc7wfGENSNBA/MigttuLXkOCQyUXxTxAki5PiokuXti4traur6OTfIIg4qIso6iAZFAdBQ1CMdzHRm3uTe7oJObnp0MOZDu/D74P3CKUUQNXBLxPUEYQfBbINM4rdCRiogIcDzn5QOqVaQ7bAArANEhNkftI9KZTrsDdD4RSLllLvgh6kJpjelfhlSvkQJoCg8UWABaU8flmifLzXECbWT6w/hPReUb4EoTMKFAwvM/4NAaqJRIQ1UIdkhk85BudJZqmHjMiQ3JE46d/YnQjJ0AK2rVsltO8vS/RN8Vakcs/ALB/nSIxqVqUuZX9g7CvA9SZHOYIq6V98XtQEm9TMKFac0jn5dW4PudqgvYeO3n+aFOA+83TC/Q4vDjacrVK5o7ivtd2kVnvjZIXAxTBQ0NHNzTbXW9qgAaohroDHY5xLIjFch6DKxXc9P0oiTKyITvoVXAcB5YLOWBGEKTGjJEbw0EnxvhONq9w1jBmVWHEyf0hlkQYe1FpcD2QbfVkya1hx8X/f9O8A2B+XdQYdO2sAAAAASUVORK5CYII=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="w">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAIAAADZrBkAAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAJXSURBVHjalFI9TxRRFD33zewwzs6ExFHUAEGzWEAFSDRaqBBNxIQIhkRb0FgSoDP+ADsLEhMKtdXCGIkfoBZuoZjIBihBFsUIiQprXHZ2MszHuxaz7CI0+qr77r3nnvfuOcTM+P+j7rjP5KKxT376e7TiSgANSdF5SLneqLXayvY2KrMVAx6a9u5ng93sBAw0JkaP64ZKf8HckM+/cafWonKrXUUhI+9Xhpzar7w+ZyQTBEDEqcGPXoxRCMPN2pfL5voV6/dVK9trDjdrCgHA1Fo0NO2V2CTzXC469qLIgEJ4fNboqd/54affwr60GzEIyFw02mxVgHEvW3rKYJMWY6Tj5R++23j0XuZdAD316mCTBoCBscWACSSlbB4vzm9IANleM2UJmXd/XrodreYAKLV2zfNbwtSXHXnkiQPgqCUWepOCga9FCaBao5QlADgTszEGQLSaKzzLADhsCruKAKy4EsyCygpuRTsMQFQqhNvSgpnrDAEgt8nLjgRgdbcrtXZcVmpts6sVwFJBxmI0JAUzVABnDojFggQwOu/fadeFqdeM33QmZpnZ6m4Xpg7g7oIfD+o4KACmMApn1qMTk94/CjB9QW+xFQFGm60MpFQAEaMv7Y5kvKWCjAHLjhzJeDEGQH9KbbEVABQEAYBigK63mx/WK+aq1kgl5DYrezi5T7zqrNqTIPCWuYwEJju1/lR5ncj7XMYQcC2lvOzQdJUgmRnk+wHAABGYgblf8sHnMP2DYzHrDHG6hm40qm17FQYIYAIxk+/7YIDiZGygEmUl2nX9MwBQYxmwZRAA5gAAAABJRU5ErkJggg==</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <Language>uk-UA</Language>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportID>e11dac30-af0f-4d10-a4a6-1a6c9bd2223f</rd:ReportID>
+</Report>
