@@ -1,0 +1,2 @@
+﻿CREATE USER [RABOTA\SQLEmployee] FOR LOGIN [RABOTA\SQLEmployee];
+

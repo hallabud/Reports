@@ -1,0 +1,3 @@
+﻿CREATE LOGIN [mac]
+    WITH PASSWORD = N'vQAj`V|bwu=T|f |&zuaW%SymsFT7_&#$!~<}n|J;dahuhv{', SID = 0x84A749C9E75A1B4BA210D36542E729B6, DEFAULT_DATABASE = [Analytics], DEFAULT_LANGUAGE = [us_english], CHECK_POLICY = OFF;
+
