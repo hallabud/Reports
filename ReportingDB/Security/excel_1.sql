@@ -1,3 +1,0 @@
-﻿CREATE LOGIN [excel]
-    WITH PASSWORD = N'vj|bwu|&UfH|zuayn+ ^|dahmsFT7_&#$!~<$uhKv{Xa,.gc', SID = 0xAE5A4A51D80608468BE59E7E632E4941, DEFAULT_DATABASE = [Reporting], DEFAULT_LANGUAGE = [us_english], CHECK_POLICY = OFF;
-

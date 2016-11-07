@@ -1,2 +1,0 @@
-﻿CREATE USER [RABOTA\SQLManagement] FOR LOGIN [RABOTA\SQLManagement];
-

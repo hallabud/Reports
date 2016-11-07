@@ -1,2 +1,0 @@
-﻿CREATE USER [RABOTA\SQLSalesforce] FOR LOGIN [RABOTA\SQLSalesforce];
-

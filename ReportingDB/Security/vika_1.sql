@@ -1,3 +1,0 @@
-﻿CREATE LOGIN [vika]
-    WITH PASSWORD = N'3vj|$b;cwu|qf|9^zuayn|damsFT7_&#$!~<huhv{Da~YgcB', SID = 0xD3F5974E05C05C4E83F6F167FCA6CDCD, DEFAULT_LANGUAGE = [us_english], CHECK_POLICY = OFF;
-
