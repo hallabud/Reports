@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="DSrcReporting">
@@ -29,11 +29,7 @@
             <Value>=Parameters!SelectedDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
-
--- список компаний по датам (1е дни месяца), заданным параметрами процедуры (между @StartDate и @EndDate)
--- + предрасчитваем даты: "Текущая дата - 1 мес." и "Текущая дата - 1 год"
-IF OBJECT_ID('tempdb..#СompaniesListByDates','U') IS NOT NULL DROP TABLE #СompaniesListByDates;
+        <CommandText>IF OBJECT_ID('tempdb..#T','U') IS NOT NULL DROP TABLE #T;
 
 SELECT
    CS.Company_key
@@ -41,26 +37,56 @@ SELECT
  , NC.Name AS 'CompanyName'
  , M.Name AS 'ManagerName'
  , DD.FullDate
- , CASE WHEN DD.DayNum = 1 THEN DATEADD(MONTH, -1, DD.FullDate) ELSE DD.FirstMonthDate END AS FullDate1MonthAgoOrFirstMonthDate
- , DATEADD(YEAR, -1, DD.FullDate) AS FullDate1YearAgo
  , DD.Date_key
  , CASE 
-    WHEN HasPaidPublishedVacs | HasPaidPublicationsLeft = 1 THEN 'Есть платные публикации на счету или опубликованные платные вакансии'
-    WHEN HasHotPublishedVacs | HasHotPublicationsLeft = 1 THEN 'Есть горячие публикации на счету или опубликованные горячие вакансии'
+    WHEN HasPaidPublishedVacs = 1 OR HasPaidPublicationsLeft = 1 THEN 'Есть платные публикации на счету или опубликованные платные вакансии'
+    WHEN HasHotPublishedVacs = 1 OR HasHotPublicationsLeft = 1 THEN 'Есть горячие публикации на счету или опубликованные горячие вакансии'
 	WHEN HasCVDBAccess = 1 THEN 'Есть доступ к базе резюме'
-	WHEN HasActivatedLogo | HasActivatedProfile = 1 THEN 'Клиенты по другому сервису (профиль/логотип)'
+	WHEN HasActivatedLogo = 1 OR HasActivatedProfile = 1 THEN 'Клиенты по другому сервису (профиль/логотип)'
     ELSE 'Не использовали платный сервис'
    END AS 'CompanyGroup'
+ , CASE
+    WHEN EXISTS (SELECT * 
+	             FROM Reporting.dbo.FactCompanyStatuses CS2 
+	              JOIN dbo.DimDate DD2 ON CS2.Date_key = DD2.Date_key
+				 WHERE CS2.Company_key = CS.Company_key 
+				  AND (CS2.HasPaidPublishedVacs = 1 OR CS2.HasPaidPublicationsLeft = 1) 
+				  AND DD2.FullDate BETWEEN (CASE WHEN DD.DayNum = 1 THEN DATEADD(MONTH, -1, DD.FullDate) + 1 ELSE DD.FirstMonthDate + 1 END) AND DD.FullDate)
+	THEN 1 ELSE 0 END AS HasVacancy
+ , CASE
+    WHEN EXISTS (SELECT * 
+	             FROM Reporting.dbo.FactCompanyStatuses CS2 
+	              JOIN dbo.DimDate DD2 ON CS2.Date_key = DD2.Date_key
+				 WHERE CS2.Company_key = CS.Company_key 
+				  AND (CS2.HasHotPublishedVacs = 1 OR CS2.HasHotPublicationsLeft = 1) 
+				  AND DD2.FullDate BETWEEN (CASE WHEN DD.DayNum = 1 THEN DATEADD(MONTH, -1, DD.FullDate) + 1 ELSE DD.FirstMonthDate + 1 END) AND DD.FullDate)
+	THEN 1 ELSE 0 END AS HasHot
+ , CASE
+    WHEN EXISTS (SELECT * 
+	             FROM Reporting.dbo.FactCompanyStatuses CS2 
+	              JOIN dbo.DimDate DD2 ON CS2.Date_key = DD2.Date_key
+				 WHERE CS2.Company_key = CS.Company_key 
+				  AND (CS2.HasCVDBAccess = 1) 
+				  AND DD2.FullDate BETWEEN (CASE WHEN DD.DayNum = 1 THEN DATEADD(MONTH, -1, DD.FullDate) + 1 ELSE DD.FirstMonthDate + 1 END) AND DD.FullDate)
+	THEN 1 ELSE 0 END AS HasCVDB
+ , CASE
+    WHEN EXISTS (SELECT * 
+	             FROM Reporting.dbo.FactCompanyStatuses CS2 
+	              JOIN dbo.DimDate DD2 ON CS2.Date_key = DD2.Date_key
+				 WHERE CS2.Company_key = CS.Company_key 
+				  AND (CS2.HasActivatedLogo = 1 OR CS2.HasActivatedProfile = 1) 
+				  AND DD2.FullDate BETWEEN (CASE WHEN DD.DayNum = 1 THEN DATEADD(MONTH, -1, DD.FullDate) + 1 ELSE DD.FirstMonthDate + 1 END) AND DD.FullDate)
+	THEN 1 ELSE 0 END AS HasLogo
  , CASE 
-    WHEN HasPaidPublishedVacs | HasPaidPublicationsLeft = 1 THEN 1
-    WHEN HasHotPublishedVacs | HasHotPublicationsLeft = 1 THEN 2
+    WHEN HasPaidPublishedVacs = 1 OR HasPaidPublicationsLeft = 1 THEN 1
+    WHEN HasHotPublishedVacs = 1 OR HasHotPublicationsLeft = 1 THEN 2
 	WHEN HasCVDBAccess = 1 THEN 3
 	WHEN HasActivatedLogo = 1 OR HasActivatedProfile = 1 THEN 4
     ELSE 5
    END AS 'CardColor'
  , CS.VacancyNum + ISNULL(CS.UnqWorkVacancyNum,0) AS UnqVacancyNum
  , CS.VacancyNum
-INTO #СompaniesListByDates
+INTO #T
 FROM Reporting.dbo.DimCompany DC
  JOIN Analytics.dbo.NotebookCompany NC ON DC.NotebookId = NC.NotebookId
  JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
@@ -72,56 +98,12 @@ WHERE DD.FullDate BETWEEN @StartDate AND @EndDate
  AND NOT EXISTS (SELECT * FROM Analytics.dbo.NotebookCompanyMerged WHERE SourceNotebookID = NC.NotebookID)
  AND M.DepartmentID IN (2,3)
  AND M.ID IN (@ManagerID)
-
-
--- тот же список компаний что и в #СompaniesListByDates, но с наличием любого признака платности за последний год
--- + расчитываем наличия признаков платности за последний месяц
-
-IF OBJECT_ID('tempdb..#CompaniesLimitedList','U') IS NOT NULL DROP TABLE #CompaniesLimitedList;
-
-SELECT * 
- , CASE
-    WHEN EXISTS (SELECT * 
-	             FROM Reporting.dbo.FactCompanyStatuses CS
-	              JOIN dbo.DimDate DD ON CS.Date_key = DD.Date_key
-				 WHERE CS.Company_key = CL.Company_key 
-				  AND CS.HasPaidPublishedVacs | CS.HasPaidPublicationsLeft = 1 
-				  AND DD.FullDate BETWEEN CL.FullDate1MonthAgoOrFirstMonthDate AND CL.FullDate)
-	THEN 1 ELSE 0 END AS HasVacancy
- , CASE
-    WHEN EXISTS (SELECT * 
-	             FROM Reporting.dbo.FactCompanyStatuses CS
-	              JOIN dbo.DimDate DD ON CS.Date_key = DD.Date_key
-				 WHERE CS.Company_key = CL.Company_key 
-				  AND CS.HasHotPublishedVacs | CS.HasHotPublicationsLeft = 1
-				  AND DD.FullDate BETWEEN CL.FullDate1MonthAgoOrFirstMonthDate AND CL.FullDate)
-	THEN 1 ELSE 0 END AS HasHot
- , CASE
-    WHEN EXISTS (SELECT * 
-	             FROM Reporting.dbo.FactCompanyStatuses CS
-	              JOIN dbo.DimDate DD ON CS.Date_key = DD.Date_key
-				 WHERE CS.Company_key = CL.Company_key 
-				  AND CS.HasCVDBAccess = 1
-				  AND DD.FullDate BETWEEN CL.FullDate1MonthAgoOrFirstMonthDate AND CL.FullDate)
-	THEN 1 ELSE 0 END AS HasCVDB
- , CASE
-    WHEN EXISTS (SELECT * 
-	             FROM Reporting.dbo.FactCompanyStatuses CS 
-	              JOIN dbo.DimDate DD ON CS.Date_key = DD.Date_key
-				 WHERE CS.Company_key = CL.Company_key 
-				  AND CS.HasActivatedLogo | CS.HasActivatedProfile = 1
-				  AND DD.FullDate BETWEEN CL.FullDate1MonthAgoOrFirstMonthDate AND CL.FullDate)
-	THEN 1 ELSE 0 END AS HasLogo
-INTO #CompaniesLimitedList
-FROM #СompaniesListByDates CL
-WHERE EXISTS (SELECT * 
-			  FROM Reporting.dbo.FactCompanyStatuses CS
-			   JOIN Reporting.dbo.DimDate DD ON CS.Date_key = DD.Date_key
-			  WHERE CS.Company_key = CL.Company_key 
-			   AND DD.FullDate BETWEEN CL.FullDate1YearAgo AND DD.FullDate
-			   AND HasPaidServices = 1);
-
--- вывод датасета для отчета
+ AND EXISTS (SELECT * 
+			 FROM Reporting.dbo.FactCompanyStatuses CS2
+			  JOIN Reporting.dbo.DimDate DD2 ON CS2.Date_key = DD2.Date_key
+			 WHERE CS2.Company_key = CS.Company_key 
+			  AND DD2.FullDate BETWEEN DATEADD(MONTH, -12, DD.FullDate) AND DD.FullDate
+			  AND HasPaidServices = 1)
 
 SELECT 
    Company_key
@@ -138,17 +120,20 @@ SELECT
  , CardColor
  , CASE 
    WHEN EXISTS (SELECT *
-				FROM dbo.FactSpiderCompanyIndexes SCI WITH (NOLOCK)
-				 JOIN dbo.DimSpiderCompany SC WITH (NOLOCK) ON SCI.SpiderCompanyID = SC.SpiderCompanyID
+				FROM dbo.FactSpiderCompanyIndexes SCI 
+				 JOIN dbo.DimSpiderCompany SC ON SCI.SpiderCompanyID = SC.SpiderCompanyID
 				WHERE SCI.Date_key = main.Date_key
 				 AND SC.NotebookId = main.NotebookId
 				 AND (SCI.IsBusiness = 1 OR SCI.IsPaidByTickets = 1 OR SCI.Paid = 1 OR HotVacancyCount &gt; 0 OR IsHasLogo = 1 OR IsHasLogo_OnMain = 1 OR VacancyCount &gt; 2)) THEN 1 ELSE 0 END AS IsPaidToWork
- , (SELECT TOP 1 UnqVacancyNum FROM #CompaniesLimitedList WHERE Company_key = main.Company_key ORDER BY Date_key DESC) AS UnqVacancyNum
- , (SELECT TOP 1 VacancyNum FROM #CompaniesLimitedList WHERE Company_key = main.Company_key ORDER BY Date_key DESC) AS VacancyNum
+ , (SELECT TOP 1 UnqVacancyNum FROM #T WHERE Company_key = main.Company_key ORDER BY Date_key DESC) AS UnqVacancyNum
+ , (SELECT TOP 1 VacancyNum FROM #T WHERE Company_key = main.Company_key ORDER BY Date_key DESC) AS VacancyNum
  , DENSE_RANK() OVER(ORDER BY CompanyName) AS RowNum
-FROM #CompaniesLimitedList AS main
-WHERE EXISTS (SELECT * FROM #CompaniesLimitedList WHERE Company_key = main.Company_Key AND CompanyGroup = @SelectedCompanyGroup AND FullDate = @SelectedDate)
-ORDER BY Company_key, FullDate;</CommandText>
+FROM #T AS main
+WHERE EXISTS (SELECT * FROM #T WHERE Company_key = main.Company_Key AND CompanyGroup = @SelectedCompanyGroup AND FullDate = @SelectedDate)
+ORDER BY Company_key, FullDate;
+
+DROP TABLE #T;
+</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -444,9 +429,6 @@ ORDER BY Company_key, FullDate;</CommandText>
                                   <StateDataElementName />
                                   <rd:IconsSet>ThreeFlags</rd:IconsSet>
                                   <Style>
-                                    <Border>
-                                      <Style>Solid</Style>
-                                    </Border>
                                     <ShadowOffset>2pt</ShadowOffset>
                                   </Style>
                                   <Top>4</Top>
@@ -587,9 +569,6 @@ ORDER BY Company_key, FullDate;</CommandText>
                                   <StateDataElementName />
                                   <rd:IconsSet>ThreeCircledSymbols</rd:IconsSet>
                                   <Style>
-                                    <Border>
-                                      <Style>Solid</Style>
-                                    </Border>
                                     <ShadowOffset>2pt</ShadowOffset>
                                   </Style>
                                   <Top>4</Top>
@@ -726,9 +705,6 @@ ORDER BY Company_key, FullDate;</CommandText>
                                   <StateDataElementName />
                                   <rd:IconsSet>ThreeCircledSymbols</rd:IconsSet>
                                   <Style>
-                                    <Border>
-                                      <Style>Solid</Style>
-                                    </Border>
                                     <ShadowOffset>2pt</ShadowOffset>
                                   </Style>
                                   <Top>4</Top>
@@ -865,9 +841,6 @@ ORDER BY Company_key, FullDate;</CommandText>
                                   <StateDataElementName />
                                   <rd:IconsSet>ThreeCircledSymbols</rd:IconsSet>
                                   <Style>
-                                    <Border>
-                                      <Style>Solid</Style>
-                                    </Border>
                                     <ShadowOffset>2pt</ShadowOffset>
                                   </Style>
                                   <Top>4</Top>
@@ -1004,9 +977,6 @@ ORDER BY Company_key, FullDate;</CommandText>
                                   <StateDataElementName />
                                   <rd:IconsSet>ThreeCircledSymbols</rd:IconsSet>
                                   <Style>
-                                    <Border>
-                                      <Style>Solid</Style>
-                                    </Border>
                                     <ShadowOffset>2pt</ShadowOffset>
                                   </Style>
                                   <Top>4</Top>
@@ -1146,9 +1116,6 @@ ORDER BY Company_key, FullDate;</CommandText>
                               <StateDataElementName />
                               <rd:IconsSet>RedToBlack</rd:IconsSet>
                               <Style>
-                                <Border>
-                                  <Style>Solid</Style>
-                                </Border>
                                 <ShadowOffset>2pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -1365,6 +1332,7 @@ ORDER BY Company_key, FullDate;</CommandText>
                                   <PaddingBottom>2pt</PaddingBottom>
                                 </Style>
                               </Textbox>
+                              <rd:Selected>true</rd:Selected>
                             </CellContents>
                           </TablixHeader>
                           <TablixMembers>
@@ -1788,15 +1756,15 @@ ORDER BY Company_key, FullDate;</CommandText>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
-        <InteractiveHeight>28cm</InteractiveHeight>
-        <InteractiveWidth>22cm</InteractiveWidth>
+        <InteractiveHeight>0cm</InteractiveHeight>
+        <InteractiveWidth>0cm</InteractiveWidth>
         <LeftMargin>2cm</LeftMargin>
         <RightMargin>2cm</RightMargin>
         <TopMargin>2cm</TopMargin>
         <BottomMargin>2cm</BottomMargin>
         <ColumnSpacing>0.13cm</ColumnSpacing>
         <Style>
-          <BackgroundColor>White</BackgroundColor>
+          <BackgroundColor>WhiteSmoke</BackgroundColor>
         </Style>
       </Page>
     </ReportSection>
@@ -1829,39 +1797,6 @@ ORDER BY Company_key, FullDate;</CommandText>
       <Hidden>true</Hidden>
     </ReportParameter>
   </ReportParameters>
-  <ReportParametersLayout>
-    <GridLayoutDefinition>
-      <NumberOfColumns>5</NumberOfColumns>
-      <NumberOfRows>1</NumberOfRows>
-      <CellDefinitions>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>StartDate</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>EndDate</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>ManagerID</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>3</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>SelectedDate</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>4</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>SelectedCompanyGroup</ParameterName>
-        </CellDefinition>
-      </CellDefinitions>
-    </GridLayoutDefinition>
-  </ReportParametersLayout>
   <rd:ReportUnitType>Cm</rd:ReportUnitType>
   <rd:ReportID>a0abba7d-ab7d-49cf-bc2e-70aebb72f0e7</rd:ReportID>
 </Report>
