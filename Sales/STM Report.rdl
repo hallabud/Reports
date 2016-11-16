@@ -102,6 +102,14 @@
           <DataField>ActiveCompaniesCount</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="IsSTM">
+          <DataField>IsSTM</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="STM_ManagerID">
+          <DataField>STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
   </DataSets>
@@ -774,7 +782,9 @@
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Fields!Name.Value</Value>
-                                  <Style />
+                                  <Style>
+                                    <FontWeight>=IIf(Fields!IsSTM.Value = 1, "Bold", "Normal")</FontWeight>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -1510,6 +1520,18 @@
                 </TablixMember>
                 <TablixMember>
                   <Group Name="Details" />
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!STM_ManagerID.Value</Value>
+                    </SortExpression>
+                    <SortExpression>
+                      <Value>=Fields!IsSTM.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                    <SortExpression>
+                      <Value>=Fields!Name.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
                 </TablixMember>
                 <TablixMember>
                   <KeepWithGroup>Before</KeepWithGroup>
@@ -1563,11 +1585,6 @@
     </ReportParameter>
     <ReportParameter Name="STM">
       <DataType>Integer</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>198</Value>
-        </Values>
-      </DefaultValue>
       <Prompt>Sales-team менеджер</Prompt>
       <ValidValues>
         <DataSetReference>
@@ -1576,6 +1593,7 @@
           <LabelField>ManagerName</LabelField>
         </DataSetReference>
       </ValidValues>
+      <MultiValue>true</MultiValue>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
