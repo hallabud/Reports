@@ -1,0 +1,2665 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="10/10/2016 1:07:56 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="RUA5105"
+  DTS:CreatorName="RABOTA\AnastasiyaG"
+  DTS:DTSID="{FBE6DBEF-58B2-4FBD-9BD1-F3AF4614A143}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2186.6"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="LoadPlanDataFromExcel"
+  DTS:PackageType="5"
+  DTS:VersionBuild="57"
+  DTS:VersionGUID="{411ECA17-2BD2-4EDC-8F1B-47226425F06C}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Excel Connection Manager]"
+      DTS:CreationName="EXCEL"
+      DTS:DTSID="{45DDD72E-2A1E-47B7-9281-BC1F4F1134BF}"
+      DTS:ObjectName="Excel Connection Manager">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Provider=Microsoft.ACE.OLEDB.12.0;Data Source=\\192.168.5.2\root\Sales Department\Sales Plan Quarter\Sales Plan Quarter.xlsx;Extended Properties=&quot;EXCEL 12.0 XML;HDR=YES&quot;;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[localhost.Test]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{394F7C35-10C7-45F0-A0F0-E1D67E785241}"
+      DTS:ObjectName="localhost.Test">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=localhost;Initial Catalog=Test;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[REPORTS.Reporting]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{A62A624C-B56A-409C-89F7-367319500973}"
+      DTS:ObjectName="REPORTS.Reporting">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=REPORTS;Initial Catalog=Reporting;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Load Plan Data"
+      DTS:CreationName="STOCK:SEQUENCE"
+      DTS:Description="Sequence Container"
+      DTS:DTSID="{87C64162-FF49-44DB-97B5-489E802E8C05}"
+      DTS:ExecutableType="STOCK:SEQUENCE"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Load Plan Data">
+      <DTS:Variables />
+      <DTS:Executables>
+        <DTS:Executable
+          DTS:refId="Package\Load Plan Data\Load PlanData"
+          DTS:CreationName="Microsoft.Pipeline"
+          DTS:Description="Data Flow Task"
+          DTS:DTSID="{E5674A79-095F-431F-A9E4-7BD66A01E72D}"
+          DTS:ExecutableType="Microsoft.Pipeline"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="Load PlanData"
+          DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <pipeline
+              version="1">
+              <components>
+                <component
+                  refId="Package\Load Plan Data\Load PlanData\Conditional Split"
+                  componentClassID="Microsoft.ConditionalSplit"
+                  contactInfo="Conditional Split;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+                  description="Routes data rows to different outputs depending on the content of the data. Use conditions (SSIS expressions) to specify which rows are routed. For example, separate records that need to be cleaned from those that are ready to be loaded or route only a subset of records."
+                  name="Conditional Split"
+                  usesDispositions="true">
+                  <inputs>
+                    <input
+                      refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input]"
+                      description="Input to the Conditional Split Transformation"
+                      name="Conditional Split Input">
+                      <inputColumns>
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[ManagerID]"
+                          cachedDataType="i4"
+                          cachedName="ManagerID"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[CountRow]"
+                          cachedDataType="i4"
+                          cachedName="CountRow"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Match Output].Columns[CountRow]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[YearNumOLD]"
+                          cachedDataType="i4"
+                          cachedName="YearNumOLD"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[YearNumOLD]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[QuarterNumOLD]"
+                          cachedDataType="ui1"
+                          cachedName="QuarterNumOLD"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[QuarterNumOLD]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[ManagerIDOLD]"
+                          cachedDataType="i4"
+                          cachedName="ManagerIDOLD"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[ManagerIDOLD]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[SalesPlan]"
+                          cachedDataType="numeric"
+                          cachedName="SalesPlan"
+                          cachedPrecision="10"
+                          cachedScale="2"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[SalesPlan]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[ClientsPlan]"
+                          cachedDataType="i4"
+                          cachedName="ClientsPlan"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ClientsPlan]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[UniqueVacancyPlan]"
+                          cachedDataType="numeric"
+                          cachedName="UniqueVacancyPlan"
+                          cachedPrecision="3"
+                          cachedScale="2"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[UniqueVacancyPlan]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[CoveragePlan]"
+                          cachedDataType="numeric"
+                          cachedName="CoveragePlan"
+                          cachedPrecision="3"
+                          cachedScale="2"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[CoveragePlan]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[SalesPlanOLD]"
+                          cachedDataType="numeric"
+                          cachedName="SalesPlanOLD"
+                          cachedPrecision="10"
+                          cachedScale="2"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[SalesPlanOLD]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[ClientsPlanOLD]"
+                          cachedDataType="i4"
+                          cachedName="ClientsPlanOLD"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[ClientsPlanOLD]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[UniqueVacancyPlanOLD]"
+                          cachedDataType="numeric"
+                          cachedName="UniqueVacancyPlanOLD"
+                          cachedPrecision="3"
+                          cachedScale="2"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[UniqueVacancyPlanOLD]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input].Columns[CoveragePlanOLD]"
+                          cachedDataType="numeric"
+                          cachedName="CoveragePlanOLD"
+                          cachedPrecision="3"
+                          cachedScale="2"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[CoveragePlanOLD]" />
+                      </inputColumns>
+                      <externalMetadataColumns />
+                    </input>
+                  </inputs>
+                  <outputs>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Conditional Split.Outputs[Load]"
+                      description="Output 1 of the Conditional Split Transformation"
+                      errorOrTruncationOperation="Computation"
+                      errorRowDisposition="FailComponent"
+                      exclusionGroup="1"
+                      name="Load"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input]"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Specifies the expression. This expression version uses lineage identifiers instead of column names."
+                          name="Expression">#{Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Match Output].Columns[CountRow]} == 1 &amp;&amp; ![ISNULL](#{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]}) &amp;&amp; [ISNULL](#{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[ManagerIDOLD]}) &amp;&amp; [ISNULL](#{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[YearNumOLD]}) &amp;&amp; [ISNULL](#{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[QuarterNumOLD]})</property>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Specifies the friendly version of the expression. This expression version uses column names."
+                          expressionType="Notify"
+                          name="FriendlyExpression">CountRow == 1 &amp;&amp; !ISNULL(ManagerID) &amp;&amp; ISNULL(ManagerIDOLD) &amp;&amp; ISNULL(YearNumOLD) &amp;&amp; ISNULL(QuarterNumOLD)</property>
+                        <property
+                          dataType="System.Int32"
+                          description="Specifies the position of the condition in the list of conditions that the transformation evaluates. The evaluation order is from the lowest to the highest value."
+                          name="EvaluationOrder">0</property>
+                      </properties>
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Conditional Split.Outputs[New]"
+                      description="Output 2 of the Conditional Split Transformation"
+                      errorOrTruncationOperation="Computation"
+                      errorRowDisposition="FailComponent"
+                      exclusionGroup="1"
+                      name="New"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input]"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Specifies the expression. This expression version uses lineage identifiers instead of column names."
+                          name="Expression">#{Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Match Output].Columns[CountRow]} == 1 &amp;&amp; ![ISNULL](#{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]}) &amp;&amp; ([ISNULL](#{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[ManagerIDOLD]}) &amp;&amp; [ISNULL](#{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[YearNumOLD]}) &amp;&amp; [ISNULL](#{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[QuarterNumOLD]}))</property>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Specifies the friendly version of the expression. This expression version uses column names."
+                          expressionType="Notify"
+                          name="FriendlyExpression">CountRow == 1 &amp;&amp; !ISNULL(ManagerID) &amp;&amp; (ISNULL(ManagerIDOLD) &amp;&amp; ISNULL(YearNumOLD) &amp;&amp; ISNULL(QuarterNumOLD))</property>
+                        <property
+                          dataType="System.Int32"
+                          description="Specifies the position of the condition in the list of conditions that the transformation evaluates. The evaluation order is from the lowest to the highest value."
+                          name="EvaluationOrder">1</property>
+                      </properties>
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Conditional Split.Outputs[Update]"
+                      description="Output 3 of the Conditional Split Transformation"
+                      errorOrTruncationOperation="Computation"
+                      errorRowDisposition="IgnoreFailure"
+                      exclusionGroup="1"
+                      name="Update"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input]"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Specifies the expression. This expression version uses lineage identifiers instead of column names."
+                          name="Expression">#{Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Match Output].Columns[CountRow]} == 1 &amp;&amp; ![ISNULL](#{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]}) &amp;&amp; ![ISNULL](#{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[ManagerIDOLD]}) &amp;&amp; ![ISNULL](#{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[YearNumOLD]}) &amp;&amp; ![ISNULL](#{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[QuarterNumOLD]}) &amp;&amp; (#{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[SalesPlanOLD]} != #{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[SalesPlan]} || #{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[ClientsPlanOLD]} != #{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ClientsPlan]} || #{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[UniqueVacancyPlanOLD]} != #{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[UniqueVacancyPlan]} || #{Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[CoveragePlanOLD]} != #{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[CoveragePlan]})</property>
+                        <property
+                          containsID="true"
+                          dataType="System.String"
+                          description="Specifies the friendly version of the expression. This expression version uses column names."
+                          expressionType="Notify"
+                          name="FriendlyExpression">CountRow == 1 &amp;&amp; !ISNULL(ManagerID) &amp;&amp; !ISNULL(ManagerIDOLD) &amp;&amp; !ISNULL(YearNumOLD) &amp;&amp; !ISNULL(QuarterNumOLD) &amp;&amp; (SalesPlanOLD != SalesPlan || ClientsPlanOLD != ClientsPlan || UniqueVacancyPlanOLD != UniqueVacancyPlan || CoveragePlanOLD != CoveragePlan)</property>
+                        <property
+                          dataType="System.Int32"
+                          description="Specifies the position of the condition in the list of conditions that the transformation evaluates. The evaluation order is from the lowest to the highest value."
+                          name="EvaluationOrder">2</property>
+                      </properties>
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Conditional Split.Outputs[Conditional Split Default Output]"
+                      description="Default Output of the Conditional Split Transformation"
+                      exclusionGroup="1"
+                      name="Conditional Split Default Output"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input]">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          name="IsDefaultOut">true</property>
+                      </properties>
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Conditional Split.Outputs[Conditional Split Error Output]"
+                      description="Error Output of the Conditional Split Transformation"
+                      exclusionGroup="1"
+                      isErrorOut="true"
+                      name="Conditional Split Error Output"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Outputs[Conditional Split Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\Conditional Split.Outputs[Conditional Split Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Conditional Split.Outputs[Conditional Split Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\Conditional Split.Outputs[Conditional Split Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+                <component
+                  refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall"
+                  componentClassID="Microsoft.OLEDBDestination"
+                  contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+                  description="OLE DB Destination"
+                  name="Dest TargetsQuarterOverall"
+                  usesDispositions="true"
+                  version="4">
+                  <properties>
+                    <property
+                      dataType="System.Int32"
+                      description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                      name="CommandTimeout">0</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the name of the database object used to open a rowset."
+                      name="OpenRowset">[dbo].[TargetsQuarterOverall]</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the variable that contains the name of the database object used to open a rowset."
+                      name="OpenRowsetVariable"></property>
+                    <property
+                      dataType="System.String"
+                      description="The SQL command to be executed."
+                      name="SqlCommand"
+                      UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the column code page to use when code page information is unavailable from the data source."
+                      name="DefaultCodePage">1252</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Forces the use of the DefaultCodePage property value when describing character data."
+                      name="AlwaysUseDefaultCodePage">false</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the mode used to access the database."
+                      name="AccessMode"
+                      typeConverter="AccessMode">3</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                      name="FastLoadKeepIdentity">false</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                      name="FastLoadKeepNulls">false</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                      name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                      name="FastLoadMaxInsertCommitSize">2147483647</property>
+                  </properties>
+                  <connections>
+                    <connection
+                      refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Connections[OleDbConnection]"
+                      connectionManagerID="Package.ConnectionManagers[REPORTS.Reporting]"
+                      connectionManagerRefId="Package.ConnectionManagers[REPORTS.Reporting]"
+                      description="The OLE DB runtime connection used to access the database."
+                      name="OleDbConnection" />
+                  </connections>
+                  <inputs>
+                    <input
+                      refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input]"
+                      errorOrTruncationOperation="Insert"
+                      errorRowDisposition="FailComponent"
+                      hasSideEffects="true"
+                      name="OLE DB Destination Input">
+                      <inputColumns>
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].Columns[YearNum]"
+                          cachedDataType="i4"
+                          cachedName="YearNum"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[YearNum]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[YearNum]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].Columns[QuarterNum]"
+                          cachedDataType="ui1"
+                          cachedName="QuarterNum"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[QuarterNum]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[QuarterNum]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].Columns[ManagerID]"
+                          cachedDataType="i4"
+                          cachedName="ManagerID"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[ManagerID]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].Columns[ManagerName]"
+                          cachedDataType="wstr"
+                          cachedLength="50"
+                          cachedName="ManagerName"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[ManagerName]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerName]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].Columns[SalesPlan]"
+                          cachedDataType="numeric"
+                          cachedName="SalesPlan"
+                          cachedPrecision="10"
+                          cachedScale="2"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[SalesPlan]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[SalesPlan]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].Columns[ClientsPlan]"
+                          cachedDataType="i4"
+                          cachedName="ClientsPlan"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[ClientsPlan]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ClientsPlan]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].Columns[UniqueVacancyPlan]"
+                          cachedDataType="numeric"
+                          cachedName="UniqueVacancyPlan"
+                          cachedPrecision="3"
+                          cachedScale="2"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[UniqueVacancyPlan]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[UniqueVacancyPlan]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].Columns[CoveragePlan]"
+                          cachedDataType="numeric"
+                          cachedName="CoveragePlan"
+                          cachedPrecision="3"
+                          cachedScale="2"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[CoveragePlan]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[CoveragePlan]" />
+                      </inputColumns>
+                      <externalMetadataColumns
+                        isUsed="True">
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[YearNum]"
+                          dataType="i4"
+                          name="YearNum" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[QuarterNum]"
+                          dataType="ui1"
+                          name="QuarterNum" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[ManagerID]"
+                          dataType="i4"
+                          name="ManagerID" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[ManagerName]"
+                          dataType="wstr"
+                          length="50"
+                          name="ManagerName" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[SalesPlan]"
+                          dataType="numeric"
+                          name="SalesPlan"
+                          precision="10"
+                          scale="2" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[ClientsPlan]"
+                          dataType="i4"
+                          name="ClientsPlan" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[UniqueVacancyPlan]"
+                          dataType="numeric"
+                          name="UniqueVacancyPlan"
+                          precision="3"
+                          scale="2" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input].ExternalColumns[CoveragePlan]"
+                          dataType="numeric"
+                          name="CoveragePlan"
+                          precision="3"
+                          scale="2" />
+                      </externalMetadataColumns>
+                    </input>
+                  </inputs>
+                  <outputs>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Outputs[OLE DB Destination Error Output]"
+                      exclusionGroup="1"
+                      isErrorOut="true"
+                      name="OLE DB Destination Error Output"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+                <component
+                  refId="Package\Load Plan Data\Load PlanData\Lookup Old Values"
+                  componentClassID="Microsoft.Lookup"
+                  contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+                  description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+                  name="Lookup Old Values"
+                  usesDispositions="true"
+                  version="6">
+                  <properties>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the SQL statement that generates the lookup table."
+                      expressionType="Notify"
+                      name="SqlCommand"
+                      UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from [dbo].[TargetsQuarterOverall]</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                      expressionType="Notify"
+                      name="SqlCommandParam"
+                      UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select * from [dbo].[TargetsQuarterOverall]) [refTable]
+where [refTable].[YearNum] = ? and [refTable].[QuarterNum] = ? and [refTable].[ManagerID] = ?</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the type of connection used to access the reference dataset."
+                      name="ConnectionType"
+                      typeConverter="LookupConnectionType">0</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the cache type of the lookup table."
+                      name="CacheType"
+                      typeConverter="CacheType">0</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                      name="NoMatchBehavior"
+                      typeConverter="LookupNoMatchBehavior">0</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                      name="NoMatchCachePercentage">0</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                      name="MaxMemoryUsage">25</property>
+                    <property
+                      dataType="System.Int64"
+                      description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                      name="MaxMemoryUsage64">25</property>
+                    <property
+                      dataType="System.String"
+                      description="Indicates whether to reference metadata in an XML format."
+                      name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="YearNum" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="QuarterNum" dataType="DT_UI1" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="ManagerID" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="ManagerName" dataType="DT_WSTR" length="50" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="SalesPlan" dataType="DT_NUMERIC" length="0" precision="10" scale="2" codePage="0"/&gt;&lt;referenceColumn name="ClientsPlan" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="UniqueVacancyPlan" dataType="DT_NUMERIC" length="0" precision="3" scale="2" codePage="0"/&gt;&lt;referenceColumn name="CoveragePlan" dataType="DT_NUMERIC" length="0" precision="3" scale="2" codePage="0"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                    <property
+                      containsID="true"
+                      dataType="System.String"
+                      description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                      name="ParameterMap">#{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[YearNum]};#{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[QuarterNum]};#{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]};</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the column code page to use when code page information is unavailable from the data source."
+                      name="DefaultCodePage">1252</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                      name="TreatDuplicateKeysAsError">false</property>
+                  </properties>
+                  <connections>
+                    <connection
+                      refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Connections[OleDbConnection]"
+                      connectionManagerID="Package.ConnectionManagers[REPORTS.Reporting]"
+                      connectionManagerRefId="Package.ConnectionManagers[REPORTS.Reporting]"
+                      description="Connection manager used to access lookup data."
+                      name="OleDbConnection" />
+                  </connections>
+                  <inputs>
+                    <input
+                      refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Inputs[Lookup Input]"
+                      name="Lookup Input">
+                      <inputColumns>
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Inputs[Lookup Input].Columns[YearNum]"
+                          cachedDataType="i4"
+                          cachedName="YearNum"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[YearNum]">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table that a column joins."
+                              name="JoinToReferenceColumn">YearNum</property>
+                            <property
+                              dataType="System.Null"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn" />
+                          </properties>
+                        </inputColumn>
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Inputs[Lookup Input].Columns[QuarterNum]"
+                          cachedDataType="ui1"
+                          cachedName="QuarterNum"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[QuarterNum]">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table that a column joins."
+                              name="JoinToReferenceColumn">QuarterNum</property>
+                            <property
+                              dataType="System.Null"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn" />
+                          </properties>
+                        </inputColumn>
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Inputs[Lookup Input].Columns[ManagerID]"
+                          cachedDataType="i4"
+                          cachedName="ManagerID"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table that a column joins."
+                              name="JoinToReferenceColumn">ManagerID</property>
+                            <property
+                              dataType="System.Null"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn" />
+                          </properties>
+                        </inputColumn>
+                      </inputColumns>
+                      <externalMetadataColumns />
+                    </input>
+                  </inputs>
+                  <outputs>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output]"
+                      errorOrTruncationOperation="Lookup"
+                      errorRowDisposition="IgnoreFailure"
+                      exclusionGroup="1"
+                      name="Lookup Match Output"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Inputs[Lookup Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[SalesPlanOLD]"
+                          dataType="numeric"
+                          errorOrTruncationOperation="Copy Column"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[SalesPlanOLD]"
+                          name="SalesPlanOLD"
+                          precision="10"
+                          scale="2"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn">SalesPlan</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[ClientsPlanOLD]"
+                          dataType="i4"
+                          errorOrTruncationOperation="Copy Column"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[ClientsPlanOLD]"
+                          name="ClientsPlanOLD"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn">ClientsPlan</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[UniqueVacancyPlanOLD]"
+                          dataType="numeric"
+                          errorOrTruncationOperation="Copy Column"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[UniqueVacancyPlanOLD]"
+                          name="UniqueVacancyPlanOLD"
+                          precision="3"
+                          scale="2"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn">UniqueVacancyPlan</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[CoveragePlanOLD]"
+                          dataType="numeric"
+                          errorOrTruncationOperation="Copy Column"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[CoveragePlanOLD]"
+                          name="CoveragePlanOLD"
+                          precision="3"
+                          scale="2"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn">CoveragePlan</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[YearNumOLD]"
+                          dataType="i4"
+                          errorOrTruncationOperation="Copy Column"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[YearNumOLD]"
+                          name="YearNumOLD"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn">YearNum</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[QuarterNumOLD]"
+                          dataType="ui1"
+                          errorOrTruncationOperation="Copy Column"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[QuarterNumOLD]"
+                          name="QuarterNumOLD"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn">QuarterNum</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[ManagerIDOLD]"
+                          dataType="i4"
+                          errorOrTruncationOperation="Copy Column"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output].Columns[ManagerIDOLD]"
+                          name="ManagerIDOLD"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn">ManagerID</property>
+                          </properties>
+                        </outputColumn>
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup No Match Output]"
+                      description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                      exclusionGroup="1"
+                      name="Lookup No Match Output"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Inputs[Lookup Input]">
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Error Output]"
+                      exclusionGroup="1"
+                      isErrorOut="true"
+                      name="Lookup Error Output"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Inputs[Lookup Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+                <component
+                  refId="Package\Load Plan Data\Load PlanData\Lookup RowCount"
+                  componentClassID="Microsoft.Lookup"
+                  contactInfo="Lookup;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;6"
+                  description="Joins additional columns to the data flow by looking up values in a table. For example, join to the 'employee id' column the employees table to get 'hire date' and 'employee name'. We recommend this transformation when the lookup table can fit into memory."
+                  name="Lookup RowCount"
+                  usesDispositions="true"
+                  version="6">
+                  <properties>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the SQL statement that generates the lookup table."
+                      expressionType="Notify"
+                      name="SqlCommand"
+                      UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select t.YearNum, t.QuarterNum, t.ManagerID, count(*) as CountRow
+from 
+TargetsQuarterOverallPrev t 
+where t.ManagerID is not null
+group by t.YearNum, t.QuarterNum, t.ManagerID</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies a SQL statement that uses parameters to generate the lookup table."
+                      expressionType="Notify"
+                      name="SqlCommandParam"
+                      UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">select * from (select t.YearNum, t.QuarterNum, t.ManagerID, count(*) as CountRow
+from 
+TargetsQuarterOverallPrev t 
+where t.ManagerID is not null
+group by t.YearNum, t.QuarterNum, t.ManagerID) [refTable]
+where [refTable].[YearNum] = ? and [refTable].[QuarterNum] = ? and [refTable].[ManagerID] = ?</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the type of connection used to access the reference dataset."
+                      name="ConnectionType"
+                      typeConverter="LookupConnectionType">0</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the cache type of the lookup table."
+                      name="CacheType"
+                      typeConverter="CacheType">0</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies how the Lookup transformation handles rows without matching entries in the reference data set."
+                      name="NoMatchBehavior"
+                      typeConverter="LookupNoMatchBehavior">0</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the percentage of the cache that is allocated for rows with no matching entries in the reference dataset."
+                      name="NoMatchCachePercentage">0</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Maximum Memory Usage for Reference Cache on a 32 bit platform."
+                      name="MaxMemoryUsage">25</property>
+                    <property
+                      dataType="System.Int64"
+                      description="Maximum Memory Usage for Reference Cache on a 64 bit platform."
+                      name="MaxMemoryUsage64">25</property>
+                    <property
+                      dataType="System.String"
+                      description="Indicates whether to reference metadata in an XML format."
+                      name="ReferenceMetadataXml">&lt;referenceMetadata&gt;&lt;referenceColumns&gt;&lt;referenceColumn name="YearNum" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="QuarterNum" dataType="DT_UI1" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="ManagerID" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;referenceColumn name="CountRow" dataType="DT_I4" length="0" precision="0" scale="0" codePage="0"/&gt;&lt;/referenceColumns&gt;&lt;/referenceMetadata&gt;</property>
+                    <property
+                      containsID="true"
+                      dataType="System.String"
+                      description="Specifies the list of lineage identifiers that map to the parameters that the SQL statement in the SQLCommand property uses. Entries in the list are separated by semicolons."
+                      name="ParameterMap">#{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[YearNum]};#{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[QuarterNum]};#{Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]};</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the column code page to use when code page information is unavailable from the data source."
+                      name="DefaultCodePage">1252</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Determines whether duplicate keys in the reference data should be treated as errors when full cache mode is used."
+                      name="TreatDuplicateKeysAsError">false</property>
+                  </properties>
+                  <connections>
+                    <connection
+                      refId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Connections[OleDbConnection]"
+                      connectionManagerID="Package.ConnectionManagers[REPORTS.Reporting]"
+                      connectionManagerRefId="Package.ConnectionManagers[REPORTS.Reporting]"
+                      description="Connection manager used to access lookup data."
+                      name="OleDbConnection" />
+                  </connections>
+                  <inputs>
+                    <input
+                      refId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Inputs[Lookup Input]"
+                      name="Lookup Input">
+                      <inputColumns>
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Inputs[Lookup Input].Columns[YearNum]"
+                          cachedDataType="i4"
+                          cachedName="YearNum"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[YearNum]">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table that a column joins."
+                              name="JoinToReferenceColumn">YearNum</property>
+                            <property
+                              dataType="System.Null"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn" />
+                          </properties>
+                        </inputColumn>
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Inputs[Lookup Input].Columns[QuarterNum]"
+                          cachedDataType="ui1"
+                          cachedName="QuarterNum"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[QuarterNum]">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table that a column joins."
+                              name="JoinToReferenceColumn">QuarterNum</property>
+                            <property
+                              dataType="System.Null"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn" />
+                          </properties>
+                        </inputColumn>
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Inputs[Lookup Input].Columns[ManagerID]"
+                          cachedDataType="i4"
+                          cachedName="ManagerID"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table that a column joins."
+                              name="JoinToReferenceColumn">ManagerID</property>
+                            <property
+                              dataType="System.Null"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn" />
+                          </properties>
+                        </inputColumn>
+                      </inputColumns>
+                      <externalMetadataColumns />
+                    </input>
+                  </inputs>
+                  <outputs>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Match Output]"
+                      errorOrTruncationOperation="Lookup"
+                      errorRowDisposition="IgnoreFailure"
+                      exclusionGroup="1"
+                      name="Lookup Match Output"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Inputs[Lookup Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Match Output].Columns[CountRow]"
+                          dataType="i4"
+                          errorOrTruncationOperation="Copy Column"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Match Output].Columns[CountRow]"
+                          name="CountRow"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              dataType="System.String"
+                              description="Specifies the column in the reference table from which a column is copied."
+                              name="CopyFromReferenceColumn">CountRow</property>
+                          </properties>
+                        </outputColumn>
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup No Match Output]"
+                      description="The Lookup output that handles rows with no matching entries in the reference dataset. Use this output when the NoMatchBehavior property is set to &quot;Send rows with no matching entries to the no match output.&quot;"
+                      exclusionGroup="1"
+                      name="Lookup No Match Output"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Inputs[Lookup Input]">
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Error Output]"
+                      exclusionGroup="1"
+                      isErrorOut="true"
+                      name="Lookup Error Output"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Inputs[Lookup Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+                <component
+                  refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev"
+                  componentClassID="Microsoft.OLEDBSource"
+                  contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+                  description="OLE DB Source"
+                  name="TargetsQuarterOverallPrev"
+                  usesDispositions="true"
+                  version="7">
+                  <properties>
+                    <property
+                      dataType="System.Int32"
+                      description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                      name="CommandTimeout">0</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the name of the database object used to open a rowset."
+                      name="OpenRowset">[dbo].[TargetsQuarterOverallPrev]</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the variable that contains the name of the database object used to open a rowset."
+                      name="OpenRowsetVariable"></property>
+                    <property
+                      dataType="System.String"
+                      description="The SQL command to be executed."
+                      name="SqlCommand"
+                      UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                    <property
+                      dataType="System.String"
+                      description="The variable that contains the SQL command to be executed."
+                      name="SqlCommandVariable"></property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the column code page to use when code page information is unavailable from the data source."
+                      name="DefaultCodePage">1252</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Forces the use of the DefaultCodePage property value when describing character data."
+                      name="AlwaysUseDefaultCodePage">false</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the mode used to access the database."
+                      name="AccessMode"
+                      typeConverter="AccessMode">0</property>
+                    <property
+                      dataType="System.String"
+                      description="The mappings between the parameters in the SQL command and variables."
+                      name="ParameterMapping"></property>
+                  </properties>
+                  <connections>
+                    <connection
+                      refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Connections[OleDbConnection]"
+                      connectionManagerID="Package.ConnectionManagers[REPORTS.Reporting]"
+                      connectionManagerRefId="Package.ConnectionManagers[REPORTS.Reporting]"
+                      description="The OLE DB runtime connection used to access the database."
+                      name="OleDbConnection" />
+                  </connections>
+                  <outputs>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output]"
+                      name="OLE DB Source Output">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[YearNum]"
+                          dataType="i4"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[YearNum]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[YearNum]"
+                          name="YearNum"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[QuarterNum]"
+                          dataType="ui1"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[QuarterNum]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[QuarterNum]"
+                          name="QuarterNum"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]"
+                          dataType="i4"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[ManagerID]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]"
+                          name="ManagerID"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerName]"
+                          dataType="wstr"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[ManagerName]"
+                          length="50"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerName]"
+                          name="ManagerName"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[SalesPlan]"
+                          dataType="numeric"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[SalesPlan]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[SalesPlan]"
+                          name="SalesPlan"
+                          precision="10"
+                          scale="2"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ClientsPlan]"
+                          dataType="i4"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[ClientsPlan]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ClientsPlan]"
+                          name="ClientsPlan"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[UniqueVacancyPlan]"
+                          dataType="numeric"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[UniqueVacancyPlan]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[UniqueVacancyPlan]"
+                          name="UniqueVacancyPlan"
+                          precision="3"
+                          scale="2"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[CoveragePlan]"
+                          dataType="numeric"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[CoveragePlan]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[CoveragePlan]"
+                          name="CoveragePlan"
+                          precision="3"
+                          scale="2"
+                          truncationRowDisposition="FailComponent" />
+                      </outputColumns>
+                      <externalMetadataColumns
+                        isUsed="True">
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[YearNum]"
+                          dataType="i4"
+                          name="YearNum" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[QuarterNum]"
+                          dataType="ui1"
+                          name="QuarterNum" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[ManagerID]"
+                          dataType="i4"
+                          name="ManagerID" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[ManagerName]"
+                          dataType="wstr"
+                          length="50"
+                          name="ManagerName" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[SalesPlan]"
+                          dataType="numeric"
+                          name="SalesPlan"
+                          precision="10"
+                          scale="2" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[ClientsPlan]"
+                          dataType="i4"
+                          name="ClientsPlan" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[UniqueVacancyPlan]"
+                          dataType="numeric"
+                          name="UniqueVacancyPlan"
+                          precision="3"
+                          scale="2" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].ExternalColumns[CoveragePlan]"
+                          dataType="numeric"
+                          name="CoveragePlan"
+                          precision="3"
+                          scale="2" />
+                      </externalMetadataColumns>
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output]"
+                      isErrorOut="true"
+                      name="OLE DB Source Error Output">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[YearNum]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[YearNum]"
+                          name="YearNum" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[QuarterNum]"
+                          dataType="ui1"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[QuarterNum]"
+                          name="QuarterNum" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[ManagerID]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[ManagerID]"
+                          name="ManagerID" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[ManagerName]"
+                          dataType="wstr"
+                          length="50"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[ManagerName]"
+                          name="ManagerName" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[SalesPlan]"
+                          dataType="numeric"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[SalesPlan]"
+                          name="SalesPlan"
+                          precision="10"
+                          scale="2" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[ClientsPlan]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[ClientsPlan]"
+                          name="ClientsPlan" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[UniqueVacancyPlan]"
+                          dataType="numeric"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[UniqueVacancyPlan]"
+                          name="UniqueVacancyPlan"
+                          precision="3"
+                          scale="2" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[CoveragePlan]"
+                          dataType="numeric"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[CoveragePlan]"
+                          name="CoveragePlan"
+                          precision="3"
+                          scale="2" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+                <component
+                  refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall"
+                  componentClassID="Microsoft.OLEDBCommand"
+                  contactInfo="OLE DB Command;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;2"
+                  description="Runs an SQL statement for each row in a data flow. For example, call a 'new employee setup' stored procedure for each row in the 'new employees' table. Note: running an SQL statement for each row of a large data flow may take a long time."
+                  name="Update TargetsQuarterOverall"
+                  usesDispositions="true"
+                  version="2">
+                  <properties>
+                    <property
+                      dataType="System.Int32"
+                      description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                      name="CommandTimeout">0</property>
+                    <property
+                      dataType="System.String"
+                      description="The SQL command to be executed."
+                      expressionType="Notify"
+                      name="SqlCommand"
+                      UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">UPDATE dbo.TargetsQuarterOverall 
+SET SalesPlan = ?, ClientsPlan = ?, UniqueVacancyPlan = ?, CoveragePlan = ?
+WHERE YearNum = ?
+and QuarterNum = ?
+and ManagerID = ?
+</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the column code page to use when code page information is unavailable from the data source."
+                      name="DefaultCodePage">1252</property>
+                  </properties>
+                  <connections>
+                    <connection
+                      refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Connections[OleDbConnection]"
+                      connectionManagerID="Package.ConnectionManagers[REPORTS.Reporting]"
+                      connectionManagerRefId="Package.ConnectionManagers[REPORTS.Reporting]"
+                      description="The OLE DB runtime connection used to access the database."
+                      name="OleDbConnection" />
+                  </connections>
+                  <inputs>
+                    <input
+                      refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input]"
+                      errorOrTruncationOperation="Command Execution"
+                      errorRowDisposition="FailComponent"
+                      hasSideEffects="true"
+                      name="OLE DB Command Input">
+                      <inputColumns>
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].Columns[SalesPlan]"
+                          cachedDataType="numeric"
+                          cachedName="SalesPlan"
+                          cachedPrecision="10"
+                          cachedScale="2"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_0]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[SalesPlan]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].Columns[ClientsPlan]"
+                          cachedDataType="i4"
+                          cachedName="ClientsPlan"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_1]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ClientsPlan]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].Columns[UniqueVacancyPlan]"
+                          cachedDataType="numeric"
+                          cachedName="UniqueVacancyPlan"
+                          cachedPrecision="3"
+                          cachedScale="2"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_2]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[UniqueVacancyPlan]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].Columns[CoveragePlan]"
+                          cachedDataType="numeric"
+                          cachedName="CoveragePlan"
+                          cachedPrecision="3"
+                          cachedScale="2"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_3]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[CoveragePlan]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].Columns[YearNum]"
+                          cachedDataType="i4"
+                          cachedName="YearNum"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_4]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[YearNum]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].Columns[QuarterNum]"
+                          cachedDataType="ui1"
+                          cachedName="QuarterNum"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_5]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[QuarterNum]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].Columns[ManagerID]"
+                          cachedDataType="i4"
+                          cachedName="ManagerID"
+                          externalMetadataColumnId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_6]"
+                          lineageId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output].Columns[ManagerID]" />
+                      </inputColumns>
+                      <externalMetadataColumns
+                        isUsed="True">
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_0]"
+                          dataType="numeric"
+                          name="Param_0"
+                          precision="10"
+                          scale="2">
+                          <properties>
+                            <property
+                              dataType="System.Int32"
+                              description="Parameter information.  Matches OLE DB's DBPARAMFLAGSENUM values."
+                              name="DBParamInfoFlags">81</property>
+                          </properties>
+                        </externalMetadataColumn>
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_1]"
+                          dataType="i4"
+                          name="Param_1">
+                          <properties>
+                            <property
+                              dataType="System.Int32"
+                              description="Parameter information.  Matches OLE DB's DBPARAMFLAGSENUM values."
+                              name="DBParamInfoFlags">81</property>
+                          </properties>
+                        </externalMetadataColumn>
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_2]"
+                          dataType="numeric"
+                          name="Param_2"
+                          precision="3"
+                          scale="2">
+                          <properties>
+                            <property
+                              dataType="System.Int32"
+                              description="Parameter information.  Matches OLE DB's DBPARAMFLAGSENUM values."
+                              name="DBParamInfoFlags">81</property>
+                          </properties>
+                        </externalMetadataColumn>
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_3]"
+                          dataType="numeric"
+                          name="Param_3"
+                          precision="3"
+                          scale="2">
+                          <properties>
+                            <property
+                              dataType="System.Int32"
+                              description="Parameter information.  Matches OLE DB's DBPARAMFLAGSENUM values."
+                              name="DBParamInfoFlags">81</property>
+                          </properties>
+                        </externalMetadataColumn>
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_4]"
+                          dataType="i4"
+                          name="Param_4">
+                          <properties>
+                            <property
+                              dataType="System.Int32"
+                              description="Parameter information.  Matches OLE DB's DBPARAMFLAGSENUM values."
+                              name="DBParamInfoFlags">81</property>
+                          </properties>
+                        </externalMetadataColumn>
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_5]"
+                          dataType="ui1"
+                          name="Param_5">
+                          <properties>
+                            <property
+                              dataType="System.Int32"
+                              description="Parameter information.  Matches OLE DB's DBPARAMFLAGSENUM values."
+                              name="DBParamInfoFlags">65</property>
+                          </properties>
+                        </externalMetadataColumn>
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input].ExternalColumns[Param_6]"
+                          dataType="i4"
+                          name="Param_6">
+                          <properties>
+                            <property
+                              dataType="System.Int32"
+                              description="Parameter information.  Matches OLE DB's DBPARAMFLAGSENUM values."
+                              name="DBParamInfoFlags">81</property>
+                          </properties>
+                        </externalMetadataColumn>
+                      </externalMetadataColumns>
+                    </input>
+                  </inputs>
+                  <outputs>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Outputs[OLE DB Command Output]"
+                      exclusionGroup="1"
+                      name="OLE DB Command Output"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input]">
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Outputs[OLE DB Command Error Output]"
+                      exclusionGroup="1"
+                      isErrorOut="true"
+                      name="OLE DB Command Error Output"
+                      synchronousInputId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Outputs[OLE DB Command Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Outputs[OLE DB Command Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Outputs[OLE DB Command Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Outputs[OLE DB Command Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+              </components>
+              <paths>
+                <path
+                  refId="Package\Load Plan Data\Load PlanData.Paths[Load]"
+                  endId="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall.Inputs[OLE DB Destination Input]"
+                  name="Load"
+                  startId="Package\Load Plan Data\Load PlanData\Conditional Split.Outputs[Load]" />
+                <path
+                  refId="Package\Load Plan Data\Load PlanData.Paths[Lookup Match Output]"
+                  endId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Inputs[Lookup Input]"
+                  name="Lookup Match Output"
+                  startId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Outputs[Lookup Match Output]" />
+                <path
+                  refId="Package\Load Plan Data\Load PlanData.Paths[Lookup Match Output1]"
+                  endId="Package\Load Plan Data\Load PlanData\Conditional Split.Inputs[Conditional Split Input]"
+                  name="Lookup Match Output"
+                  startId="Package\Load Plan Data\Load PlanData\Lookup Old Values.Outputs[Lookup Match Output]" />
+                <path
+                  refId="Package\Load Plan Data\Load PlanData.Paths[OLE DB Source Output]"
+                  endId="Package\Load Plan Data\Load PlanData\Lookup RowCount.Inputs[Lookup Input]"
+                  name="OLE DB Source Output"
+                  startId="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev.Outputs[OLE DB Source Output]" />
+                <path
+                  refId="Package\Load Plan Data\Load PlanData.Paths[Update]"
+                  endId="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall.Inputs[OLE DB Command Input]"
+                  name="Update"
+                  startId="Package\Load Plan Data\Load PlanData\Conditional Split.Outputs[Update]" />
+              </paths>
+            </pipeline>
+          </DTS:ObjectData>
+        </DTS:Executable>
+        <DTS:Executable
+          DTS:refId="Package\Load Plan Data\Load Prev Data"
+          DTS:CreationName="Microsoft.Pipeline"
+          DTS:Description="Data Flow Task"
+          DTS:DTSID="{2327F7E7-11E7-4918-A303-BC82E1BA793D}"
+          DTS:ExecutableType="Microsoft.Pipeline"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="Load Prev Data"
+          DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <pipeline
+              version="1">
+              <components>
+                <component
+                  refId="Package\Load Plan Data\Load Prev Data\Data Conversion"
+                  componentClassID="Microsoft.DataConvert"
+                  contactInfo="Data Conversion;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+                  description="Data Conversion"
+                  name="Data Conversion"
+                  usesDispositions="true">
+                  <inputs>
+                    <input
+                      refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input]"
+                      name="Data Conversion Input">
+                      <inputColumns>
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input].Columns[YearNum]"
+                          cachedDataType="r8"
+                          cachedName="YearNum"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[YearNum]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input].Columns[QuarterNum]"
+                          cachedDataType="r8"
+                          cachedName="QuarterNum"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[QuarterNum]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input].Columns[ManagerID]"
+                          cachedDataType="r8"
+                          cachedName="ManagerID"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[ManagerID]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input].Columns[ManagerName]"
+                          cachedDataType="wstr"
+                          cachedLength="255"
+                          cachedName="ManagerName"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[ManagerName]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input].Columns[Sales]"
+                          cachedDataType="r8"
+                          cachedName="Sales"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Sales]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input].Columns[Clients]"
+                          cachedDataType="r8"
+                          cachedName="Clients"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Clients]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input].Columns[Unique]"
+                          cachedDataType="r8"
+                          cachedName="Unique"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Unique]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input].Columns[Coverage]"
+                          cachedDataType="r8"
+                          cachedName="Coverage"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Coverage]" />
+                      </inputColumns>
+                      <externalMetadataColumns />
+                    </input>
+                  </inputs>
+                  <outputs>
+                    <output
+                      refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output]"
+                      exclusionGroup="1"
+                      name="Data Conversion Output"
+                      synchronousInputId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[YearNum]"
+                          dataType="i4"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[YearNum]"
+                          name="YearNum"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              containsID="true"
+                              dataType="System.Int32"
+                              description="Specifies the input column used as the source of data for the conversion."
+                              name="SourceInputColumnLineageID">#{Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[YearNum]}</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[QuarterNum]"
+                          dataType="ui1"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[QuarterNum]"
+                          name="QuarterNum"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              containsID="true"
+                              dataType="System.Int32"
+                              description="Specifies the input column used as the source of data for the conversion."
+                              name="SourceInputColumnLineageID">#{Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[QuarterNum]}</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[ManagerID]"
+                          dataType="i4"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[ManagerID]"
+                          name="ManagerID"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              containsID="true"
+                              dataType="System.Int32"
+                              description="Specifies the input column used as the source of data for the conversion."
+                              name="SourceInputColumnLineageID">#{Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[ManagerID]}</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[ManagerName]"
+                          dataType="wstr"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          length="50"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[ManagerName]"
+                          name="ManagerName"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              containsID="true"
+                              dataType="System.Int32"
+                              description="Specifies the input column used as the source of data for the conversion."
+                              name="SourceInputColumnLineageID">#{Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[ManagerName]}</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Sales]"
+                          dataType="numeric"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Sales]"
+                          name="Sales"
+                          precision="10"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              containsID="true"
+                              dataType="System.Int32"
+                              description="Specifies the input column used as the source of data for the conversion."
+                              name="SourceInputColumnLineageID">#{Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Sales]}</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Clients]"
+                          dataType="i4"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Clients]"
+                          name="Clients"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              containsID="true"
+                              dataType="System.Int32"
+                              description="Specifies the input column used as the source of data for the conversion."
+                              name="SourceInputColumnLineageID">#{Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Clients]}</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Unique]"
+                          dataType="numeric"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Unique]"
+                          name="Unique"
+                          precision="3"
+                          scale="2"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              containsID="true"
+                              dataType="System.Int32"
+                              description="Specifies the input column used as the source of data for the conversion."
+                              name="SourceInputColumnLineageID">#{Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Unique]}</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Coverage]"
+                          dataType="numeric"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Coverage]"
+                          name="Coverage"
+                          precision="3"
+                          scale="2"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              containsID="true"
+                              dataType="System.Int32"
+                              description="Specifies the input column used as the source of data for the conversion."
+                              name="SourceInputColumnLineageID">#{Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Coverage]}</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                          </properties>
+                        </outputColumn>
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Error Output]"
+                      exclusionGroup="1"
+                      isErrorOut="true"
+                      name="Data Conversion Error Output"
+                      synchronousInputId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+                <component
+                  refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev"
+                  componentClassID="Microsoft.OLEDBDestination"
+                  contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+                  description="OLE DB Destination"
+                  name="Dest TargetsQuarterOverallPrev"
+                  usesDispositions="true"
+                  version="4">
+                  <properties>
+                    <property
+                      dataType="System.Int32"
+                      description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                      name="CommandTimeout">0</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the name of the database object used to open a rowset."
+                      name="OpenRowset">[dbo].[TargetsQuarterOverallPrev]</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the variable that contains the name of the database object used to open a rowset."
+                      name="OpenRowsetVariable"></property>
+                    <property
+                      dataType="System.String"
+                      description="The SQL command to be executed."
+                      name="SqlCommand"
+                      UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the column code page to use when code page information is unavailable from the data source."
+                      name="DefaultCodePage">1252</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Forces the use of the DefaultCodePage property value when describing character data."
+                      name="AlwaysUseDefaultCodePage">false</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the mode used to access the database."
+                      name="AccessMode"
+                      typeConverter="AccessMode">3</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                      name="FastLoadKeepIdentity">false</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                      name="FastLoadKeepNulls">false</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                      name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                      name="FastLoadMaxInsertCommitSize">2147483647</property>
+                  </properties>
+                  <connections>
+                    <connection
+                      refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Connections[OleDbConnection]"
+                      connectionManagerID="Package.ConnectionManagers[REPORTS.Reporting]"
+                      connectionManagerRefId="Package.ConnectionManagers[REPORTS.Reporting]"
+                      description="The OLE DB runtime connection used to access the database."
+                      name="OleDbConnection" />
+                  </connections>
+                  <inputs>
+                    <input
+                      refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input]"
+                      errorOrTruncationOperation="Insert"
+                      errorRowDisposition="FailComponent"
+                      hasSideEffects="true"
+                      name="OLE DB Destination Input">
+                      <inputColumns>
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].Columns[YearNum]"
+                          cachedDataType="i4"
+                          cachedName="YearNum"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[YearNum]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[YearNum]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].Columns[QuarterNum]"
+                          cachedDataType="ui1"
+                          cachedName="QuarterNum"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[QuarterNum]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[QuarterNum]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].Columns[ManagerID]"
+                          cachedDataType="i4"
+                          cachedName="ManagerID"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[ManagerID]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[ManagerID]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].Columns[ManagerName]"
+                          cachedDataType="wstr"
+                          cachedLength="50"
+                          cachedName="ManagerName"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[ManagerName]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[ManagerName]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].Columns[Sales]"
+                          cachedDataType="numeric"
+                          cachedName="Sales"
+                          cachedPrecision="10"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[SalesPlan]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Sales]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].Columns[Clients]"
+                          cachedDataType="i4"
+                          cachedName="Clients"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[ClientsPlan]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Clients]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].Columns[Unique]"
+                          cachedDataType="numeric"
+                          cachedName="Unique"
+                          cachedPrecision="3"
+                          cachedScale="2"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[UniqueVacancyPlan]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Unique]" />
+                        <inputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].Columns[Coverage]"
+                          cachedDataType="numeric"
+                          cachedName="Coverage"
+                          cachedPrecision="3"
+                          cachedScale="2"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[CoveragePlan]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output].Columns[Coverage]" />
+                      </inputColumns>
+                      <externalMetadataColumns
+                        isUsed="True">
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[YearNum]"
+                          dataType="i4"
+                          name="YearNum" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[QuarterNum]"
+                          dataType="ui1"
+                          name="QuarterNum" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[ManagerID]"
+                          dataType="i4"
+                          name="ManagerID" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[ManagerName]"
+                          dataType="wstr"
+                          length="50"
+                          name="ManagerName" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[SalesPlan]"
+                          dataType="numeric"
+                          name="SalesPlan"
+                          precision="10"
+                          scale="2" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[ClientsPlan]"
+                          dataType="i4"
+                          name="ClientsPlan" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[UniqueVacancyPlan]"
+                          dataType="numeric"
+                          name="UniqueVacancyPlan"
+                          precision="3"
+                          scale="2" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input].ExternalColumns[CoveragePlan]"
+                          dataType="numeric"
+                          name="CoveragePlan"
+                          precision="3"
+                          scale="2" />
+                      </externalMetadataColumns>
+                    </input>
+                  </inputs>
+                  <outputs>
+                    <output
+                      refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Outputs[OLE DB Destination Error Output]"
+                      exclusionGroup="1"
+                      isErrorOut="true"
+                      name="OLE DB Destination Error Output"
+                      synchronousInputId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+                <component
+                  refId="Package\Load Plan Data\Load Prev Data\Excel Source"
+                  componentClassID="Microsoft.ExcelSource"
+                  contactInfo="Excel Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;1"
+                  description="Excel Source"
+                  name="Excel Source"
+                  usesDispositions="true"
+                  version="1">
+                  <properties>
+                    <property
+                      dataType="System.Int32"
+                      description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                      name="CommandTimeout">0</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the name of the database object used to open a rowset."
+                      name="OpenRowset">Data$</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the variable that contains the name of the database object used to open a rowset."
+                      name="OpenRowsetVariable"></property>
+                    <property
+                      dataType="System.String"
+                      description="The SQL command to be executed."
+                      name="SqlCommand"
+                      UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                    <property
+                      dataType="System.String"
+                      description="The variable that contains the SQL command to be executed."
+                      name="SqlCommandVariable"></property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the mode used to access the database."
+                      name="AccessMode"
+                      typeConverter="AccessMode">0</property>
+                    <property
+                      dataType="System.String"
+                      description="The mapping from parameters in the SQL command to variables."
+                      name="ParameterMapping"></property>
+                  </properties>
+                  <connections>
+                    <connection
+                      refId="Package\Load Plan Data\Load Prev Data\Excel Source.Connections[OleDbConnection]"
+                      connectionManagerID="Package.ConnectionManagers[Excel Connection Manager]"
+                      connectionManagerRefId="Package.ConnectionManagers[Excel Connection Manager]"
+                      description="The OLE DB runtime connection used to access the database."
+                      name="OleDbConnection" />
+                  </connections>
+                  <outputs>
+                    <output
+                      refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output]"
+                      name="Excel Source Output">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[YearNum]"
+                          dataType="r8"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[YearNum]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[YearNum]"
+                          name="YearNum"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[QuarterNum]"
+                          dataType="r8"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[QuarterNum]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[QuarterNum]"
+                          name="QuarterNum"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[ManagerID]"
+                          dataType="r8"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[ManagerID]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[ManagerID]"
+                          name="ManagerID"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[ManagerName]"
+                          dataType="wstr"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[ManagerName]"
+                          length="255"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[ManagerName]"
+                          name="ManagerName"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Sales]"
+                          dataType="r8"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[Sales]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Sales]"
+                          name="Sales"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Clients]"
+                          dataType="r8"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[Clients]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Clients]"
+                          name="Clients"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Unique]"
+                          dataType="r8"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[Unique]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Unique]"
+                          name="Unique"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Coverage]"
+                          dataType="r8"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[Coverage]"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].Columns[Coverage]"
+                          name="Coverage"
+                          truncationRowDisposition="FailComponent" />
+                      </outputColumns>
+                      <externalMetadataColumns
+                        isUsed="True">
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[YearNum]"
+                          dataType="r8"
+                          name="YearNum" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[QuarterNum]"
+                          dataType="r8"
+                          name="QuarterNum" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[ManagerID]"
+                          dataType="r8"
+                          name="ManagerID" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[ManagerName]"
+                          dataType="wstr"
+                          length="255"
+                          name="ManagerName" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[Sales]"
+                          dataType="r8"
+                          name="Sales" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[Clients]"
+                          dataType="r8"
+                          name="Clients" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[Unique]"
+                          dataType="r8"
+                          name="Unique" />
+                        <externalMetadataColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output].ExternalColumns[Coverage]"
+                          dataType="r8"
+                          name="Coverage" />
+                      </externalMetadataColumns>
+                    </output>
+                    <output
+                      refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output]"
+                      isErrorOut="true"
+                      name="Excel Source Error Output">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[YearNum]"
+                          dataType="r8"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[YearNum]"
+                          name="YearNum" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[QuarterNum]"
+                          dataType="r8"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[QuarterNum]"
+                          name="QuarterNum" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[ManagerID]"
+                          dataType="r8"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[ManagerID]"
+                          name="ManagerID" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[ManagerName]"
+                          dataType="wstr"
+                          length="255"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[ManagerName]"
+                          name="ManagerName" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[Sales]"
+                          dataType="r8"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[Sales]"
+                          name="Sales" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[Clients]"
+                          dataType="r8"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[Clients]"
+                          name="Clients" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[Unique]"
+                          dataType="r8"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[Unique]"
+                          name="Unique" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[Coverage]"
+                          dataType="r8"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[Coverage]"
+                          name="Coverage" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+              </components>
+              <paths>
+                <path
+                  refId="Package\Load Plan Data\Load Prev Data.Paths[Data Conversion Output]"
+                  endId="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev.Inputs[OLE DB Destination Input]"
+                  name="Data Conversion Output"
+                  startId="Package\Load Plan Data\Load Prev Data\Data Conversion.Outputs[Data Conversion Output]" />
+                <path
+                  refId="Package\Load Plan Data\Load Prev Data.Paths[Excel Source Output]"
+                  endId="Package\Load Plan Data\Load Prev Data\Data Conversion.Inputs[Data Conversion Input]"
+                  name="Excel Source Output"
+                  startId="Package\Load Plan Data\Load Prev Data\Excel Source.Outputs[Excel Source Output]" />
+              </paths>
+            </pipeline>
+          </DTS:ObjectData>
+        </DTS:Executable>
+        <DTS:Executable
+          DTS:refId="Package\Load Plan Data\TRUNCATE TargetsQuarterOverallPrev_test"
+          DTS:CreationName="Microsoft.ExecuteSQLTask"
+          DTS:Description="Execute SQL Task"
+          DTS:DTSID="{1B7FFFBE-11EE-4387-BF53-5ECF93E29D85}"
+          DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="TRUNCATE TargetsQuarterOverallPrev_test"
+          DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <SQLTask:SqlTaskData
+              SQLTask:Connection="{A62A624C-B56A-409C-89F7-367319500973}"
+              SQLTask:SqlStatementSource="TRUNCATE TABLE TargetsQuarterOverallPrev" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+          </DTS:ObjectData>
+        </DTS:Executable>
+      </DTS:Executables>
+      <DTS:PrecedenceConstraints>
+        <DTS:PrecedenceConstraint
+          DTS:refId="Package\Load Plan Data.PrecedenceConstraints[Constraint]"
+          DTS:CreationName=""
+          DTS:DTSID="{F68144CB-9398-45C3-9D9D-A5A8CBBC7B47}"
+          DTS:From="Package\Load Plan Data\Load Prev Data"
+          DTS:LogicalAnd="True"
+          DTS:ObjectName="Constraint"
+          DTS:To="Package\Load Plan Data\Load PlanData" />
+        <DTS:PrecedenceConstraint
+          DTS:refId="Package\Load Plan Data.PrecedenceConstraints[Constraint 1]"
+          DTS:CreationName=""
+          DTS:DTSID="{B53E1E63-BFEC-4101-B01E-C5F6448649D5}"
+          DTS:From="Package\Load Plan Data\TRUNCATE TargetsQuarterOverallPrev_test"
+          DTS:LogicalAnd="True"
+          DTS:ObjectName="Constraint 1"
+          DTS:To="Package\Load Plan Data\Load Prev Data" />
+      </DTS:PrecedenceConstraints>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="281,42"
+          Id="Package\Load Plan Data\Load Prev Data"
+          TopLeft="31,92" />
+        <NodeLayout
+          Size="268,42"
+          Id="Package\Load Plan Data\Load PlanData"
+          TopLeft="34,179" />
+        <EdgeLayout
+          Id="Package\Load Plan Data.PrecedenceConstraints[Constraint]"
+          TopLeft="169.75,134">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,45"
+              Start="0,0"
+              End="0,37.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,37.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <NodeLayout
+          Size="283,42"
+          Id="Package\Load Plan Data\TRUNCATE TargetsQuarterOverallPrev_test"
+          TopLeft="30,27" />
+        <EdgeLayout
+          Id="Package\Load Plan Data.PrecedenceConstraints[Constraint 1]"
+          TopLeft="171.5,69">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,23"
+              Start="0,0"
+              End="0,15.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,15.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <ContainerLayout
+          HeaderHeight="43"
+          IsExpanded="True"
+          PanelSize="354,271"
+          Size="354,314"
+          Id="Package\Load Plan Data"
+          TopLeft="57,50" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Load Plan Data\Load Prev Data">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="186,42"
+          Id="Package\Load Plan Data\Load Prev Data\Excel Source"
+          TopLeft="165,87" />
+        <NodeLayout
+          Size="156,42"
+          Id="Package\Load Plan Data\Load Prev Data\Data Conversion"
+          TopLeft="164,161" />
+        <EdgeLayout
+          Id="Package\Load Plan Data\Load Prev Data.Paths[Excel Source Output]"
+          TopLeft="258,129">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-16,32"
+              Start="0,0"
+              End="-16,24.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,12" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,12"
+                    Point2="0,16"
+                    Point3="-4,16" />
+                  <mssgle:LineSegment
+                    End="-12,16" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-12,16"
+                    Point2="-16,16"
+                    Point3="-16,20" />
+                  <mssgle:LineSegment
+                    End="-16,24.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <NodeLayout
+          Size="228,42"
+          Id="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev"
+          TopLeft="174,234" />
+        <EdgeLayout
+          Id="Package\Load Plan Data\Load Prev Data.Paths[Data Conversion Output]"
+          TopLeft="242,203">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="46,31"
+              Start="0,0"
+              End="46,23.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,11.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,11.5"
+                    Point2="0,15.5"
+                    Point3="4,15.5" />
+                  <mssgle:LineSegment
+                    End="42,15.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="42,15.5"
+                    Point2="46,15.5"
+                    Point3="46,19.5" />
+                  <mssgle:LineSegment
+                    End="46,23.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Plan Data\Load Prev Data\Excel Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Plan Data\Load Prev Data\Dest TargetsQuarterOverallPrev">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <TaskHost
+    design-time-name="Package\Load Plan Data\Load PlanData">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="16" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mssgm="clr-namespace:Microsoft.SqlServer.Graph.Model;assembly=Microsoft.SqlServer.Graph">
+        <NodeLayout
+          Size="204,42"
+          Id="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev"
+          TopLeft="68,42" />
+        <NodeLayout
+          Size="164,42"
+          Id="Package\Load Plan Data\Load PlanData\Lookup RowCount"
+          TopLeft="310,40" />
+        <EdgeLayout
+          Id="Package\Load Plan Data\Load PlanData.Paths[OLE DB Source Output]"
+          TopLeft="272,62">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="38,0"
+              Start="0,0"
+              End="30.5,0">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="30.5,0" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <NodeLayout
+          Size="155,42"
+          Id="Package\Load Plan Data\Load PlanData\Conditional Split"
+          TopLeft="391,118" />
+        <NodeLayout
+          Size="208,42"
+          Id="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall"
+          TopLeft="221,209" />
+        <NodeLayout
+          Size="166,42"
+          Id="Package\Load Plan Data\Load PlanData\Lookup Old Values"
+          TopLeft="524,38" />
+        <EdgeLayout
+          Id="Package\Load Plan Data\Load PlanData.Paths[Lookup Match Output]"
+          TopLeft="474,60">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="50,0"
+              Start="0,0"
+              End="42.5,0">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="42.5,0" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-26.94138671875,5,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Load Plan Data\Load PlanData.Paths[Lookup Match Output1]"
+          TopLeft="607,80">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-138.5,38"
+              Start="0,0"
+              End="-138.5,30.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,15" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,15"
+                    Point2="0,19"
+                    Point3="-4,19" />
+                  <mssgle:LineSegment
+                    End="-134.5,19" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-134.5,19"
+                    Point2="-138.5,19"
+                    Point3="-138.5,23" />
+                  <mssgle:LineSegment
+                    End="-138.5,30.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-117.44138671875,24,96.3827734375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <NodeLayout
+          Size="220,42"
+          Id="Package\Load Plan Data\Load PlanData\Update TargetsQuarterOverall"
+          TopLeft="498,208" />
+        <EdgeLayout
+          Id="Package\Load Plan Data\Load PlanData.Paths[Update]"
+          TopLeft="493,160">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="115,48"
+              Start="0,0"
+              End="115,40.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,15.4942528735632" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,15.4942528735632"
+                    Point2="0,19.4942528735632"
+                    Point3="4,19.4942528735632" />
+                  <mssgle:LineSegment
+                    End="111,19.4942528735632" />
+                  <mssgle:CubicBezierSegment
+                    Point1="111,19.4942528735632"
+                    Point2="115,19.4942528735632"
+                    Point3="115,23.4942528735632" />
+                  <mssgle:LineSegment
+                    End="115,40.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="41.21970703125,24.4942528735632,32.5605859375,11.609375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Load Plan Data\Load PlanData.Paths[Load]"
+          TopLeft="444,160">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-119,49"
+              Start="0,0"
+              End="-119,41.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,15.9003831417625" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,15.9003831417625"
+                    Point2="0,19.9003831417625"
+                    Point3="-4,19.9003831417625" />
+                  <mssgle:LineSegment
+                    End="-115,19.9003831417625" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-115,19.9003831417625"
+                    Point2="-119,19.9003831417625"
+                    Point3="-119,23.9003831417625" />
+                  <mssgle:LineSegment
+                    End="-119,41.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-70.39298828125,24.9003831417625,21.7859765625,9.7490234375"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Plan Data\Load PlanData\TargetsQuarterOverallPrev">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Plan Data\Load PlanData\Lookup RowCount">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:boolean">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string"></Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:int">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Plan Data\Load PlanData\Dest TargetsQuarterOverall">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Load Plan Data\Load PlanData\Lookup Old Values">
+    <Properties>
+      <Property>
+        <Name>OverwriteParamsSQLProp</Name>
+        <Value
+          type="q2:boolean">false</Value>
+      </Property>
+      <Property>
+        <Name>UsedTableName</Name>
+        <Value
+          type="q3:string">[dbo].[TargetsQuarterOverall]</Value>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q4:int">0</Value>
+      </Property>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>
