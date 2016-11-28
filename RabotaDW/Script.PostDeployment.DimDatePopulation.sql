@@ -9,7 +9,6 @@ Post-Deployment Script Template
                SELECT * FROM [$(TableName)]					
 --------------------------------------------------------------------------------------
 */
-:r .\Script.PostDeployment.DimDatePopulation.sql
 
 DECLARE @StartDate date = '2000-01-01';
 DECLARE @EndDate date = '2020-12-31';
