@@ -13,5 +13,7 @@ Post-Deployment Script Template
 DECLARE @StartDate date = '2000-01-01';
 DECLARE @EndDate date = '2020-12-31';
 
-EXECUTE [dbo].[uspDimDatePopulate]  @StartDate, @EndDate;
+IF NOT EXISTS (SELECT * FROM dbo.DimDate)
+
+	EXECUTE [dbo].[uspDimDatePopulate]  @StartDate, @EndDate;
 
