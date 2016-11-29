@@ -65,7 +65,8 @@ BEGIN
 			 , 'Q' + CONVERT(VARCHAR, DATEPART(QUARTER, @Date)) AS QuarterName
 			 , CONVERT(DATE, DATEADD(QUARTER, DATEDIFF(QUARTER, 0, @Date), 0)) AS QuarterFirstDate
 			 , CONVERT(DATE, DATEADD(DAY, -1, DATEADD(QUARTER, DATEDIFF(QUARTER, 0, @Date) + 1, 0))) AS QuarterLastDate
-			 , YEAR(@Date) AS YearNum;
+			 , YEAR(@Date) AS YearNum
+			 , CASE WHEN DATEPART(WEEKDAY, @Date) IN (6,7) THEN 0 ELSE 1 END AS IsWorkingDay;
 
 			 SET @Date = DATEADD(DAY, 1, @Date);
 

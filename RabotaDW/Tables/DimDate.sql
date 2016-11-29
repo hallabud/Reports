@@ -25,6 +25,7 @@
     [QuarterFirstDate] DATE NOT NULL, 
     [QuarterLastDate] DATE NOT NULL,
 	[YearNum] SMALLINT NOT NULL, 
+    [IsWorkingDay] BIT NOT NULL, 
     CONSTRAINT [PK_DimDate] PRIMARY KEY ([DateKey]) 
 )
 
