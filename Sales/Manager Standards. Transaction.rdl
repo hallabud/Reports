@@ -492,7 +492,7 @@
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style />
-                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Label>=Code.MinutesToHoursMinutes(Avg(Fields!AvgProcessingTime.Value))</Label>
                         <Visible>true</Visible>
                       </ChartDataLabel>
                       <Style>
@@ -1664,6 +1664,21 @@
       </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
+  <Code>Function MinutesToHoursMinutes(ByVal vMins As Integer) As String
+ 
+Dim Mins As Integer
+Dim Hours As Integer
+ 
+vMins = IIF(vMins &lt;= 0, 0, vMins)
+ 
+Hours = Floor(vMins / 60)
+Mins = vMins - (Hours * 60)
+ 
+MinutesToHoursMinutes = IIF(Hours &lt; 9, "0" &amp; CStr(Hours), CStr(Hours)) &amp; " ч. " &amp; IIF(Mins &lt; 9, "0" &amp; CStr(Mins), CStr(Mins))  &amp; " мин." 
+ 
+Return MinutesToHoursMinutes
+ 
+End Function</Code>
   <Language>uk-UA</Language>
   <rd:ReportUnitType>Cm</rd:ReportUnitType>
   <rd:ReportID>ea7229ec-d3a2-4b68-81d0-e7641576abae</rd:ReportID>
