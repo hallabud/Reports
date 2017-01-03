@@ -416,14 +416,14 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
             <Value>=Parameters!Period.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>WITH C AS
+        <CommandText>SET DATEFIRST 1;
+
+WITH C AS
  (
 SELECT 
    DD.YearNum
  , DD.WeekNum
  , DD.WeekName
- --, D.Name AS Department
- --, C.Name AS City
  , COUNT(DISTINCT NC.NotebookID) AS CompanyCount
  , SUM(FRR.RecognizedRevenue) AS RecognizedRevenue
  , ROW_NUMBER() OVER(ORDER BY YearNum DESC, WeekNum DESC) AS RowNum 
@@ -431,18 +431,13 @@ FROM Reporting.dbo.FactRecognizedRevenueNotebook FRR
  JOIN Reporting.dbo.DimDate DD ON FRR.Date_key = DD.Date_key
  JOIN Reporting.dbo.DimService DS ON FRR.Service_key = DS.Service_key
  LEFT JOIN Analytics.dbo.NotebookCompany NC ON FRR.NotebookID = NC.NotebookID
- --LEFT JOIN Analytics.dbo.City C ON NC.HeadquarterCityID = C.Id
- --LEFT JOIN Analytics.dbo.Manager M ON NC.ManagerID = M.ID
- --LEFT JOIN Analytics.dbo.Departments D ON M.DepartmentID = D.Id
 WHERE DD.WeekNum &lt;&gt; DATEPART(WEEK, GETDATE())
 GROUP BY 
    DD.YearNum
  , DD.WeekNum
  , DD.WeekName
  )
-SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period
- --, D.Name
- --, C.Name;</CommandText>
+SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
       </Query>
       <Fields>
         <Field Name="YearNum">
