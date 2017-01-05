@@ -23,13 +23,13 @@
         <CommandText>WITH CTE_UserRequests AS 
  (
 SELECT * 
-FROM Analytics.dbo.Admin7_RequestText
+FROM SRV16.RabotaUA2.dbo.Admin7_RequestText WITH (NOLOCK)
 WHERE IsByUser = 1
  )
 , CTE_CcAnswers AS 
  (
 SELECT * 
-FROM Analytics.dbo.Admin7_RequestText
+FROM SRV16.RabotaUA2.dbo.Admin7_RequestText WITH (NOLOCK)
 WHERE IsByUser = 0
  )
 , CTE_RequestAnswers AS 
@@ -81,12 +81,12 @@ SELECT
  , R.Id
  , CASE R.UserScale WHEN 1 THEN '1 балл' WHEN 2 THEN '2 балла' WHEN 3 THEN '3 балла' WHEN 4 THEN '4 балла' WHEN 5 THEN '5 баллов' ELSE 'Без оценки' END AS UserScale
  , CAST(R.UserScale AS DECIMAL(4,1)) AS UserScaleNumber
-FROM Analytics.dbo.Admin7_Request R
+FROM SRV16.RabotaUA2.dbo.Admin7_Request R  WITH (NOLOCK)
  JOIN CTE_RequestAnswers RA ON R.ID = RA.RequestId
- JOIN Analytics.dbo.Admin7_RequestSubject RS ON R.SubjectID = RS.ID
+ JOIN SRV16.RabotaUA2.dbo.Admin7_RequestSubject RS WITH (NOLOCK) ON R.SubjectID = RS.ID
  JOIN Reporting.dbo.DimDate DD ON dbo.fnGetDatePart(RA.RequestDate) = DD.Fulldate
- LEFT JOIN Analytics.dbo.Admin7_RequestSubSubject RSS ON R.SubSubjectID = RSS.ID
- LEFT JOIN Analytics.dbo.Notebook N ON R.NotebookId = N.Id
+ LEFT JOIN SRV16.RabotaUA2.dbo.Admin7_RequestSubSubject RSS WITH (NOLOCK) ON R.SubSubjectID = RSS.ID
+ LEFT JOIN SRV16.RabotaUA2.dbo.Notebook N WITH (NOLOCK) ON R.NotebookId = N.Id
 WHERE DD.FullDate BETWEEN @StartDate AND @EndDate
  AND R.State = 4;</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
@@ -174,7 +174,7 @@ WHERE DD.FullDate BETWEEN @StartDate AND @EndDate
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
         <CommandText>SELECT MAX(DD.FullDate) AS EndDate, DATEADD(MONTH,-1,MAX(DD.FullDate)) AS StartDate
-FROM SRV16.RabotaUA2.dbo.Admin7_Request R
+FROM SRV16.RabotaUA2.dbo.Admin7_Request R WITH (NOLOCK)
  JOIN Reporting.dbo.DimDate DD ON dbo.fnGetDatePart(R.AddDate) = DD.Fulldate</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
@@ -213,7 +213,6 @@ FROM SRV16.RabotaUA2.dbo.Admin7_Request R
             </Paragraphs>
             <rd:DefaultName>textbox8</rd:DefaultName>
             <Top>0.25cm</Top>
-            <Left>0cm</Left>
             <Height>0.63492cm</Height>
             <Width>13.25cm</Width>
             <Style>
@@ -1268,7 +1267,6 @@ FROM SRV16.RabotaUA2.dbo.Admin7_Request R
             <RepeatRowHeaders>true</RepeatRowHeaders>
             <DataSetName>DStReporting</DataSetName>
             <Top>2.02645cm</Top>
-            <Left>0cm</Left>
             <Height>7.8492cm</Height>
             <Width>22.02646cm</Width>
             <ZIndex>1</ZIndex>
@@ -1292,7 +1290,6 @@ FROM SRV16.RabotaUA2.dbo.Admin7_Request R
             </Paragraphs>
             <rd:DefaultName>textbox10</rd:DefaultName>
             <Top>1.25cm</Top>
-            <Left>0cm</Left>
             <Height>0.63492cm</Height>
             <Width>18cm</Width>
             <ZIndex>2</ZIndex>
@@ -1321,7 +1318,6 @@ FROM SRV16.RabotaUA2.dbo.Admin7_Request R
             </Paragraphs>
             <rd:DefaultName>textbox16</rd:DefaultName>
             <Top>10.18134cm</Top>
-            <Left>0cm</Left>
             <Height>0.63492cm</Height>
             <Width>19cm</Width>
             <ZIndex>3</ZIndex>
@@ -2257,7 +2253,6 @@ FROM SRV16.RabotaUA2.dbo.Admin7_Request R
             <RepeatRowHeaders>true</RepeatRowHeaders>
             <DataSetName>DStReporting</DataSetName>
             <Top>10.84798cm</Top>
-            <Left>0cm</Left>
             <Height>7.21428cm</Height>
             <Width>22.05291cm</Width>
             <ZIndex>4</ZIndex>
@@ -2280,7 +2275,6 @@ FROM SRV16.RabotaUA2.dbo.Admin7_Request R
               </Paragraph>
             </Paragraphs>
             <Top>18.34009cm</Top>
-            <Left>0cm</Left>
             <Height>0.63492cm</Height>
             <Width>22.02646cm</Width>
             <ZIndex>5</ZIndex>
@@ -3061,7 +3055,6 @@ FROM SRV16.RabotaUA2.dbo.Admin7_Request R
               </Filter>
             </Filters>
             <Top>19.07022cm</Top>
-            <Left>0cm</Left>
             <Height>3.1746cm</Height>
             <Width>11cm</Width>
             <ZIndex>6</ZIndex>
@@ -3487,7 +3480,6 @@ FROM SRV16.RabotaUA2.dbo.Admin7_Request R
               </Filter>
             </Filters>
             <Top>23.40716cm</Top>
-            <Left>0cm</Left>
             <Height>2.4cm</Height>
             <Width>11cm</Width>
             <ZIndex>7</ZIndex>
@@ -3514,7 +3506,6 @@ FROM SRV16.RabotaUA2.dbo.Admin7_Request R
               </Paragraph>
             </Paragraphs>
             <Top>22.59585cm</Top>
-            <Left>0cm</Left>
             <Height>0.63492cm</Height>
             <Width>22.05291cm</Width>
             <ZIndex>8</ZIndex>
@@ -3542,7 +3533,6 @@ FROM SRV16.RabotaUA2.dbo.Admin7_Request R
               </Paragraph>
             </Paragraphs>
             <Top>26.0153cm</Top>
-            <Left>0cm</Left>
             <Height>0.63492cm</Height>
             <Width>22.05291cm</Width>
             <ZIndex>9</ZIndex>
