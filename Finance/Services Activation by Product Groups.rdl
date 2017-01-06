@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition">
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="DSrcAnalytics">
-      <DataSourceReference>DSrcAnalytics</DataSourceReference>
+    <DataSource Name="DSrcReporting">
+      <DataSourceReference>DSrcReporting</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>071a3ebb-ec0d-4d78-bc6f-21f785b233bf</rd:DataSourceID>
+      <rd:DataSourceID>655e431a-e86b-4052-ad42-79a5651f6b44</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="DStServicesActivation">
       <Query>
-        <DataSourceName>DSrcAnalytics</DataSourceName>
+        <DataSourceName>DSrcReporting</DataSourceName>
         <QueryParameters>
           <QueryParameter Name="@StartDate">
             <Value>=Parameters!StartDate.Value</Value>
@@ -57,16 +57,16 @@
  , D2.Name AS OrderType
  , SUM(OD.CatalogPrice) AS CatalogPrice
  , SUM(OD.ClientPrice) AS ClientPrice
-FROM dbo.Orders O
- JOIN dbo.OrderDetail OD ON O.ID = OD.OrderID
- JOIN dbo.Directory D1 ON O.State = D1.ID AND D1.Type = 'OrderState'
- JOIN dbo.Directory D2 ON O.Type = D2.ID AND D2.Type = 'OrderType'
- JOIN dbo.Order_ActivationBasis AB ON O.ActivationBasisID = AB.ID
- JOIN dbo.OrderService AS OS ON OD.ServiceID = OS.ID
- JOIN dbo.OrderService_Group AS OSG ON OS.GroupID = OSG.ID
- JOIN dbo.OrderService_Unit AS OSU ON OD.UnitID = OSU.ID 
- JOIN dbo.NotebookCompany NC ON O.NotebookID = NC.NotebookID
- JOIN dbo.Manager M ON NC.ManagerID = M.ID
+FROM SRV16.RabotaUA2.dbo.Orders O WITH (NOLOCK)
+ JOIN SRV16.RabotaUA2.dbo.OrderDetail OD WITH (NOLOCK) ON O.ID = OD.OrderID
+ JOIN SRV16.RabotaUA2.dbo.Directory D1 WITH (NOLOCK) ON O.State = D1.ID AND D1.Type = 'OrderState'
+ JOIN SRV16.RabotaUA2.dbo.Directory D2 WITH (NOLOCK) ON O.Type = D2.ID AND D2.Type = 'OrderType'
+ JOIN SRV16.RabotaUA2.dbo.Order_ActivationBasis AB WITH (NOLOCK) ON O.ActivationBasisID = AB.ID
+ JOIN SRV16.RabotaUA2.dbo.OrderService AS OS WITH (NOLOCK) ON OD.ServiceID = OS.ID
+ JOIN SRV16.RabotaUA2.dbo.OrderService_Group AS OSG WITH (NOLOCK) ON OS.GroupID = OSG.ID
+ JOIN SRV16.RabotaUA2.dbo.OrderService_Unit AS OSU WITH (NOLOCK) ON OD.UnitID = OSU.ID 
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC WITH (NOLOCK) ON O.NotebookID = NC.NotebookID
+ JOIN SRV16.RabotaUA2.dbo.Manager M WITH (NOLOCK) ON NC.ManagerID = M.ID
  JOIN Reporting.dbo.DimDate DD ON OD.ActivationStartDate = DD.FullDate
 WHERE O.NotebookID NOT IN (853455, 1448295) /*не включаем тестовые компании*/
  AND O.State IN (4,5) /*выбираем только активированные или выполненные заказы*/ 
@@ -144,8 +144,10 @@ GROUP BY
     </DataSet>
     <DataSet Name="DStOrderTypes">
       <Query>
-        <DataSourceName>DSrcAnalytics</DataSourceName>
-        <CommandText>SELECT ID, Name FROM dbo.Directory WHERE Type = 'OrderType'</CommandText>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>SELECT ID, Name 
+FROM SRV16.RabotaUA2.dbo.Directory WITH (NOLOCK)
+WHERE Type = 'OrderType'</CommandText>
       </Query>
       <Fields>
         <Field Name="ID">
@@ -1808,7 +1810,7 @@ GROUP BY
       <DataType>DateTime</DataType>
       <DefaultValue>
         <Values>
-          <Value>01.01.2015 0:00:00</Value>
+          <Value>=DateAdd(DateInterval.Day, 1 - DatePart(DateInterval.DayOfYear, DateAdd(DateInterval.Year, -1, Today)), DateAdd(DateInterval.Year, -1, Today))</Value>
         </Values>
       </DefaultValue>
       <Prompt>Начальная дата</Prompt>
