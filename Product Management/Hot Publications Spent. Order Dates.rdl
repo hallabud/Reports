@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition">
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="DSrcAnalytics">
-      <DataSourceReference>DSrcAnalytics</DataSourceReference>
+    <DataSource Name="DSrcReporting">
+      <DataSourceReference>DSrcReporting</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>bd313a6e-454c-44df-b193-7d88b8c2b44e</rd:DataSourceID>
+      <rd:DataSourceID>c2e91306-0181-422b-9ae9-33cc7be52f39</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="DStHotPublicationsSpent">
       <Query>
-        <DataSourceName>DSrcAnalytics</DataSourceName>
+        <DataSourceName>DSrcReporting</DataSourceName>
         <QueryParameters>
           <QueryParameter Name="@StartDate">
             <Value>=Parameters!StartDate.Value</Value>
@@ -35,11 +35,11 @@ SELECT
    END AS OrderGroupByDate_OrderNum 
  , OS.PackageCount
  , NCS.SpendCount
-FROM dbo.NotebookCompany_Spent NCS
- JOIN dbo.Orders O ON NCS.OrderID = O.ID
- JOIN dbo.TicketPayment TP ON NCS.TicketPaymentID = TP.Id
- JOIN dbo.OrderDetail OD ON TP.OrderDetailID = OD.ID
- JOIN dbo.OrderService OS ON OD.ServiceID = OS.ID
+FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS WITH (NOLOCK)
+ JOIN SRV16.RabotaUA2.dbo.Orders O WITH (NOLOCK) ON NCS.OrderID = O.ID
+ JOIN SRV16.RabotaUA2.dbo.TicketPayment TP WITH (NOLOCK) ON NCS.TicketPaymentID = TP.Id
+ JOIN SRV16.RabotaUA2.dbo.OrderDetail OD WITH (NOLOCK) ON TP.OrderDetailID = OD.ID
+ JOIN SRV16.RabotaUA2.dbo.OrderService OS WITH (NOLOCK) ON OD.ServiceID = OS.ID
  JOIN Reporting.dbo.DimDate D ON CAST(NCS.AddDate AS DATE) = D.FullDate
 WHERE NCS.SpendType = 5
  AND NCS.AddDate &gt;= @StartDate
@@ -382,7 +382,6 @@ GROUP BY YearNum, MonthNum, MonthNameEng, OrderGroupByDate, PackageCount,OrderGr
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStHotPublicationsSpent</DataSetName>
-            <Left>0cm</Left>
             <Height>16cm</Height>
             <Width>33cm</Width>
             <Style>

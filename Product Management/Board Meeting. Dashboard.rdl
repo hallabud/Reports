@@ -189,7 +189,7 @@
 		 , COUNT(*) AS ContactsOpened
 		 , LAG(COUNT(*),1,NULL) OVER(PARTITION BY D.MonthNum ORDER BY D.YearNum) AS ContactsOpened_Prv
 		 , 1. * COUNT(*) / LAG(COUNT(*),1,NULL) OVER(PARTITION BY D.MonthNum ORDER BY D.YearNum) - 1. AS YTY
-		FROM Analytics.dbo.DailyViewedResume DVR
+		FROM SRV16.RabotaUA2.dbo.DailyViewedResume DVR WITH (NOLOCK)
 		 JOIN Reporting.dbo.DimDate D ON DVR.ViewDate = D.FullDate
 		WHERE D.YearNum BETWEEN @YearNum - 1 AND @YearNum
 		GROUP BY D.YearNum, D.MonthNum, D.MonthNameEng
@@ -210,7 +210,7 @@ IF @Mode = 2
 		 , LAG(COUNT(*),1,NULL) OVER(PARTITION BY D.MonthNum ORDER BY D.YearNum) AS ContactsOpened_Prv
 		 , 1. * COUNT(*) / LAG(COUNT(*),1,NULL) OVER(PARTITION BY D.MonthNum ORDER BY D.YearNum) - 1. AS YTY
 		 , ROW_NUMBER() OVER(ORDER BY D.YearNum DESC, D.MonthNum DESC) AS RowNum
-		FROM Analytics.dbo.DailyViewedResume DVR
+		FROM SRV16.RabotaUA2.dbo.DailyViewedResume DVR WITH (NOLOCK)
 		 JOIN Reporting.dbo.DimDate D ON DVR.ViewDate = D.FullDate
 		WHERE D.YearNum BETWEEN @YearNum - 2 AND @YearNum
 		GROUP BY D.YearNum, D.MonthNum, D.MonthNameEng
