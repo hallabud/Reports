@@ -424,13 +424,12 @@ SELECT
    DD.YearNum
  , DD.WeekNum
  , DD.WeekName
- , COUNT(DISTINCT NC.NotebookID) AS CompanyCount
+ , COUNT(DISTINCT FRR.NotebookID) AS CompanyCount
  , SUM(FRR.RecognizedRevenue) AS RecognizedRevenue
  , ROW_NUMBER() OVER(ORDER BY YearNum DESC, WeekNum DESC) AS RowNum 
 FROM Reporting.dbo.FactRecognizedRevenueNotebook FRR
  JOIN Reporting.dbo.DimDate DD ON FRR.Date_key = DD.Date_key
  JOIN Reporting.dbo.DimService DS ON FRR.Service_key = DS.Service_key
- LEFT JOIN Analytics.dbo.NotebookCompany NC ON FRR.NotebookID = NC.NotebookID
 WHERE DD.WeekNum &lt;&gt; DATEPART(WEEK, GETDATE())
 GROUP BY 
    DD.YearNum
