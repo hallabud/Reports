@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="DSrcAnalytics">
-      <DataSourceReference>DSrcAnalytics</DataSourceReference>
+    <DataSource Name="DSrcReporting">
+      <DataSourceReference>DSrcReporting</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>bd313a6e-454c-44df-b193-7d88b8c2b44e</rd:DataSourceID>
+      <rd:DataSourceID>c1143430-08d0-400c-bf43-7f36fbc69b63</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="DStHotPublicationsSpent">
       <Query>
-        <DataSourceName>DSrcAnalytics</DataSourceName>
+        <DataSourceName>DSrcReporting</DataSourceName>
         <QueryParameters>
           <QueryParameter Name="@StartDate">
             <Value>=Parameters!StartDate.Value</Value>
@@ -30,19 +30,18 @@ SELECT
  , D.MonthNameEng
  , ISNULL(OS.PackageCount, 1) AS PackageCOunt
  , NCS.SpendCount
-FROM dbo.NotebookCompany_Spent NCS
- JOIN dbo.Orders O ON NCS.OrderID = O.ID
- JOIN dbo.TicketPayment TP ON NCS.TicketPaymentID = TP.Id
- JOIN dbo.OrderDetail OD ON TP.OrderDetailID = OD.ID
- JOIN dbo.OrderService OS ON OD.ServiceID = OS.ID
- JOIN Reporting.dbo.DimDate D ON CAST(NCS.AddDate AS DATE) = D.FullDate
+FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS WITH (NOLOCK)
+ JOIN SRV16.RabotaUA2.dbo.Orders O WITH (NOLOCK) ON NCS.OrderID = O.ID
+ JOIN SRV16.RabotaUA2.dbo.TicketPayment TP WITH (NOLOCK) ON NCS.TicketPaymentID = TP.Id
+ JOIN SRV16.RabotaUA2.dbo.OrderDetail OD WITH (NOLOCK) ON TP.OrderDetailID = OD.ID
+ JOIN SRV16.RabotaUA2.dbo.OrderService OS WITH (NOLOCK) ON OD.ServiceID = OS.ID
+ JOIN Reporting.dbo.DimDate D WITH (NOLOCK) ON CAST(NCS.AddDate AS DATE) = D.FullDate
 WHERE NCS.SpendType IN (1,2,5)
  AND NCS.AddDate &gt;= @StartDate
  )
 SELECT SpendType, YearNum, MonthNum, MonthNameEng, PackageCount, SUM(SpendCount) AS SpendCount
 FROM C
-GROUP BY SpendType, YearNum, MonthNum, MonthNameEng, PackageCount;
-</CommandText>
+GROUP BY SpendType, YearNum, MonthNum, MonthNameEng, PackageCount;</CommandText>
       </Query>
       <Fields>
         <Field Name="SpendType">
@@ -382,7 +381,6 @@ GROUP BY SpendType, YearNum, MonthNum, MonthNameEng, PackageCount;
                 </FilterValues>
               </Filter>
             </Filters>
-            <Left>0cm</Left>
             <Height>16cm</Height>
             <Width>33cm</Width>
             <Style>
@@ -1063,6 +1061,19 @@ GROUP BY SpendType, YearNum, MonthNum, MonthNameEng, PackageCount;
       <Prompt>Начальная дата</Prompt>
     </ReportParameter>
   </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>StartDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
   <Language>uk-UA</Language>
   <rd:ReportUnitType>Cm</rd:ReportUnitType>
   <rd:ReportID>28382b19-4d52-4478-9940-f0b2dd591863</rd:ReportID>
