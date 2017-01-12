@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="DSrcReporting">
@@ -132,10 +132,12 @@
             <Value>=Parameters!Manager.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT FCS.VacancyDiffGroup, COUNT(*) AS ActionNum, COUNT(DISTINCT A.NotebookID) AS NotebookNum
-FROM Analytics.dbo.CRM_Action A
- JOIN Analytics.dbo.aspnet_Membership U ON A.Responsible = U.Email
- JOIN Analytics.dbo.Manager M ON U.UserId = M.aspnet_UserUIN
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+SELECT FCS.VacancyDiffGroup, COUNT(*) AS ActionNum, COUNT(DISTINCT A.NotebookID) AS NotebookNum
+FROM SRV16.RabotaUA2.dbo.CRM_Action A
+ JOIN SRV16.RabotaUA2.dbo.aspnet_Membership U ON A.Responsible = U.Email
+ JOIN SRV16.RabotaUA2.dbo.Manager M ON U.UserId = M.aspnet_UserUIN
  JOIN dbo.DimDate D ON dbo.fnGetDatePart(A.CompleteDate) = D.FullDate
  JOIN dbo.DimCompany C ON A.NotebookID = C.NotebookId
  JOIN dbo.FactCompanyStatuses FCS ON D.Date_key = FCS.Date_key AND C.Company_key = FCS.Company_key
@@ -162,11 +164,13 @@ GROUP BY FCS.VacancyDiffGroup;</CommandText>
     <DataSet Name="DStManagers">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>SELECT M.Name, D.Name AS DepartmentName, AM.LoweredEmail AS Email,
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+SELECT M.Name, D.Name AS DepartmentName, AM.LoweredEmail AS Email,
  'RABOTA\' + LEFT(AM.EMail, CHARINDEX('@', AM.Email) - 1) AS UserID
-FROM Analytics.dbo.Manager M
- JOIN Analytics.dbo.Departments D ON M.DepartmentId = D.ID
- JOIN Analytics.dbo.aspnet_Membership AM ON M.aspnet_UserUIN = AM.UserID
+FROM SRV16.RabotaUA2.dbo.Manager M
+ JOIN SRV16.RabotaUA2.dbo.Departments D ON M.DepartmentId = D.ID
+ JOIN SRV16.RabotaUA2.dbo.aspnet_Membership AM ON M.aspnet_UserUIN = AM.UserID
 WHERE D.Name IN ('Sales Force','Telesales','Teleinfo')
  AND M.IsForTesting = 0
 ORDER BY Name</CommandText>
@@ -204,7 +208,7 @@ ORDER BY Name</CommandText>
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
         <CommandText>SELECT Name 
-FROM Analytics.dbo.Departments 
+FROM SRV16.RabotaUA2.dbo.Departments  WITH (NOLOCK)
 WHERE Name IN ('Sales Force','Telesales','Teleinfo')
 ORDER BY Name</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
@@ -854,6 +858,9 @@ ORDER BY Name</CommandText>
                               <StateDataElementName />
                               <rd:IconsSet>FiveStars</rd:IconsSet>
                               <Style>
+                                <Border>
+                                  <Style>Solid</Style>
+                                </Border>
                                 <ShadowOffset>0pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -971,6 +978,9 @@ ORDER BY Name</CommandText>
                               <StateDataElementName />
                               <rd:IconsSet>ThreeColoredArrows</rd:IconsSet>
                               <Style>
+                                <Border>
+                                  <Style>Solid</Style>
+                                </Border>
                                 <ShadowOffset>0pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -1156,6 +1166,9 @@ ORDER BY Name</CommandText>
                               <StateDataElementName />
                               <rd:IconsSet>FiveStars</rd:IconsSet>
                               <Style>
+                                <Border>
+                                  <Style>Solid</Style>
+                                </Border>
                                 <ShadowOffset>0pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -1281,7 +1294,6 @@ ORDER BY Name</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -1402,6 +1414,9 @@ ORDER BY Name</CommandText>
                               <StateDataElementName />
                               <rd:IconsSet>FiveStars</rd:IconsSet>
                               <Style>
+                                <Border>
+                                  <Style>Solid</Style>
+                                </Border>
                                 <ShadowOffset>0pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -1516,6 +1531,9 @@ ORDER BY Name</CommandText>
                               <StateDataElementName />
                               <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
                               <Style>
+                                <Border>
+                                  <Style>Solid</Style>
+                                </Border>
                                 <ShadowOffset>0pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -1631,6 +1649,9 @@ ORDER BY Name</CommandText>
                               <StateDataElementName />
                               <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
                               <Style>
+                                <Border>
+                                  <Style>Solid</Style>
+                                </Border>
                                 <ShadowOffset>0pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -1746,6 +1767,9 @@ ORDER BY Name</CommandText>
                               <StateDataElementName />
                               <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
                               <Style>
+                                <Border>
+                                  <Style>Solid</Style>
+                                </Border>
                                 <ShadowOffset>0pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -1861,6 +1885,9 @@ ORDER BY Name</CommandText>
                               <StateDataElementName />
                               <rd:IconsSet>ThreeUncircledSymbols</rd:IconsSet>
                               <Style>
+                                <Border>
+                                  <Style>Solid</Style>
+                                </Border>
                                 <ShadowOffset>0pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -2389,6 +2416,34 @@ Right(User!UserID,Len(User!UserID) - 7) &amp; "@rabota.ua")))))</Value>
       </ValidValues>
     </ReportParameter>
   </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>2</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>StartDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>EndDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>Department</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>Manager</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
   <EmbeddedImages>
     <EmbeddedImage Name="ID5star">
       <MIMEType>image/png</MIMEType>

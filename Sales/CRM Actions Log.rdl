@@ -2,16 +2,16 @@
 <Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="DSrcAnalytics">
-      <DataSourceReference>DSrcAnalytics</DataSourceReference>
+    <DataSource Name="DSrcReporting">
+      <DataSourceReference>DSrcReporting</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>4c378701-9071-4a5e-b5e1-895c52b0b188</rd:DataSourceID>
+      <rd:DataSourceID>a641bdba-2438-451a-b712-43a58d032f4b</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="DStActions">
       <Query>
-        <DataSourceName>DSrcAnalytics</DataSourceName>
+        <DataSourceName>DSrcReporting</DataSourceName>
         <QueryParameters>
           <QueryParameter Name="@ManagerIDs">
             <Value>=Parameters!ManagerIDs.Value</Value>
@@ -30,7 +30,7 @@
           </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT D.Name AS ActionType, A.CompleteDate, COALESCE(NC.NotebookID, MN.ID) AS NotebookID, COALESCE(NC.Name, MN.CompanyName) AS CompanyName, M.Name AS ManagerName, MU.Name AS MultiUserName, CD.ID AS DealID, D2.Name AS DealState, O.ClientPriceSum, A.ActionComment, A.ResultComment
- , (SELECT COUNT(*) FROM Analytics.dbo.NotebookCompany NC WHERE NC.ManagerID IN (@ManagerIDs)) AS ManagerCompanyNum
+ , (SELECT COUNT(*) FROM SRV16.RabotaUA2.dbo.NotebookCompany NC WITH (NOLOCK) WHERE NC.ManagerID IN (@ManagerIDs)) AS ManagerCompanyNum
  , CASE WHEN NC.NotebookID IS NULL THEN 1 ELSE 0 END AS IsMetaNotebook
 FROM SRV16.RabotaUA2.dbo.CRM_Action A WITH (NOLOCK)
  JOIN SRV16.RabotaUA2.dbo.CRM_Directory D WITH (NOLOCK) ON D.Type = 'ActionType' AND A.TypeID = D.ID
@@ -109,9 +109,9 @@ ORDER BY A.CompleteDate;</CommandText>
     </DataSet>
     <DataSet Name="DStDepartments">
       <Query>
-        <DataSourceName>DSrcAnalytics</DataSourceName>
+        <DataSourceName>DSrcReporting</DataSourceName>
         <CommandText>SELECT ID, Name
-FROM Analytics.dbo.Departments
+FROM SRV16.RabotaUA2.dbo.Departments WITH (NOLOCK)
 WHERE ID IN (2,3,4)</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
@@ -128,9 +128,9 @@ WHERE ID IN (2,3,4)</CommandText>
     </DataSet>
     <DataSet Name="DStManagers">
       <Query>
-        <DataSourceName>DSrcAnalytics</DataSourceName>
+        <DataSourceName>DSrcReporting</DataSourceName>
         <CommandText>SELECT ID, Name, DepartmentID
-FROM Analytics.dbo.Manager
+FROM SRV16.RabotaUA2.dbo.Manager WITH (NOLOCK)
 WHERE DepartmentID IN (2,3,4)
  AND IsForTesting = 0
 ORDER BY Name</CommandText>

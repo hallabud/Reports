@@ -12,7 +12,9 @@
     <DataSet Name="DStRecognizedRevenue">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
 DECLARE @ReportDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = @TodayDate);
 DECLARE @StartDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
 DECLARE @EndDate DATE = (SELECT LastMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
@@ -39,8 +41,8 @@ SELECT
    END AS ManagerAgeGroupOrderNum
  , SUM(RecognizedRevenue) SumRR
 FROM Reporting.dbo.FactRecognizedRevenueNotebook RRN
- JOIN Analytics.dbo.NotebookCompany NC ON RRN.NotebookID = NC.NotebookId
- JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON RRN.NotebookID = NC.NotebookId
+ JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerId = M.Id
 WHERE Date_key BETWEEN @StartDateKey AND @EndDateKey
  AND M.DepartmentID = 2 AND IsTatarovaGroup = 0 AND IsLoyaltyGroup = 0 AND IsForTesting = 0 AND IsReportExcluding = 0
 GROUP BY
@@ -84,7 +86,9 @@ GROUP BY
     <DataSet Name="DStPaidClientsEndOfMonth">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
 DECLARE @ReportDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = @TodayDate);
 DECLARE @StartDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
 DECLARE @EndDate DATE = (SELECT LastMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
@@ -113,8 +117,8 @@ SELECT
 FROM Reporting.dbo.FactCompanyStatuses FCS
  JOIN Reporting.dbo.DimDate D ON FCS.Date_key = D.Date_key
  JOIN Reporting.dbo.DimCompany C ON FCS.Company_key = C.Company_key
- JOIN Analytics.dbo.NotebookCompany NC ON C.NotebookID = NC.NotebookId
- JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON C.NotebookID = NC.NotebookId
+ JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerId = M.Id
 WHERE FCS.HasPaidServices = 1
  AND D.Date_key = @EndDateKey
  AND M.DepartmentID = 2 AND IsTatarovaGroup = 0 AND IsLoyaltyGroup = 0 AND IsForTesting = 0 AND IsReportExcluding = 0
@@ -159,7 +163,9 @@ GROUP BY
     <DataSet Name="DStActiveClients">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
 DECLARE @ReportDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = @TodayDate);
 DECLARE @StartDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
 DECLARE @EndDate DATE = (SELECT LastMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
@@ -188,8 +194,8 @@ SELECT
 FROM Reporting.dbo.FactCompanyStatuses FCS
  JOIN Reporting.dbo.DimDate D ON FCS.Date_key = D.Date_key
  JOIN Reporting.dbo.DimCompany C ON FCS.Company_key = C.Company_key
- JOIN Analytics.dbo.NotebookCompany NC ON C.NotebookID = NC.NotebookId
- JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON C.NotebookID = NC.NotebookId
+ JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerId = M.Id
 WHERE D.Date_key = @EndDateKey
  AND EXISTS (SELECT * 
 	    	 FROM dbo.FactRecognizedRevenueNotebook RRN 
@@ -238,7 +244,9 @@ GROUP BY
     <DataSet Name="DStNewClients">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+DECLARE @TodayDate DATE = CONVERT(DATE, GETDATE());
 DECLARE @ReportDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = @TodayDate);
 DECLARE @StartDate DATE = (SELECT FirstMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
 DECLARE @EndDate DATE = (SELECT LastMonthDate FROM dbo.DimDate WHERE FullDate = DATEADD(MONTH, -1, @ReportDate));
@@ -267,8 +275,8 @@ SELECT
 FROM Reporting.dbo.FactCompanyStatuses FCS
  JOIN Reporting.dbo.DimDate D ON FCS.Date_key = D.Date_key
  JOIN Reporting.dbo.DimCompany C ON FCS.Company_key = C.Company_key
- JOIN Analytics.dbo.NotebookCompany NC ON C.NotebookID = NC.NotebookId
- JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON C.NotebookID = NC.NotebookId
+ JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerId = M.Id
 WHERE D.Date_key = @EndDateKey
  AND EXISTS (SELECT * 
 	    	 FROM dbo.FactRecognizedRevenueNotebook RRN 

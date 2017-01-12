@@ -62,14 +62,14 @@ SELECT
  , CS.VacancyNum
 INTO #СompaniesListByDates
 FROM Reporting.dbo.DimCompany DC
- JOIN Analytics.dbo.NotebookCompany NC ON DC.NotebookId = NC.NotebookId
- JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON DC.NotebookId = NC.NotebookId
+ JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerId = M.Id
  JOIN Reporting.dbo.FactCompanyStatuses CS ON DC.Company_key = CS.Company_key
  JOIN Reporting.dbo.DimDate DD ON CS.Date_key = DD.Date_key
 WHERE DD.FullDate BETWEEN @StartDate AND @EndDate
  AND (DD.DayNum = 1 OR DD.FullDate = @EndDate)
  AND NC.IsNetworkCompany = 0
- AND NOT EXISTS (SELECT * FROM Analytics.dbo.NotebookCompanyMerged WHERE SourceNotebookID = NC.NotebookID)
+ AND NOT EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.NotebookCompanyMerged WHERE SourceNotebookID = NC.NotebookID)
  AND M.DepartmentID IN (2,3)
  AND M.ID IN (@ManagerID)
 
