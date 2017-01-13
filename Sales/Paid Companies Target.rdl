@@ -21,7 +21,9 @@
             <Value>=Parameters!DepartmentName.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>DECLARE @StartDate DATETIME; SET @StartDate = '2014-01-01';
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+DECLARE @StartDate DATETIME; SET @StartDate = '2014-01-01';
 DECLARE @TodayDate DATETIME; SET @TodayDate = dbo.fnGetDatePart(GETDATE());
 
  --DECLARE @DepartmentName VARCHAR(30); SET @DepartmentName = 'Sales Force'
@@ -53,7 +55,7 @@ IF @Mode = 'Месячный'
 			ELSE 'Не клиент'
 		   END AS IsClient
 		 , CASE 
-			WHEN NC.IsNetworkCompany = 1 OR NC.IsNonResident = 1 OR NC.HeadquarterCityId IN (SELECT Id FROM Analytics.dbo.City WHERE Id IN (6,12,13,29,33,34) OR OblastCityID IN (6,12,13,29,33,34)) THEN 'Нецелевые компании'
+			WHEN NC.IsNetworkCompany = 1 OR NC.IsNonResident = 1 OR NC.HeadquarterCityId IN (SELECT Id FROM SRV16.RabotaUA2.dbo.City WHERE Id IN (6,12,13,29,33,34) OR OblastCityID IN (6,12,13,29,33,34)) THEN 'Нецелевые компании'
 			ELSE 'Целевые компании'
 		   END AS IsTargetAudience
 		 , CASE 
@@ -65,7 +67,7 @@ IF @Mode = 'Месячный'
 		FROM Reporting.dbo.DimCompany DC
 		 JOIN Reporting.dbo.FactCompanyStatuses FCS ON DC.Company_key = FCS.Company_key
 		 JOIN Reporting.dbo.DimDate DD ON FCS.Date_key = DD.Date_key
-		 JOIN Analytics.dbo.NotebookCompany NC ON DC.NotebookId = NC.NotebookId
+		 JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON DC.NotebookId = NC.NotebookId
 		WHERE DepartmentName IN (@DepartmentName)
 		 AND DD.FullDate &gt;= @StartDate
 		 AND (DD.DayNum = 1 OR DD.FullDate = @TodayDate)
@@ -84,7 +86,7 @@ IF @Mode = 'Недельный'
 			ELSE 'Не клиент'
 		   END AS IsClient
 		 , CASE 
-			WHEN NC.IsNetworkCompany = 1 OR NC.IsNonResident = 1 OR NC.HeadquarterCityId IN (SELECT Id FROM Analytics.dbo.City WHERE Id IN (6,12,13,29,33,34) OR OblastCityID IN (6,12,13,29,33,34)) THEN 'Нецелевые компании'
+			WHEN NC.IsNetworkCompany = 1 OR NC.IsNonResident = 1 OR NC.HeadquarterCityId IN (SELECT Id FROM SRV16.RabotaUA2.dbo.City WHERE Id IN (6,12,13,29,33,34) OR OblastCityID IN (6,12,13,29,33,34)) THEN 'Нецелевые компании'
 			ELSE 'Целевые компании'
 		   END AS IsTargetAudience
 		 , CASE 
@@ -96,7 +98,7 @@ IF @Mode = 'Недельный'
 		FROM Reporting.dbo.DimCompany DC
 		 JOIN Reporting.dbo.FactCompanyStatuses FCS ON DC.Company_key = FCS.Company_key
 		 JOIN Reporting.dbo.DimDate DD ON FCS.Date_key = DD.Date_key
-		 JOIN Analytics.dbo.NotebookCompany NC ON DC.NotebookId = NC.NotebookId
+		 JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON DC.NotebookId = NC.NotebookId
 		WHERE DepartmentName IN (@DepartmentName)
 		 AND DD.FullDate &gt;= DATEADD(MONTH, -3, @TodayDate)
 		 AND (DD.WeekDayNum = 6 OR DD.FullDate = @TodayDate)

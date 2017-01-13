@@ -23,11 +23,13 @@
             <Value>=Parameters!Managers.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT DD.YearNum, DD.QuarterNum, DD.MonthNameRus, DD.MonthNum, M.Name AS Manager, SUM(RecognizedRevenue) AS SumRecognizedRevenue
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+SELECT DD.YearNum, DD.QuarterNum, DD.MonthNameRus, DD.MonthNum, M.Name AS Manager, SUM(RecognizedRevenue) AS SumRecognizedRevenue
 FROM Reporting.dbo.FactRecognizedRevenueNotebook RRN
  JOIN Reporting.dbo.DimDate DD ON RRN.Date_key = DD.Date_key
- JOIN Analytics.dbo.NotebookCompany NC ON RRN.NotebookID = NC.NotebookID
- JOIN Analytics.dbo.Manager M ON NC.ManagerID = M.ID
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON RRN.NotebookID = NC.NotebookID
+ JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerID = M.ID
 WHERE M.DepartmentID IN (2,3)
  AND DD.FullDate BETWEEN @StartDate AND @EndDate
  AND M.ID IN (@Managers)

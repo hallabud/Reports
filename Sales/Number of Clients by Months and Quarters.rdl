@@ -39,10 +39,15 @@
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>WITH C_Revenue_Month AS 
- (
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+IF OBJECT_ID('tempdb..#RevenueMonth','U') IS NOT NULL DROP TABLE #RevenueMonth;
+IF OBJECT_ID('tempdb..#RevenueMonthActivity','U') IS NOT NULL DROP TABLE #RevenueMonthActivity;
+IF OBJECT_ID('tempdb..#Companies') IS NOT NULL DROP TABLE #Companies;
+
+-- потребление по компаниям помесячно за интересующий период
   SELECT
-    M.Id AS ManagerID
+     M.Id AS ManagerID
    , M.Name AS ManagerName
    , NC.NotebookId
    , NC.Name AS CompanyName
@@ -52,8 +57,9 @@
    , DD.MonthNameRus
    , RRN.Service_key
    , SUM(RRN.RecognizedRevenue) AS SumRecognizedRevenue
-  FROM Analytics.dbo.NotebookCompany AS NC 
-   INNER JOIN Analytics.dbo.Manager AS M ON NC.ManagerId = M.Id 
+  INTO #RevenueMonth
+  FROM SRV16.RabotaUA2.dbo.NotebookCompany AS NC 
+   INNER JOIN SRV16.RabotaUA2.dbo.Manager AS M ON NC.ManagerId = M.Id 
    INNER JOIN Reporting.dbo.FactRecognizedRevenueNotebook AS RRN ON NC.NotebookId = RRN.NotebookID
    INNER JOIN Reporting.dbo.DimDate AS DD ON RRN.Date_key = DD.Date_key
   WHERE M.Id IN (@ManagerID) 
@@ -68,32 +74,32 @@
    , DD.MonthNameEng
    , DD.MonthNameRus
    , RRN.Service_key
-  HAVING SUM(RRN.RecognizedRevenue) &gt; 0
- )
- , C_Revenue_Month_2 AS
- (
+  HAVING SUM(RRN.RecognizedRevenue) &gt; 0;
+
+
+-- потребление + группа активности
   SELECT 
-   ManagerID
- , ManagerName
- ,  CASE 
-     WHEN EXISTS (SELECT * 
-                  FROM C_Revenue_Month
-                  WHERE NotebookId = CRM.NotebookId 
-				   AND YearNum = CRM.YearNum
-				   AND MonthNum = CRM.MonthNum
-				   AND Service_key &lt;&gt; 10
-				   AND SumRecognizedRevenue &gt; 0) 
-     THEN 'С доходом: Активный клиент' ELSE 'С доходом: Пассивный клиент' END AS ClientType
- , YearNum
- , MonthNum
- , MonthNameEng
- , MonthNameRus
- , NotebookId
- , Service_key
-FROM C_Revenue_Month AS CRM
- )
- , C_Companies AS
- (
+	   ManagerID
+	 , ManagerName
+	 ,  CASE 
+		 WHEN EXISTS (SELECT * 
+					  FROM #RevenueMonth
+					  WHERE NotebookId = RM.NotebookId 
+					   AND YearNum = RM.YearNum
+					   AND MonthNum = RM.MonthNum
+					   AND Service_key &lt;&gt; 10
+					   AND SumRecognizedRevenue &gt; 0) 
+		 THEN 'С доходом: Активный клиент' ELSE 'С доходом: Пассивный клиент' END AS ClientType
+	 , YearNum
+	 , MonthNum
+	 , MonthNameEng
+	 , MonthNameRus
+	 , NotebookId
+	 , Service_key
+  INTO #RevenueMonthActivity
+  FROM #RevenueMonth AS RM;
+
+-- суммы потраченных публикаций компаниями помесячно 
  SELECT
     M.Id AS ManagerID
   , M.Name AS ManagerName
@@ -102,45 +108,56 @@ FROM C_Revenue_Month AS CRM
   , DD.MonthNameEng
   , DD.MonthNameRus
   , NC.NotebookId
-  , (SELECT COUNT(*)
-     FROM Analytics.dbo.NotebookCompany_Spent AS NCS
-     WHERE NotebookID = NC.NotebookId AND AddDate BETWEEN DD.FirstMonthDate AND DD.LastMonthDate + 1) AS PubNum
- FROM Analytics.dbo.NotebookCompany AS NC 
-  INNER JOIN Analytics.dbo.Manager AS M ON NC.ManagerId = M.Id 
+  , SUM(NCS.SpendCount) AS PubNum
+ INTO #Companies
+ FROM SRV16.RabotaUA2.dbo.NotebookCompany AS NC 
+  INNER JOIN SRV16.RabotaUA2.dbo.Manager AS M ON NC.ManagerId = M.Id 
   CROSS JOIN Reporting.dbo.DimDate AS DD
+  LEFT JOIN SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS ON NC.NotebookID = NCS.NotebookID AND NCS.AddDate BETWEEN DD.FirstMonthDate AND DD.LastMonthDate + 1
  WHERE DD.FullDate BETWEEN @StartDate AND @EndDate 
   AND DD.DayNum = 1 
-  AND M.Id IN (@ManagerID) 
+  AND M.Id IN (@ManagerID)
   AND NOT EXISTS (SELECT *
-                  FROM Analytics.dbo.NotebookCompanyMerged AS NCM
+                  FROM SRV16.RabotaUA2.dbo.NotebookCompanyMerged AS NCM
                   WHERE NCM.SourceNotebookID = NC.NotebookId) 
   AND EXISTS (SELECT *
-              FROM Analytics.dbo.Notebook AS N
+              FROM SRV16.RabotaUA2.dbo.Notebook AS N
               WHERE Id = NC.NotebookId 
 			   AND NotebookStateId IN (5, 7)) 
   AND NOT EXISTS (SELECT *
-				  FROM C_Revenue_Month
-                  WHERE NotebookId = NC.NotebookId AND YearNum = DD.YearNum AND MonthNum = DD.MonthNum))
+				  FROM #RevenueMonth
+                  WHERE NotebookId = NC.NotebookId AND YearNum = DD.YearNum AND MonthNum = DD.MonthNum)
+ GROUP BY 
+	M.Id
+  , M.Name
+  , DD.YearNum
+  , DD.MonthNum
+  , DD.MonthNameEng
+  , DD.MonthNameRus
+  , NC.NotebookId;
+
 
 SELECT
    ManagerID
  , ManagerName
- , CASE WHEN PubNum = 0 THEN 'Нет потраченных публикаций' ELSE 'Есть потраченные публикации' END AS ClientType
+ , CASE WHEN PubNum IS NULL THEN 'Нет потраченных публикаций' WHEN PubNum = 0 THEN 'Нет потраченных публикаций' ELSE 'Есть потраченные публикации' END AS ClientType
  , YearNum
  , MonthNum
  , MonthNameEng
  , MonthNameRus
  , COUNT(DISTINCT NotebookId) AS ClientNum
-FROM C_Companies
+FROM #Companies
 GROUP BY 
    ManagerID
  , ManagerName
- , CASE WHEN PubNum = 0 THEN 'Нет потраченных публикаций' ELSE 'Есть потраченные публикации' END
+ , CASE WHEN PubNum IS NULL THEN 'Нет потраченных публикаций' WHEN PubNum = 0 THEN 'Нет потраченных публикаций' ELSE 'Есть потраченные публикации' END
  , YearNum
  , MonthNum
  , MonthNameEng
  , MonthNameRus
+
 UNION ALL
+
 SELECT 
    ManagerID
  , ManagerName
@@ -150,7 +167,7 @@ SELECT
  , MonthNameEng
  , MonthNameRus
  , COUNT(DISTINCT NotebookId) AS ClientNum
-FROM C_Revenue_Month_2
+FROM #RevenueMonthActivity
 GROUP BY 
    ManagerID
  , ManagerName
@@ -158,7 +175,7 @@ GROUP BY
  , YearNum
  , MonthNum
  , MonthNameEng
- , MonthNameRus</CommandText>
+ , MonthNameRus;</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -210,8 +227,13 @@ GROUP BY
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>WITH C_Revenue_Quarter AS 
- (
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+IF OBJECT_ID('tempdb..#RevenueQuarter','U') IS NOT NULL DROP TABLE #RevenueQuarter;
+IF OBJECT_ID('tempdb..#RevenueQuarterActivity','U') IS NOT NULL DROP TABLE #RevenueQuarterActivity;
+IF OBJECT_ID('tempdb..#Companies','U') IS NOT NULL DROP TABLE #Companies;
+
+  -- потребление поквартально
   SELECT
     M.Id AS ManagerID
    , M.Name AS ManagerName
@@ -221,8 +243,9 @@ GROUP BY
    , DD.QuarterNum
    , RRN.Service_key
    , SUM(RRN.RecognizedRevenue) AS SumRecognizedRevenue
-  FROM Analytics.dbo.NotebookCompany AS NC 
-   INNER JOIN Analytics.dbo.Manager AS M ON NC.ManagerId = M.Id 
+  INTO #RevenueQuarter
+  FROM SRV16.RabotaUA2.dbo.NotebookCompany AS NC 
+   INNER JOIN SRV16.RabotaUA2.dbo.Manager AS M ON NC.ManagerId = M.Id 
    INNER JOIN Reporting.dbo.FactRecognizedRevenueNotebook AS RRN ON NC.NotebookId = RRN.NotebookID
    INNER JOIN Reporting.dbo.DimDate AS DD ON RRN.Date_key = DD.Date_key
   WHERE M.Id IN (@ManagerID) 
@@ -236,18 +259,17 @@ GROUP BY
    , DD.QuarterNum
    , RRN.Service_key
   HAVING SUM(RRN.RecognizedRevenue) &gt; 0
- )
- , C_Revenue_Quarter_2 AS
- (
+
+  -- потребление поквартально с группами активности
   SELECT 
    ManagerID
  , ManagerName
  ,  CASE 
      WHEN EXISTS (SELECT * 
-                  FROM C_Revenue_Quarter
-                  WHERE NotebookId = CRM.NotebookId 
-				   AND YearNum = CRM.YearNum
-				   AND QuarterNum = CRM.QuarterNum
+                  FROM #RevenueQuarter
+                  WHERE NotebookId = RQ.NotebookId 
+				   AND YearNum = RQ.YearNum
+				   AND QuarterNum = RQ.QuarterNum
 				   AND Service_key &lt;&gt; 10
 				   AND SumRecognizedRevenue &gt; 0) 
      THEN 'С доходом: Активный клиент' ELSE 'С доходом: Пассивный клиент' END AS ClientType
@@ -255,51 +277,60 @@ GROUP BY
  , QuarterNum
  , NotebookId
  , Service_key
-FROM C_Revenue_Quarter AS CRM
- )
- , C_Companies AS
- (
+INTO #RevenueQuarterActivity
+FROM #RevenueQuarter AS RQ
+
+ -- траты публикаций компаниями
  SELECT
     M.Id AS ManagerID
   , M.Name AS ManagerName
   , DD.YearNum
   , DD.QuarterNum
   , NC.NotebookId
-  , (SELECT COUNT(*)
-     FROM Analytics.dbo.NotebookCompany_Spent AS NCS
-     WHERE NotebookID = NC.NotebookId AND AddDate BETWEEN DD.FirstQuarterDate AND DD.LastQuarterDate + 1) AS PubNum
- FROM Analytics.dbo.NotebookCompany AS NC 
-  INNER JOIN Analytics.dbo.Manager AS M ON NC.ManagerId = M.Id 
+  , SUM(SpendCount) AS PubNum
+ INTO #Companies
+ FROM SRV16.RabotaUA2.dbo.NotebookCompany AS NC 
+  INNER JOIN SRV16.RabotaUA2.dbo.Manager AS M ON NC.ManagerId = M.Id 
   CROSS JOIN Reporting.dbo.DimDate AS DD
+  LEFT JOIN SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS ON NC.NotebookID = NCS.NotebookId AND NCS.AddDate BETWEEN  DD.FirstQuarterDate AND DD.LastQuarterDate + 1
  WHERE DD.FullDate BETWEEN @StartDate AND @EndDate 
   AND DD.DayNum = 1 
   AND M.Id IN (@ManagerID) 
   AND NOT EXISTS (SELECT *
-                  FROM Analytics.dbo.NotebookCompanyMerged AS NCM
+                  FROM SRV16.RabotaUA2.dbo.NotebookCompanyMerged AS NCM
                   WHERE NCM.SourceNotebookID = NC.NotebookId) 
   AND EXISTS (SELECT *
-              FROM Analytics.dbo.Notebook AS N
+              FROM SRV16.RabotaUA2.dbo.Notebook AS N
               WHERE Id = NC.NotebookId 
 			   AND NotebookStateId IN (5, 7)) 
   AND NOT EXISTS (SELECT *
-				  FROM C_Revenue_Quarter
-                  WHERE NotebookId = NC.NotebookId AND YearNum = DD.YearNum AND QuarterNum = DD.QuarterNum))
+				  FROM #RevenueQuarter
+                  WHERE NotebookId = NC.NotebookId AND YearNum = DD.YearNum AND QuarterNum = DD.QuarterNum)
+GROUP BY 
+	M.Id
+  , M.Name
+  , DD.YearNum
+  , DD.QuarterNum
+  , NC.NotebookId;
+
 
 SELECT
    ManagerID
  , ManagerName
- , CASE WHEN PubNum = 0 THEN 'Нет потраченных публикаций' ELSE 'Есть потраченные публикации' END AS ClientType
+ , CASE WHEN PubNum IS NULL THEN 'Нет потраченных публикаций' WHEN PubNum = 0 THEN 'Нет потраченных публикаций' ELSE 'Есть потраченные публикации' END AS ClientType
  , YearNum
  , QuarterNum
  , COUNT(DISTINCT NotebookId) AS ClientNum
-FROM C_Companies
+FROM #Companies
 GROUP BY 
    ManagerID
  , ManagerName
- , CASE WHEN PubNum = 0 THEN 'Нет потраченных публикаций' ELSE 'Есть потраченные публикации' END
+ , CASE WHEN PubNum IS NULL THEN 'Нет потраченных публикаций' WHEN PubNum = 0 THEN 'Нет потраченных публикаций' ELSE 'Есть потраченные публикации' END
  , YearNum
  , QuarterNum
+
 UNION ALL
+
 SELECT 
    ManagerID
  , ManagerName
@@ -307,13 +338,13 @@ SELECT
  , YearNum
  , QuarterNum
  , COUNT(DISTINCT NotebookId) AS ClientNum
-FROM C_Revenue_Quarter_2
+FROM #RevenueQuarterActivity
 GROUP BY 
    ManagerID
  , ManagerName
  , ClientType
  , YearNum
- , QuarterNum</CommandText>
+ , QuarterNum;</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -978,23 +1009,6 @@ GROUP BY
                     </TablixCell>
                   </TablixCells>
                 </TablixRow>
-                <TablixRow>
-                  <Height>0.07938cm</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Rectangle Name="Rectangle10">
-                          <KeepTogether>true</KeepTogether>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                          </Style>
-                        </Rectangle>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
@@ -1016,14 +1030,11 @@ GROUP BY
                     </SortExpression>
                   </SortExpressions>
                 </TablixMember>
-                <TablixMember>
-                  <Group Name="Details" />
-                </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStClientsMonths</DataSetName>
             <Top>12cm</Top>
-            <Height>11cm</Height>
+            <Height>10.92062cm</Height>
             <Width>17.5cm</Width>
             <ZIndex>1</ZIndex>
             <Style>
@@ -1352,23 +1363,6 @@ GROUP BY
                     </TablixCell>
                   </TablixCells>
                 </TablixRow>
-                <TablixRow>
-                  <Height>0.07938cm</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Rectangle Name="Rectangle11">
-                          <KeepTogether>true</KeepTogether>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                          </Style>
-                        </Rectangle>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
@@ -1390,15 +1384,12 @@ GROUP BY
                     </SortExpression>
                   </SortExpressions>
                 </TablixMember>
-                <TablixMember>
-                  <Group Name="Details1" />
-                </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStClientsQuarter</DataSetName>
             <Top>12cm</Top>
             <Left>17.5cm</Left>
-            <Height>11cm</Height>
+            <Height>10.92062cm</Height>
             <Width>17.5cm</Width>
             <ZIndex>2</ZIndex>
             <Style>
@@ -1748,7 +1739,7 @@ GROUP BY
             </Style>
           </Chart>
         </ReportItems>
-        <Height>9.05512in</Height>
+        <Height>9.02387in</Height>
         <Style>
           <BackgroundColor>WhiteSmoke</BackgroundColor>
         </Style>
