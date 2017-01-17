@@ -78,6 +78,36 @@
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!AlertTypeID.Value</FilterExpression>
+          <Operator>NotEqual</Operator>
+          <FilterValues>
+            <FilterValue DataType="Integer">1</FilterValue>
+          </FilterValues>
+        </Filter>
+        <Filter>
+          <FilterExpression>=Fields!AlertTypeID.Value</FilterExpression>
+          <Operator>NotEqual</Operator>
+          <FilterValues>
+            <FilterValue DataType="Integer">2</FilterValue>
+          </FilterValues>
+        </Filter>
+        <Filter>
+          <FilterExpression>=Fields!AlertTypeID.Value</FilterExpression>
+          <Operator>NotEqual</Operator>
+          <FilterValues>
+            <FilterValue DataType="Integer">19</FilterValue>
+          </FilterValues>
+        </Filter>
+        <Filter>
+          <FilterExpression>=Fields!AlertTypeID.Value</FilterExpression>
+          <Operator>NotEqual</Operator>
+          <FilterValues>
+            <FilterValue DataType="Integer">20</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
     </DataSet>
   </DataSets>
   <ReportSections>
@@ -401,7 +431,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)</Value>
+                                  <Value>=IIf(Single.IsNaN(Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)), 0, IIf(Single.IsInfinity(Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)), 0, Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)))</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>0 %</Format>
@@ -664,7 +694,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)</Value>
+                                  <Value>=IIf(Single.IsNaN(Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)), 0, IIf(Single.IsInfinity(Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)), 0, Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)))</Value>
                                   <Style>
                                     <Format>0 %</Format>
                                   </Style>
@@ -879,7 +909,7 @@
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value>Deals Cnt</Value>
+                                    <Value>Deals Count</Value>
                                     <Style>
                                       <FontWeight>Bold</FontWeight>
                                     </Style>
@@ -921,7 +951,7 @@
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value>Paid Deals Cnt</Value>
+                                    <Value>Paid Deals Count</Value>
                                     <Style>
                                       <FontWeight>Bold</FontWeight>
                                     </Style>
@@ -1135,7 +1165,6 @@
               </Filter>
             </Filters>
             <Top>46.71125cm</Top>
-            <Left>0cm</Left>
             <Height>1.8cm</Height>
             <Width>24.77542cm</Width>
             <Style>
@@ -1151,7 +1180,7 @@
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Воронка продаж по менеджерам и типам уведомлений за период</Value>
+                    <Value>Воронка продаж по менеджерам за период</Value>
                     <Style>
                       <FontSize>12pt</FontSize>
                       <FontWeight>Bold</FontWeight>
@@ -1163,7 +1192,6 @@
             </Paragraphs>
             <rd:DefaultName>Textbox106</rd:DefaultName>
             <Top>45.81139cm</Top>
-            <Left>0cm</Left>
             <Height>0.75875cm</Height>
             <Width>15.80854cm</Width>
             <ZIndex>1</ZIndex>
@@ -1301,6 +1329,7 @@
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>#,0;(#,0)</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1337,6 +1366,7 @@
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>#,0;(#,0)</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1373,6 +1403,7 @@
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>#,0;(#,0)</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1408,6 +1439,7 @@
                                   <Value>=Code.MinutesToHoursMinutes(Avg(Fields!AvgProcessingTime.Value))</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1444,6 +1476,7 @@
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>#,0;(#,0)</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1480,6 +1513,7 @@
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>#,0;(#,0)</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1516,6 +1550,7 @@
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>#,0 '₴'</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1549,10 +1584,11 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)</Value>
+                                  <Value>=IIf(Single.IsNaN(Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)), 0, IIf(Single.IsInfinity(Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)), 0, Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)))</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>0 %</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1593,6 +1629,7 @@
                                   <Value>=Sum(Fields!AlarmsCount.Value)</Value>
                                   <Style>
                                     <Format>#,0;(#,0)</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1625,6 +1662,7 @@
                                   <Value>=Sum(Fields!CompaniesCount.Value)</Value>
                                   <Style>
                                     <Format>#,0;(#,0)</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1657,6 +1695,7 @@
                                   <Value>=Sum(Fields!ActionsCount.Value)</Value>
                                   <Style>
                                     <Format>#,0;(#,0)</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1687,7 +1726,9 @@
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Code.MinutesToHoursMinutes(Avg(Fields!AvgProcessingTime.Value))</Value>
-                                  <Style />
+                                  <Style>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -1719,6 +1760,7 @@
                                   <Value>=Sum(Fields!DealsCnt.Value)</Value>
                                   <Style>
                                     <Format>#,0;(#,0)</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1751,6 +1793,7 @@
                                   <Value>=Sum(Fields!PaidDealsCnt.Value)</Value>
                                   <Style>
                                     <Format>#,0;(#,0)</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1783,6 +1826,7 @@
                                   <Value>=Sum(Fields!PaidSum.Value)</Value>
                                   <Style>
                                     <Format>#,0 '₴'</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1813,9 +1857,10 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)</Value>
+                                  <Value>=IIf(Single.IsNaN(Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)), 0, IIf(Single.IsInfinity(Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)), 0, Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)))</Value>
                                   <Style>
                                     <Format>0 %</Format>
+                                    <Color>=IIf(Sum(Fields!AlarmsCount.Value) = 0 And Sum(Fields!ActionsCount.Value) = 0 And Sum(Fields!DealsCnt.Value) = 0 And Sum(Fields!PaidSum.Value) = 0, "#696969", "Black")</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2028,7 +2073,7 @@
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value>Deals Cnt</Value>
+                                    <Value>Deals Count</Value>
                                     <Style>
                                       <FontWeight>Bold</FontWeight>
                                     </Style>
@@ -2070,7 +2115,7 @@
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value>Paid Deals Cnt</Value>
+                                    <Value>Paid Deals Count</Value>
                                     <Style>
                                       <FontWeight>Bold</FontWeight>
                                     </Style>
@@ -2398,12 +2443,12 @@
                       <GroupExpression>=Fields!ManagerName.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
-                  <Label>=Fields!ManagerName.Value</Label>
                   <SortExpressions>
                     <SortExpression>
                       <Value>=IIf(Fields!ManagerID.Value = 0, 999, Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value))</Value>
                     </SortExpression>
                   </SortExpressions>
+                  <Label>=Fields!ManagerName.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -2700,7 +2745,6 @@
                   <FontWeight>Bold</FontWeight>
                   <TextAlign>Left</TextAlign>
                   <VerticalAlign>Top</VerticalAlign>
-                  <Color>#a6a6a6</Color>
                 </Style>
                 <Position>TopLeft</Position>
               </ChartTitle>
@@ -2754,12 +2798,12 @@
                       <GroupExpression>=Fields!AlertType.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
-                  <Label>=IIf(Fields!AlertTypeID.Value = -1, "Average", Fields!AlertType.Value)</Label>
                   <SortExpressions>
                     <SortExpression>
                       <Value>= IIf(Fields!AlertTypeID.Value = -1, 999, IIf(Sum(Fields!ActionsCount.Value) = 0, 0, Sum(Fields!PaidDealsCnt.Value) / Sum(Fields!ActionsCount.Value)))</Value>
                     </SortExpression>
                   </SortExpressions>
+                  <Label>=IIf(Fields!AlertTypeID.Value = -1, "Average", Fields!AlertType.Value)</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -2780,10 +2824,11 @@
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style>
-                          <Format>0 %</Format>
+                          <Format>0.0 %</Format>
                         </Style>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
+                        <Position>Outside</Position>
                       </ChartDataLabel>
                       <Style>
                         <Color>#0000ff</Color>
@@ -3057,7 +3102,6 @@
                   <FontWeight>Bold</FontWeight>
                   <TextAlign>Left</TextAlign>
                   <VerticalAlign>Top</VerticalAlign>
-                  <Color>#a6a6a6</Color>
                 </Style>
                 <Position>TopLeft</Position>
               </ChartTitle>
@@ -3080,7 +3124,16 @@
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStTramsactionEfficiencyByAlertTypeByPeriod</DataSetName>
-            <Top>12.03528cm</Top>
+            <Filters>
+              <Filter>
+                <FilterExpression>=Fields!ManagerID.Value</FilterExpression>
+                <Operator>NotEqual</Operator>
+                <FilterValues>
+                  <FilterValue DataType="Integer">0</FilterValue>
+                </FilterValues>
+              </Filter>
+            </Filters>
+            <Top>12cm</Top>
             <Left>0.05084cm</Left>
             <Height>33cm</Height>
             <Width>22cm</Width>
