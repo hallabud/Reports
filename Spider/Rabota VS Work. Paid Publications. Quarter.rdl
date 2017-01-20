@@ -12,7 +12,9 @@
     <DataSet Name="DStPaidPubsCompanies">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>WITH CTE_BasicPaid AS
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+WITH CTE_BasicPaid AS
  (
 SELECT
    'BasicPaid' AS 'Src'
@@ -21,7 +23,7 @@ SELECT
  , NCS.NotebookID
 FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS
  JOIN dbo.DimDate D ON dbo.fnGetDatePart(NCS.AddDate) = D.FullDate
- JOIN Analytics.dbo.NotebookCompany NC ON NCS.NotebookID = NC.NotebookID
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON NCS.NotebookID = NC.NotebookID
 WHERE NCS.RegionalPackageID IS NOT NULL
  AND NCS.AddDate &gt;= '2012-10-01'
  AND EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.RegionalTicketPayment RTP WHERE NCS.TicketPaymentID = RTP.ID AND State = 10 AND TicketPaymentTypeID NOT IN (5, 6))

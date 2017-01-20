@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="DSrcReporting">
@@ -33,7 +33,9 @@
             <Value>=Parameters!ManagerID.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>DECLARE @ReportFirstMonthDate DATETIME; SET @ReportFirstMonthDate = DATEADD(DAY, 1 - DAY(@ReportDate), @ReportDate);
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+DECLARE @ReportFirstMonthDate DATETIME; SET @ReportFirstMonthDate = DATEADD(DAY, 1 - DAY(@ReportDate), @ReportDate);
 
 IF OBJECT_ID('tempdb..#FirstPubDates','U') IS NOT NULL DROP TABLE #FirstPubDates;
 IF OBJECT_ID('tempdb..#RabotaVacancyNum','U') IS NOT NULL DROP TABLE #RabotaVacancyNum;
@@ -45,7 +47,7 @@ CREATE TABLE #WorkVacancyNum (FullDate DATETIME, CompanyId INT, VacancyNum INT, 
 
 INSERT INTO #FirstPubDates
 SELECT NotebookID, MIN(AddDate)
-FROM Analytics.dbo.NotebookCompany_Spent NCS
+FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS
 GROUP BY NotebookID;
 
 INSERT INTO #RabotaVacancyNum
@@ -53,23 +55,23 @@ SELECT
    @ReportDate AS FullDate
  , NC.NotebookID
  , COUNT(DISTINCT VSH.VacancyId)
-FROM Analytics.dbo.VacancyStateHistory AS VSH 
- INNER JOIN Analytics.dbo.Vacancy AS V ON VSH.VacancyId = V.Id 
- INNER JOIN Analytics.dbo.NotebookCompany AS NC ON V.NotebookId = NC.NotebookId 
- INNER JOIN Analytics.dbo.Notebook AS N ON NC.NotebookId = N.Id
+FROM SRV16.RabotaUA2.dbo.VacancyStateHistory AS VSH 
+ INNER JOIN SRV16.RabotaUA2.dbo.Vacancy AS V ON VSH.VacancyId = V.Id 
+ INNER JOIN SRV16.RabotaUA2.dbo.NotebookCompany AS NC ON V.NotebookId = NC.NotebookId 
+ INNER JOIN SRV16.RabotaUA2.dbo.Notebook AS N ON NC.NotebookId = N.Id
 WHERE (VSH.State = 4) AND (VSH.DateTime BETWEEN @ReportFirstMonthDate AND @ReportDate + 1) AND (VSH.DateTo - VSH.DateFrom = 29) 
  OR (VSH.State = 4 AND VSH.DateTime BETWEEN @ReportFirstMonthDate AND @ReportDate + 1 AND VSH.DateTo IS NULL)
  OR (VSH.State = 4 AND VSH.DateTime BETWEEN @ReportFirstMonthDate AND @ReportDate + 1 AND VSH.DateTo - VSH.DateFrom &lt;&gt; 29 AND VSH.DateTimeUpd &gt;= @ReportDate)
 GROUP BY NC.NotebookID;
 
 INSERT INTO #WorkVacancyNum
-SELECT Analytics.dbo.fnGetDatePart(SCH.AddDate), SC.CompanyID, MAX(SCH.VacancyCount)
-FROM Analytics.dbo.SpiderCompanyHistory SCH
- JOIN Analytics.dbo.SpiderCompany SC ON SCH.SpiderCompanyID = SC.ID AND SC.Source = 1
+SELECT dbo.fnGetDatePart(SCH.AddDate), SC.CompanyID, MAX(SCH.VacancyCount)
+FROM SRV16.RabotaUA2.dbo.SpiderCompanyHistory SCH
+ JOIN SRV16.RabotaUA2.dbo.SpiderCompany SC ON SCH.SpiderCompanyID = SC.ID AND SC.Source = 1
  --JOIN Reporting.dbo.DimDate DD ON Reporting.dbo.fnGetDatePart(SCH.AddDate) = DD.FullDate
 WHERE SCH.AddDate BETWEEN @ReportDate AND @ReportDate + 1
  AND SCH.VacancyCount &gt; 0
-GROUP BY Analytics.dbo.fnGetDatePart(SCH.AddDate), SC.CompanyID;
+GROUP BY dbo.fnGetDatePart(SCH.AddDate), SC.CompanyID;
 
 WITH C AS
  (
@@ -89,13 +91,13 @@ SELECT NC.NotebookId, NC.Name AS NotebookName, SC.CompanyId, SC.Name AS CompanyN
  , CASE 
     WHEN NC.NotebookID IS NULL THEN 'Компания на work.ua без привязки к компании на rabota.ua'
 	WHEN SC.CompanyID IS NULL THEN 'Компания на rabota.ua без привязки к компании на work.ua'
-    WHEN NC.NotebookID IS NOT NULL AND SC.CompanyID IS NOT NULL AND EXISTS (SELECT * FROM Analytics.dbo.SpiderCompanyHistory WHERE Source = 1 AND SpiderCompanyId = SC.ID AND VacancyCount &gt; 0 AND AddDate &gt;= DATEADD(YEAR, -1, @ReportDate)) THEN 'Привязанные компании'
+    WHEN NC.NotebookID IS NOT NULL AND SC.CompanyID IS NOT NULL AND EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.SpiderCompanyHistory WHERE Source = 1 AND SpiderCompanyId = SC.ID AND VacancyCount &gt; 0 AND AddDate &gt;= DATEADD(YEAR, -1, @ReportDate)) THEN 'Привязанные компании'
 	ELSE 'Компания на rabota.ua без привязки к компании на work.ua'
    END AS CompanyGroup
-FROM Analytics.dbo.NotebookCompany NC
- FULL JOIN Analytics.dbo.SpiderCompany SC ON NC.NotebookID = SC.NotebookId AND SC.Source = 1
- LEFT JOIN Analytics.dbo.Notebook N ON NC.NotebookId = N.Id
- LEFT JOIN Analytics.dbo.Manager M ON NC.ManagerID = M.Id
+FROM SRV16.RabotaUA2.dbo.NotebookCompany NC
+ FULL JOIN SRV16.RabotaUA2.dbo.SpiderCompany SC ON NC.NotebookID = SC.NotebookId AND SC.Source = 1
+ LEFT JOIN SRV16.RabotaUA2.dbo.Notebook N ON NC.NotebookId = N.Id
+ LEFT JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerID = M.Id
  LEFT JOIN #FirstPubDates FPD ON NC.NotebookId = FPD.NotebookID
  --CROSS JOIN @LastDates LD
  LEFT JOIN #RabotaVacancyNum RVN ON NC.NotebookId = RVN.NotebookID --AND LD.FullDate = RVN.FullDate
@@ -175,7 +177,7 @@ DROP TABLE #WorkVacancyNum;</CommandText>
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
         <CommandText>SELECT ID, Name
-FROM Analytics.dbo.Manager
+FROM SRV16.RabotaUA2.dbo.Manager WITH (NOLOCK)
 WHERE DepartmentID IN (1,2,3,4)
  AND IsForTesting = 0
 ORDER BY Name</CommandText>
@@ -845,7 +847,6 @@ ORDER BY Name</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -974,7 +975,7 @@ ORDER BY Name</CommandText>
             </TablixRowHierarchy>
             <DataSetName>DStMain</DataSetName>
             <Height>1.8cm</Height>
-            <Width>27.15729cm</Width>
+            <Width>27.1573cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1105,6 +1106,44 @@ ORDER BY Name</CommandText>
       <MultiValue>true</MultiValue>
     </ReportParameter>
   </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>3</NumberOfColumns>
+      <NumberOfRows>3</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>ReportDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Department</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>CityID</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>CompanyGroup</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>VacancyDiffGroup</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>ManagerID</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
   <rd:ReportUnitType>Cm</rd:ReportUnitType>
   <rd:ReportID>03933fdc-c0cf-4033-9663-3ed978c4fd4d</rd:ReportID>
 </Report>

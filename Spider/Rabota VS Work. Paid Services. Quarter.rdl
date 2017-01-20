@@ -1697,12 +1697,12 @@ SELECT
  , D.YearNum AS YearNum
  , D.QuarterNum AS QuarterNum
  , NCS.NotebookID
-FROM Analytics.dbo.NotebookCompany_Spent NCS
+FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS
  JOIN dbo.DimDate D ON dbo.fnGetDatePart(NCS.AddDate) = D.FullDate
- JOIN Analytics.dbo.NotebookCompany NC ON NCS.NotebookID = NC.NotebookID
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON NCS.NotebookID = NC.NotebookID
 WHERE NCS.RegionalPackageID IS NOT NULL
  AND NCS.AddDate &gt;= '2012-10-01'
- AND EXISTS (SELECT * FROM Analytics.dbo.RegionalTicketPayment RTP WHERE NCS.TicketPaymentID = RTP.ID AND State = 10 AND TicketPaymentTypeID NOT IN (5, 6))
+ AND EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.RegionalTicketPayment RTP WHERE NCS.TicketPaymentID = RTP.ID AND State = 10 AND TicketPaymentTypeID NOT IN (5, 6))
  )
 , CTE_NotBasicPaid AS
  (
@@ -1711,12 +1711,12 @@ SELECT
  , D.YearNum AS YearNum
  , D.QuarterNum AS QuarterNum
  , NCS.NotebookID
-FROM Analytics.dbo.NotebookCompany_Spent NCS
+FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS
  JOIN dbo.DimDate D ON dbo.fnGetDatePart(NCS.AddDate) = D.FullDate
- JOIN Analytics.dbo.NotebookCompany NC ON NCS.NotebookID = NC.NotebookID
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON NCS.NotebookID = NC.NotebookID
 WHERE NCS.RegionalPackageID IS NULL
  AND NCS.AddDate &gt;= '2012-10-01'
- AND EXISTS (SELECT * FROM Analytics.dbo.TicketPayment TP WHERE NCS.TicketPaymentID = TP.ID AND State = 10 AND TicketPaymentTypeID NOT IN (5, 6))
+ AND EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.TicketPayment TP WHERE NCS.TicketPaymentID = TP.ID AND State = 10 AND TicketPaymentTypeID NOT IN (5, 6))
  )
 , CTE_HasActivatedProfileOrLogo AS
  (
@@ -1726,9 +1726,9 @@ SELECT
  , DATEPART(QUARTER,D.FullDate) AS QuarterNum
  , O.NotebookId
 FROM dbo.DimDate D
- JOIN Analytics.dbo.OrderDetail OD ON D.FullDate BETWEEN OD.ActivationStartDate AND OD.ActivationEndDate
- JOIN Analytics.dbo.Orders O ON OD.OrderID = O.ID
- JOIN Analytics.dbo.NotebookCompany NC ON O.NotebookID = NC.NotebookID
+ JOIN SRV16.RabotaUA2.dbo.OrderDetail OD ON D.FullDate BETWEEN OD.ActivationStartDate AND OD.ActivationEndDate
+ JOIN SRV16.RabotaUA2.dbo.Orders O ON OD.OrderID = O.ID
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON O.NotebookID = NC.NotebookID
 WHERE D.FullDate &gt;= '2012-10-01' AND D.FullDate &lt;= GETDATE()
  AND OD.ServiceID BETWEEN 25 AND 46 
  AND OD.State IN (2,3)
@@ -1747,8 +1747,8 @@ SELECT
    D.YearNum AS YearNum
  , D.QuarterNum AS QuarterNum
  , SCH.CompanyID
-FROM Analytics.dbo.SpiderCompanyWorkHistory SCH
- JOIN Analytics.dbo.SpiderCompany SC ON SCH.CompanyID = SC.CompanyId AND SC.Source = 1
+FROM SRV16.RabotaUA2.dbo.SpiderCompanyWorkHistory SCH
+ JOIN SRV16.RabotaUA2.dbo.SpiderCompany SC ON SCH.CompanyID = SC.CompanyId AND SC.Source = 1
  JOIN dbo.DimDate D ON SCH.Date = D.FullDate
 WHERE (ISNULL(SCH.IsPaidByTickets,0) = 1 OR ISNULL(SCH.Paid,0) = 1)
  AND D.FullDate &gt;= '2012-10-01'
@@ -1760,8 +1760,8 @@ SELECT
    D.YearNum AS YearNum
  , D.QuarterNum AS QuarterNum
  , SCH.CompanyID
-FROM Analytics.dbo.SpiderCompanyWorkHistory SCH
- JOIN Analytics.dbo.SpiderCompany SC ON SCH.CompanyID = SC.CompanyId AND SC.Source = 1
+FROM SRV16.RabotaUA2.dbo.SpiderCompanyWorkHistory SCH
+ JOIN SRV16.RabotaUA2.dbo.SpiderCompany SC ON SCH.CompanyID = SC.CompanyId AND SC.Source = 1
  JOIN dbo.DimDate D ON SCH.Date = D.FullDate
 WHERE SCH.HotVacancyCount &gt; 0
  AND SCH.Date &gt;= '2012-10-01' AND DATEPART(WEEKDAY,SCH.Date) = 1
@@ -1831,13 +1831,13 @@ SELECT
  , D.QuarterNum
  , NC.NotebookID
  , CASE WHEN M.DepartmentID = 2 THEN 'Закреплены за Sales Force' ELSE 'Не закреплены за Sales Force' END AS IsSalesForce
-FROM Analytics.dbo.NotebookCompany_Spent NCS
+FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS
  JOIN Reporting.dbo.DimDate D ON dbo.fnGetDatePart(NCS.AddDate) = D.FullDate
- JOIN Analytics.dbo.NotebookCompany NC ON NCS.NotebookId = NC.NotebookId
- JOIN Analytics.dbo.Manager M ON NC.ManagerID = M.Id
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON NCS.NotebookId = NC.NotebookId
+ JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerID = M.Id
 WHERE NCS.RegionalPackageID IS NOT NULL
  AND NCS.AddDate &gt;= '2012-10-01'
- AND EXISTS (SELECT * FROM Analytics.dbo.RegionalTicketPayment RTP WHERE NCS.TicketPaymentID = RTP.ID AND State = 10 AND TicketPaymentTypeID NOT IN (5, 6))
+ AND EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.RegionalTicketPayment RTP WHERE NCS.TicketPaymentID = RTP.ID AND State = 10 AND TicketPaymentTypeID NOT IN (5, 6))
  )
 , CTE_NotBasicPaid AS
  (
@@ -1847,13 +1847,13 @@ SELECT
  , D.QuarterNum
  , NC.NotebookID
  , CASE WHEN M.DepartmentID = 2 THEN 'Закреплены за Sales Force' ELSE 'Не закреплены за Sales Force' END AS IsSalesForce
-FROM Analytics.dbo.NotebookCompany_Spent NCS
+FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS
  JOIN Reporting.dbo.DimDate D ON dbo.fnGetDatePart(NCS.AddDate) = D.FullDate
- JOIN Analytics.dbo.NotebookCompany NC ON NCS.NotebookId = NC.NotebookId
- JOIN Analytics.dbo.Manager M ON NC.ManagerID = M.Id
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON NCS.NotebookId = NC.NotebookId
+ JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerID = M.Id
 WHERE NCS.RegionalPackageID IS NULL
  AND NCS.AddDate &gt;= '2012-10-01'
- AND EXISTS (SELECT * FROM Analytics.dbo.TicketPayment TP WHERE NCS.TicketPaymentID = TP.ID AND State = 10 AND TicketPaymentTypeID NOT IN (5, 6))
+ AND EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.TicketPayment TP WHERE NCS.TicketPaymentID = TP.ID AND State = 10 AND TicketPaymentTypeID NOT IN (5, 6))
  )
 , CTE_HasActivatedProfileOrLogo AS
  (
@@ -1864,10 +1864,10 @@ SELECT
  , O.NotebookId
  , CASE WHEN M.DepartmentID = 2 THEN 'Закреплены за Sales Force' ELSE 'Не закреплены за Sales Force' END AS IsSalesForce
 FROM dbo.DimDate D
- JOIN Analytics.dbo.OrderDetail OD ON D.FullDate BETWEEN OD.ActivationStartDate AND OD.ActivationEndDate
- JOIN Analytics.dbo.Orders O ON OD.OrderID = O.ID
- JOIN Analytics.dbo.NotebookCompany NC ON O.NotebookId = NC.NotebookId
- JOIN Analytics.dbo.Manager M ON NC.ManagerID = M.Id
+ JOIN SRV16.RabotaUA2.dbo.OrderDetail OD ON D.FullDate BETWEEN OD.ActivationStartDate AND OD.ActivationEndDate
+ JOIN SRV16.RabotaUA2.dbo.Orders O ON OD.OrderID = O.ID
+ JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON O.NotebookId = NC.NotebookId
+ JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerID = M.Id
 WHERE D.FullDate &gt;= '2012-10-01' AND D.FullDate &lt;= GETDATE()
  AND OD.ServiceID BETWEEN 25 AND 46 
  AND OD.State IN (2,3)
@@ -1888,13 +1888,13 @@ SELECT
  , SCH.CompanyID
  , CASE 
     WHEN EXISTS (SELECT * 
-	            FROM Analytics.dbo.NotebookCompany NC 
-                             JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+	            FROM SRV16.RabotaUA2.dbo.NotebookCompany NC 
+                             JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerId = M.Id
  	            WHERE NC.NotebookId = SC.NotebookId 
                              AND M.DepartmentID = 2)
    THEN 'Закреплены за Sales Force' ELSE 'Не закреплены за Sales Force' END AS IsSalesForce
-FROM Analytics.dbo.SpiderCompanyWorkHistory SCH
- JOIN Analytics.dbo.SpiderCompany SC ON SCH.CompanyID = SC.CompanyId AND SC.Source = 1
+FROM SRV16.RabotaUA2.dbo.SpiderCompanyWorkHistory SCH
+ JOIN SRV16.RabotaUA2.dbo.SpiderCompany SC ON SCH.CompanyID = SC.CompanyId AND SC.Source = 1
  JOIN dbo.DimDate D ON SCH.Date = D.FullDate
 WHERE (ISNULL(SCH.IsPaidByTickets,0) = 1 OR ISNULL(SCH.Paid,0) = 1)
  AND D.FullDate &gt;= '2012-10-01'
@@ -1908,13 +1908,13 @@ SELECT
  , SCH.CompanyID
  , CASE 
     WHEN EXISTS (SELECT * 
-	            FROM Analytics.dbo.NotebookCompany NC 
-                             JOIN Analytics.dbo.Manager M ON NC.ManagerId = M.Id
+	            FROM SRV16.RabotaUA2.dbo.NotebookCompany NC 
+                             JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerId = M.Id
  	            WHERE NC.NotebookId = SC.NotebookId 
                              AND M.DepartmentID = 2)
    THEN 'Закреплены за Sales Force' ELSE 'Не закреплены за Sales Force' END AS IsSalesForce
-FROM Analytics.dbo.SpiderCompanyWorkHistory SCH 
- JOIN Analytics.dbo.SpiderCompany SC ON SCH.CompanyID = SC.CompanyId AND SC.Source = 1 
+FROM SRV16.RabotaUA2.dbo.SpiderCompanyWorkHistory SCH 
+ JOIN SRV16.RabotaUA2.dbo.SpiderCompany SC ON SCH.CompanyID = SC.CompanyId AND SC.Source = 1 
  JOIN dbo.DimDate D ON SCH.Date = D.FullDate
 WHERE SCH.HotVacancyCount &gt; 0
  AND SCH.Date &gt;= '2012-10-01' AND DATEPART(WEEKDAY,SCH.Date) = 1
