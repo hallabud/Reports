@@ -118,16 +118,24 @@
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_ssrs_Report_TransactionsEfficiencyDynamics</CommandText>
+        <CommandText>usp_ssrs_Report_TransactionsEfficiencyDynamics_Weekly</CommandText>
       </Query>
       <Fields>
-        <Field Name="FullDate">
-          <DataField>FullDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
+        <Field Name="YearNum">
+          <DataField>YearNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="WeekNum">
+          <DataField>WeekNum</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
         </Field>
         <Field Name="AlarmsCount">
           <DataField>AlarmsCount</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="WeekName">
+          <DataField>WeekName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="CompaniesCount">
           <DataField>CompaniesCount</DataField>
@@ -167,15 +175,23 @@
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_ssrs_Report_TransactionEfficiency_PaidServices</CommandText>
+        <CommandText>usp_ssrs_Report_TransactionEfficiency_PaidServices_Weekly</CommandText>
       </Query>
       <Fields>
-        <Field Name="FullDate">
-          <DataField>FullDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
+        <Field Name="YearNum">
+          <DataField>YearNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="WeekNum">
+          <DataField>WeekNum</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
         </Field>
         <Field Name="Manager">
           <DataField>Manager</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="WeekName">
+          <DataField>WeekName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="PaidCompaniesCount">
@@ -559,15 +575,30 @@
                 <ChartMember>
                   <Group Name="Chart2_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!FullDate.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart2_CategoryGroup1">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -1005,7 +1036,7 @@
                   <Width>3.24083cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.05021cm</Width>
+                  <Width>2.5cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -1052,7 +1083,9 @@
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Sum(Fields!AlarmsCount.Value)</Value>
-                                  <Style />
+                                  <Style>
+                                    <Format>#,0;(#,0)</Format>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -1117,7 +1150,9 @@
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Sum(Fields!CompaniesCount.Value)</Value>
-                                  <Style />
+                                  <Style>
+                                    <Format>#,0;(#,0)</Format>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -1182,7 +1217,9 @@
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Sum(Fields!ActionsCount.Value)</Value>
-                                  <Style />
+                                  <Style>
+                                    <Format>#,0;(#,0)</Format>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -1212,7 +1249,7 @@
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="Textbox59">
+                      <Textbox Name="Textbox1">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
@@ -1226,7 +1263,7 @@
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox59</rd:DefaultName>
+                        <rd:DefaultName>Textbox1</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -1240,32 +1277,68 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox3">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style />
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox3</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="FullDate">
+                  <Group Name="YearNum">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="FullDate">
+                      <Textbox Name="YearNum">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=Fields!FullDate.Value</Value>
-                                <Style>
-                                  <Format>dd.MM.yyyy</Format>
-                                </Style>
+                                <Value>=Fields!YearNum.Value</Value>
+                                <Style />
                               </TextRun>
                             </TextRuns>
                             <Style>
@@ -1273,7 +1346,7 @@
                             </Style>
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>FullDate</rd:DefaultName>
+                        <rd:DefaultName>YearNum</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -1287,6 +1360,56 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="WeekName">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="WeekName">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>=Fields!WeekName.Value</Value>
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>WeekName</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
               </TablixMembers>
             </TablixColumnHierarchy>
@@ -1298,10 +1421,10 @@
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStTractionsEfficiencyDynamics</DataSetName>
-            <Top>18.93189cm</Top>
+            <Top>18.78148cm</Top>
             <Left>0.29104cm</Left>
-            <Height>2.4cm</Height>
-            <Width>5.29104cm</Width>
+            <Height>3cm</Height>
+            <Width>5.74083cm</Width>
             <ZIndex>2</ZIndex>
             <Style>
               <Border>
@@ -1315,15 +1438,30 @@
                 <ChartMember>
                   <Group Name="Chart3_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!FullDate.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart3_CategoryGroup1">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -1702,7 +1840,7 @@
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStTractionsEfficiencyDynamics</DataSetName>
-            <Top>21.63065cm</Top>
+            <Top>21.88731cm</Top>
             <Left>0.29104cm</Left>
             <Height>8cm</Height>
             <Width>18cm</Width>
@@ -1723,7 +1861,7 @@
                   <Width>3.24083cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.05021cm</Width>
+                  <Width>2.5cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -1770,7 +1908,9 @@
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Sum(Fields!ActionsCount.Value)</Value>
-                                  <Style />
+                                  <Style>
+                                    <Format>#,0;(#,0)</Format>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -1835,7 +1975,9 @@
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Sum(Fields!DealsCount.Value)</Value>
-                                  <Style />
+                                  <Style>
+                                    <Format>#,0;(#,0)</Format>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -1865,7 +2007,7 @@
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="Textbox63">
+                      <Textbox Name="Textbox5">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
@@ -1879,7 +2021,7 @@
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox59</rd:DefaultName>
+                        <rd:DefaultName>Textbox5</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -1893,32 +2035,68 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox7">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style />
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox7</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="FullDate2">
+                  <Group Name="YearNum1">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="FullDate2">
+                      <Textbox Name="YearNum1">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=Fields!FullDate.Value</Value>
-                                <Style>
-                                  <Format>dd.MM.yyyy</Format>
-                                </Style>
+                                <Value>=Fields!YearNum.Value</Value>
+                                <Style />
                               </TextRun>
                             </TextRuns>
                             <Style>
@@ -1926,7 +2104,7 @@
                             </Style>
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>FullDate</rd:DefaultName>
+                        <rd:DefaultName>YearNum1</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -1940,6 +2118,56 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="WeekName1">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="WeekName1">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>=Fields!WeekName.Value</Value>
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>WeekName1</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
               </TablixMembers>
             </TablixColumnHierarchy>
@@ -1950,10 +2178,10 @@
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStTractionsEfficiencyDynamics</DataSetName>
-            <Top>29.77176cm</Top>
+            <Top>30.0637cm</Top>
             <Left>0.29104cm</Left>
-            <Height>1.8cm</Height>
-            <Width>5.29104cm</Width>
+            <Height>2.4cm</Height>
+            <Width>5.74083cm</Width>
             <ZIndex>4</ZIndex>
             <Style>
               <Border>
@@ -1965,17 +2193,32 @@
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart3_CategoryGroup2">
+                  <Group Name="Chart4_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!FullDate.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart4_CategoryGroup1">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -2354,7 +2597,7 @@
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStTractionsEfficiencyDynamics</DataSetName>
-            <Top>31.67759cm</Top>
+            <Top>32.53426cm</Top>
             <Left>0.29104cm</Left>
             <Height>8cm</Height>
             <Width>18cm</Width>
@@ -2375,7 +2618,7 @@
                   <Width>3.24083cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.05021cm</Width>
+                  <Width>2.5cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -2422,7 +2665,9 @@
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Sum(Fields!DealsCount.Value)</Value>
-                                  <Style />
+                                  <Style>
+                                    <Format>#,0;(#,0)</Format>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -2487,7 +2732,9 @@
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Sum(Fields!PaidDealsCount.Value)</Value>
-                                  <Style />
+                                  <Style>
+                                    <Format>#,0;(#,0)</Format>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -2517,7 +2764,7 @@
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="Textbox66">
+                      <Textbox Name="Textbox9">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
@@ -2531,7 +2778,7 @@
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox59</rd:DefaultName>
+                        <rd:DefaultName>Textbox9</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -2545,32 +2792,68 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox11">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style />
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox11</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="FullDate3">
+                  <Group Name="YearNum2">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="FullDate3">
+                      <Textbox Name="YearNum2">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=Fields!FullDate.Value</Value>
-                                <Style>
-                                  <Format>dd.MM.yyyy</Format>
-                                </Style>
+                                <Value>=Fields!YearNum.Value</Value>
+                                <Style />
                               </TextRun>
                             </TextRuns>
                             <Style>
@@ -2578,7 +2861,7 @@
                             </Style>
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>FullDate</rd:DefaultName>
+                        <rd:DefaultName>YearNum2</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -2592,6 +2875,56 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="WeekName2">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="WeekName2">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>=Fields!WeekName.Value</Value>
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>WeekName2</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
               </TablixMembers>
             </TablixColumnHierarchy>
@@ -2602,10 +2935,10 @@
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStTractionsEfficiencyDynamics</DataSetName>
-            <Top>39.92453cm</Top>
+            <Top>40.67537cm</Top>
             <Left>0.29104cm</Left>
-            <Height>1.8cm</Height>
-            <Width>5.29104cm</Width>
+            <Height>2.4cm</Height>
+            <Width>5.74083cm</Width>
             <ZIndex>6</ZIndex>
             <Style>
               <Border>
@@ -2617,17 +2950,32 @@
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart3_CategoryGroup3">
+                  <Group Name="Chart5_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!FullDate.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart5_CategoryGroup1">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -3011,7 +3359,7 @@
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStTractionsEfficiencyDynamics</DataSetName>
-            <Top>41.86565cm</Top>
+            <Top>43.14593cm</Top>
             <Left>0.29104cm</Left>
             <Height>8cm</Height>
             <Width>18cm</Width>
@@ -3032,7 +3380,7 @@
                   <Width>3.24083cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.05021cm</Width>
+                  <Width>2.5cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -3079,7 +3427,9 @@
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Sum(Fields!PaidDealsCount.Value)</Value>
-                                  <Style />
+                                  <Style>
+                                    <Format>#,0;(#,0)</Format>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -3176,7 +3526,7 @@
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="Textbox69">
+                      <Textbox Name="Textbox13">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
@@ -3190,7 +3540,7 @@
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox59</rd:DefaultName>
+                        <rd:DefaultName>Textbox13</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -3204,32 +3554,68 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox15">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style />
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox15</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="FullDate4">
+                  <Group Name="YearNum3">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="FullDate4">
+                      <Textbox Name="YearNum3">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=Fields!FullDate.Value</Value>
-                                <Style>
-                                  <Format>dd.MM.yyyy</Format>
-                                </Style>
+                                <Value>=Fields!YearNum.Value</Value>
+                                <Style />
                               </TextRun>
                             </TextRuns>
                             <Style>
@@ -3237,7 +3623,7 @@
                             </Style>
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>FullDate</rd:DefaultName>
+                        <rd:DefaultName>YearNum3</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -3251,6 +3637,56 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="WeekName3">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="WeekName3">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>=Fields!WeekName.Value</Value>
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>WeekName3</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
               </TablixMembers>
             </TablixColumnHierarchy>
@@ -3261,10 +3697,10 @@
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStTractionsEfficiencyDynamics</DataSetName>
-            <Top>50.04203cm</Top>
+            <Top>51.28704cm</Top>
             <Left>0.29104cm</Left>
-            <Height>1.8cm</Height>
-            <Width>5.29104cm</Width>
+            <Height>2.4cm</Height>
+            <Width>5.74083cm</Width>
             <ZIndex>8</ZIndex>
             <Style>
               <Border>
@@ -3276,17 +3712,32 @@
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart3_CategoryGroup4">
+                  <Group Name="Chart6_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!FullDate.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart6_CategoryGroup1">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -3668,7 +4119,7 @@
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStTractionsEfficiencyDynamics</DataSetName>
-            <Top>52.01842cm</Top>
+            <Top>53.79287cm</Top>
             <Left>0.29104cm</Left>
             <Height>8cm</Height>
             <Width>18cm</Width>
@@ -3689,7 +4140,7 @@
                   <Width>3.24083cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.05021cm</Width>
+                  <Width>2.5cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -3836,7 +4287,7 @@
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="Textbox72">
+                      <Textbox Name="Textbox17">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
@@ -3850,7 +4301,7 @@
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox59</rd:DefaultName>
+                        <rd:DefaultName>Textbox17</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -3864,32 +4315,68 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox19">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style />
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox19</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="FullDate5">
+                  <Group Name="YearNum4">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="FullDate5">
+                      <Textbox Name="YearNum4">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=Fields!FullDate.Value</Value>
-                                <Style>
-                                  <Format>dd.MM.yyyy</Format>
-                                </Style>
+                                <Value>=Fields!YearNum.Value</Value>
+                                <Style />
                               </TextRun>
                             </TextRuns>
                             <Style>
@@ -3897,7 +4384,7 @@
                             </Style>
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>FullDate</rd:DefaultName>
+                        <rd:DefaultName>YearNum4</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -3911,6 +4398,56 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="WeekName4">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="WeekName4">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>=Fields!WeekName.Value</Value>
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>WeekName4</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
               </TablixMembers>
             </TablixColumnHierarchy>
@@ -3921,10 +4458,10 @@
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStTractionsEfficiencyDynamics</DataSetName>
-            <Top>60.19481cm</Top>
+            <Top>61.93398cm</Top>
             <Left>0.29104cm</Left>
-            <Height>1.8cm</Height>
-            <Width>5.29104cm</Width>
+            <Height>2.4cm</Height>
+            <Width>5.74083cm</Width>
             <ZIndex>10</ZIndex>
             <Style>
               <Border>
@@ -3936,17 +4473,32 @@
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart3_CategoryGroup5">
+                  <Group Name="Chart7_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!FullDate.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart7_CategoryGroup1">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -4283,7 +4835,7 @@
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStTractionsEfficiencyDynamics</DataSetName>
-            <Top>62.1712cm</Top>
+            <Top>64.47509cm</Top>
             <Left>0.29104cm</Left>
             <Height>8cm</Height>
             <Width>18cm</Width>
@@ -4304,7 +4856,7 @@
                   <Width>3.24083cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.05021cm</Width>
+                  <Width>2.5cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -4350,7 +4902,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Avg(Fields!AvgProcessingTime.Value)</Value>
+                                  <Value>=Code.MinutesToHoursMinutes(Avg(Fields!AvgProcessingTime.Value))</Value>
                                   <Style>
                                     <Format>#,0;(#,0)</Format>
                                   </Style>
@@ -4383,7 +4935,7 @@
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="Textbox75">
+                      <Textbox Name="Textbox21">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
@@ -4397,7 +4949,7 @@
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox59</rd:DefaultName>
+                        <rd:DefaultName>Textbox21</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -4411,32 +4963,68 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox23">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style />
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox23</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="FullDate6">
+                  <Group Name="YearNum5">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="FullDate6">
+                      <Textbox Name="YearNum5">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=Fields!FullDate.Value</Value>
-                                <Style>
-                                  <Format>dd.MM.yyyy</Format>
-                                </Style>
+                                <Value>=Fields!YearNum.Value</Value>
+                                <Style />
                               </TextRun>
                             </TextRuns>
                             <Style>
@@ -4444,7 +5032,7 @@
                             </Style>
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>FullDate</rd:DefaultName>
+                        <rd:DefaultName>YearNum5</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -4458,6 +5046,56 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="WeekName5">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="WeekName5">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>=Fields!WeekName.Value</Value>
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>WeekName5</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
               </TablixMembers>
             </TablixColumnHierarchy>
@@ -4467,10 +5105,10 @@
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStTractionsEfficiencyDynamics</DataSetName>
-            <Top>70.34759cm</Top>
+            <Top>72.58093cm</Top>
             <Left>0.29104cm</Left>
-            <Height>1.2cm</Height>
-            <Width>5.29104cm</Width>
+            <Height>1.8cm</Height>
+            <Width>5.74083cm</Width>
             <ZIndex>12</ZIndex>
             <Style>
               <Border>
@@ -4482,17 +5120,32 @@
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart3_CategoryGroup6">
+                  <Group Name="Chart8_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!FullDate.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart8_CategoryGroup1">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -4840,7 +5493,7 @@
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStTransactionPaidServices</DataSetName>
-            <Top>71.6887cm</Top>
+            <Top>74.48676cm</Top>
             <Left>0.29104cm</Left>
             <Height>8cm</Height>
             <Width>18cm</Width>
@@ -4861,7 +5514,7 @@
                   <Width>3.24083cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.05021cm</Width>
+                  <Width>2.5cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -4940,7 +5593,7 @@
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="Textbox77">
+                      <Textbox Name="Textbox2">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
@@ -4954,7 +5607,7 @@
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox59</rd:DefaultName>
+                        <rd:DefaultName>Textbox2</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -4968,32 +5621,68 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox6">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value />
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style />
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox6</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="FullDate7">
+                  <Group Name="YearNum6">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
+                      <Value>=Fields!YearNum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
                     <Size>0.6cm</Size>
                     <CellContents>
-                      <Textbox Name="FullDate7">
+                      <Textbox Name="YearNum6">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=Fields!FullDate.Value</Value>
-                                <Style>
-                                  <Format>dd.MM.yyyy</Format>
-                                </Style>
+                                <Value>=Fields!YearNum.Value</Value>
+                                <Style />
                               </TextRun>
                             </TextRuns>
                             <Style>
@@ -5001,7 +5690,7 @@
                             </Style>
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>FullDate</rd:DefaultName>
+                        <rd:DefaultName>YearNum6</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -5015,6 +5704,56 @@
                       </Textbox>
                     </CellContents>
                   </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="WeekName6">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekName.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <TablixHeader>
+                        <Size>0.6cm</Size>
+                        <CellContents>
+                          <Textbox Name="WeekName6">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>=Fields!WeekName.Value</Value>
+                                    <Style />
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>WeekName6</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
               </TablixMembers>
             </TablixColumnHierarchy>
@@ -5024,10 +5763,10 @@
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStTransactionPaidServices</DataSetName>
-            <Top>79.86509cm</Top>
+            <Top>82.66315cm</Top>
             <Left>0.29104cm</Left>
-            <Height>1.2cm</Height>
-            <Width>5.29104cm</Width>
+            <Height>1.8cm</Height>
+            <Width>5.74083cm</Width>
             <ZIndex>14</ZIndex>
             <Style>
               <Border>
@@ -5036,10 +5775,10 @@
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>32.06439in</Height>
+        <Height>33.48943in</Height>
         <Style />
       </Body>
-      <Width>7.2012in</Width>
+      <Width>7.30537in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
@@ -5059,7 +5798,7 @@
       <DataType>DateTime</DataType>
       <DefaultValue>
         <Values>
-          <Value>=DateAdd(DateInterval.Day, -7, Today)</Value>
+          <Value>=DateAdd(DateInterval.WeekOfYear, - 4, DateAdd(DateInterval.Day, 2 - DatePart(DateInterval.Weekday, Today), Today))</Value>
         </Values>
       </DefaultValue>
       <Prompt>Начальная дата</Prompt>
@@ -5138,6 +5877,21 @@
       </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
+  <Code>Function MinutesToHoursMinutes(ByVal vMins As Integer) As String
+ 
+Dim Mins As Integer
+Dim Hours As Integer
+ 
+vMins = IIF(vMins &lt;= 0, 0, vMins)
+ 
+Hours = Floor(vMins / 60)
+Mins = vMins - (Hours * 60)
+ 
+MinutesToHoursMinutes = IIF(Hours &lt; 9, "0" &amp; CStr(Hours), CStr(Hours)) &amp; " ч. " &amp; IIF(Mins &lt; 9, "0" &amp; CStr(Mins), CStr(Mins))  &amp; " мин." 
+ 
+Return MinutesToHoursMinutes
+ 
+End Function</Code>
   <Language>uk-UA</Language>
   <rd:ReportUnitType>Cm</rd:ReportUnitType>
   <rd:ReportID>0d9285b5-4925-48a3-ae1b-ef225f61a2e9</rd:ReportID>
