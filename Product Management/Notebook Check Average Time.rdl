@@ -177,7 +177,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Code.MinutesToHoursMinutes(Avg(Fields!Duration.Value))</Value>
+                                  <Value>=Code.SecondsToHoursMinutesSeconds(Avg(Fields!Duration.Value))</Value>
                                   <Style>
                                     <Format>#,0;(#,0)</Format>
                                   </Style>
@@ -246,7 +246,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Code.MinutesToHoursMinutes(Avg(Fields!Duration.Value))</Value>
+                                  <Value>=Code.SecondsToHoursMinutesSeconds(Avg(Fields!Duration.Value))</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>#,0;(#,0)</Format>
@@ -320,7 +320,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Code.MinutesToHoursMinutes(Avg(Fields!Duration.Value))</Value>
+                                  <Value>=Code.SecondsToHoursMinutesSeconds(Avg(Fields!Duration.Value))</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>#,0;(#,0)</Format>
@@ -626,7 +626,7 @@
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value>Итог</Value>
+                                    <Value>Total</Value>
                                     <Style>
                                       <FontWeight>Bold</FontWeight>
                                     </Style>
@@ -665,7 +665,7 @@
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>Итог</Value>
+                                <Value>Total</Value>
                                 <Style>
                                   <FontWeight>Bold</FontWeight>
                                   <Color>White</Color>
@@ -702,7 +702,7 @@
                               <Paragraph>
                                 <TextRuns>
                                   <TextRun>
-                                    <Value />
+                                    <Value>Total</Value>
                                     <Style>
                                       <FontWeight>Bold</FontWeight>
                                       <Color>White</Color>
@@ -746,7 +746,7 @@
         <Height>1.41732in</Height>
         <Style />
       </Body>
-      <Width>6.13615in</Width>
+      <Width>7.12041in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
@@ -799,19 +799,21 @@
       </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
-  <Code>Function MinutesToHoursMinutes(ByVal vMins As Integer) As String
+  <Code>Function SecondsToHoursMinutesSeconds(ByVal vSecs As Integer) As String
  
+Dim Seconds AS Integer
 Dim Mins As Integer
 Dim Hours As Integer
  
-vMins = IIF(vMins &lt;= 0, 0, vMins)
+vSecs = IIF(vSecs &lt;= 0, 0, vSecs)
  
-Hours = Floor(vMins / 60)
-Mins = vMins - (Hours * 60)
+Hours = Floor(vSecs / 3600)
+Mins = Floor(vSecs / 60) - Hours * 60
+Seconds = vSecs - Hours * 3600 - Mins * 60
  
-MinutesToHoursMinutes = IIF(Hours &lt; 9, "0" &amp; CStr(Hours), CStr(Hours)) &amp; " ч. " &amp; IIF(Mins &lt; 9, "0" &amp; CStr(Mins), CStr(Mins))  &amp; " мин." 
+SecondsToHoursMinutesSeconds = IIF(Hours &lt;= 9, "0" &amp; CStr(Hours), CStr(Hours)) &amp; ":" &amp; IIF(Mins &lt;= 9, "0" &amp; CStr(Mins), CStr(Mins)) &amp; ":" &amp; IIF(Seconds &lt;= 9, "0" &amp; CStr(Seconds), CStr(Seconds))
  
-Return MinutesToHoursMinutes
+Return SecondsToHoursMinutesSeconds
  
 End Function</Code>
   <Language>uk-UA</Language>
