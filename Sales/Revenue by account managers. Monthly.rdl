@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="DSrcReporting">
@@ -23,17 +23,8 @@
             <Value>=Parameters!Managers.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
-
-SELECT DD.YearNum, DD.QuarterNum, DD.MonthNameRus, DD.MonthNum, M.Name AS Manager, SUM(RecognizedRevenue) AS SumRecognizedRevenue
-FROM Reporting.dbo.FactRecognizedRevenueNotebook RRN
- JOIN Reporting.dbo.DimDate DD ON RRN.Date_key = DD.Date_key
- JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON RRN.NotebookID = NC.NotebookID
- JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerID = M.ID
-WHERE M.DepartmentID IN (2,3)
- AND DD.FullDate BETWEEN @StartDate AND @EndDate
- AND M.ID IN (@Managers)
-GROUP BY DD.YearNum, DD.QuarterNum, DD.MonthNameRus, DD.MonthNum, M.Name</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_RevenueByAccountManagersMonthly</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -107,23 +98,78 @@ GROUP BY DD.YearNum, DD.QuarterNum, DD.MonthNameRus, DD.MonthNum, M.Name</Comman
           <DataField>DepartmentID</DataField>
           <rd:TypeName>System.Byte</rd:TypeName>
         </Field>
+        <Field Name="STM_ManagerID">
+          <DataField>STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Real_STM_ManagerID">
+          <DataField>Real_STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
-          <FilterExpression>=Fields!DepartmentID.Value</FilterExpression>
-          <Operator>In</Operator>
+          <FilterExpression>=Fields!IsLoyaltyGroup.Value</FilterExpression>
+          <Operator>Equal</Operator>
           <FilterValues>
-            <FilterValue>=Parameters!Department.Value</FilterValue>
+            <FilterValue>=Fields!IsLoyaltyGroup.Value</FilterValue>
           </FilterValues>
         </Filter>
         <Filter>
-          <FilterExpression>=Fields!IsLoyaltyGroup.Value</FilterExpression>
+          <FilterExpression>=Fields!STM_ManagerID.Value</FilterExpression>
           <Operator>In</Operator>
           <FilterValues>
-            <FilterValue>=Parameters!IsLoyaltyGroup.Value</FilterValue>
+            <FilterValue>=Parameters!Stm.Value</FilterValue>
           </FilterValues>
         </Filter>
       </Filters>
+    </DataSet>
+    <DataSet Name="DStSTMs">
+      <SharedDataSet>
+        <SharedDataSetReference>DStSTMs</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="ManagerID">
+          <DataField>ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TeamLead_ManagerID">
+          <DataField>TeamLead_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!TeamLead_ManagerID.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!SalesTeam.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
+    </DataSet>
+    <DataSet Name="DStSalesTeam">
+      <SharedDataSet>
+        <SharedDataSetReference>DStSalesTeamsDistinct</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="SalesTeamName">
+          <DataField>SalesTeamName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SalesManagerID">
+          <DataField>SalesManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="SalesManagerName">
+          <DataField>SalesManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
     </DataSet>
   </DataSets>
   <ReportSections>
@@ -837,6 +883,24 @@ GROUP BY DD.YearNum, DD.QuarterNum, DD.MonthNameRus, DD.MonthNum, M.Name</Comman
       </DefaultValue>
       <Prompt>Укажите начальную дату:</Prompt>
     </ReportParameter>
+    <ReportParameter Name="SalesTeam">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStSalesTeam</DataSetName>
+          <ValueField>SalesManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Команда</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStSalesTeam</DataSetName>
+          <ValueField>SalesManagerID</ValueField>
+          <LabelField>SalesManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
     <ReportParameter Name="EndDate">
       <DataType>DateTime</DataType>
       <DefaultValue>
@@ -846,44 +910,26 @@ GROUP BY DD.YearNum, DD.QuarterNum, DD.MonthNameRus, DD.MonthNum, M.Name</Comman
       </DefaultValue>
       <Prompt>Укажите конечную дату:</Prompt>
     </ReportParameter>
-    <ReportParameter Name="Department">
+    <ReportParameter Name="Stm">
       <DataType>Integer</DataType>
       <DefaultValue>
-        <Values>
-          <Value>2</Value>
-          <Value>12</Value>
-        </Values>
+        <DataSetReference>
+          <DataSetName>DStSTMs</DataSetName>
+          <ValueField>ManagerID</ValueField>
+        </DataSetReference>
       </DefaultValue>
-      <Prompt>Отдел</Prompt>
+      <Prompt>STM</Prompt>
       <ValidValues>
         <DataSetReference>
-          <DataSetName>DStDepartments</DataSetName>
-          <ValueField>DepartmentID</ValueField>
-          <LabelField>DepartmentName</LabelField>
+          <DataSetName>DStSTMs</DataSetName>
+          <ValueField>ManagerID</ValueField>
+          <LabelField>ManagerName</LabelField>
         </DataSetReference>
       </ValidValues>
       <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="IsLoyaltyGroup">
-      <DataType>Boolean</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>false</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>Группа лояльности</Prompt>
-      <ValidValues>
-        <ParameterValues>
-          <ParameterValue>
-            <Value>true</Value>
-            <Label>Да</Label>
-          </ParameterValue>
-          <ParameterValue>
-            <Value>false</Value>
-            <Label>Нет</Label>
-          </ParameterValue>
-        </ParameterValues>
-      </ValidValues>
+      <cl:ComponentMetadata>
+        <cl:HideUpdateNotifications>true</cl:HideUpdateNotifications>
+      </cl:ComponentMetadata>
     </ReportParameter>
     <ReportParameter Name="Managers">
       <DataType>Integer</DataType>
@@ -915,24 +961,24 @@ GROUP BY DD.YearNum, DD.QuarterNum, DD.MonthNameRus, DD.MonthNum, M.Name</Comman
           <ParameterName>StartDate</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
           <ParameterName>EndDate</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>Department</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>2</RowIndex>
           <ParameterName>Managers</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>1</RowIndex>
-          <ParameterName>IsLoyaltyGroup</ParameterName>
+          <ParameterName>Stm</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>SalesTeam</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
