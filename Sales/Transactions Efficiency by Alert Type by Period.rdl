@@ -83,6 +83,25 @@
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="DStTransactionManagers">
+      <SharedDataSet>
+        <SharedDataSetReference>DStTransactionManagers</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="ManagerID">
+          <DataField>ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ManagerLoginEmail">
+          <DataField>ManagerLoginEmail</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -2168,7 +2187,6 @@
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                   </TablixCells>
@@ -3189,6 +3207,15 @@
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStTramsactionEfficiencyByAlertTypeByPeriod</DataSetName>
+            <Filters>
+              <Filter>
+                <FilterExpression>=Fields!ManagerID.Value</FilterExpression>
+                <Operator>In</Operator>
+                <FilterValues>
+                  <FilterValue>=Parameters!Manager.Value</FilterValue>
+                </FilterValues>
+              </Filter>
+            </Filters>
             <Top>61.80632cm</Top>
             <Left>0.22458cm</Left>
             <Height>3cm</Height>
@@ -3967,8 +3994,10 @@
                         <Y>=CountDistinct(Fields!PaidDealID.Value)</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
-                        <Style />
-                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Style>
+                          <Format>0 %</Format>
+                        </Style>
+                        <Label>#PERCENT</Label>
                         <Visible>true</Visible>
                       </ChartDataLabel>
                       <Style />
@@ -4259,7 +4288,6 @@
                   <FontWeight>Bold</FontWeight>
                   <TextAlign>Left</TextAlign>
                   <VerticalAlign>Top</VerticalAlign>
-                  <Color>#a6a6a6</Color>
                 </Style>
                 <Position>TopLeft</Position>
               </ChartTitle>
@@ -4635,7 +4663,6 @@
                   <FontWeight>Bold</FontWeight>
                   <TextAlign>Left</TextAlign>
                   <VerticalAlign>Top</VerticalAlign>
-                  <Color>#a6a6a6</Color>
                 </Style>
                 <Position>TopLeft</Position>
               </ChartTitle>
@@ -4719,6 +4746,24 @@
       </DefaultValue>
       <Prompt>Конечная дата</Prompt>
     </ReportParameter>
+    <ReportParameter Name="Manager">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStTransactionManagers</DataSetName>
+          <ValueField>ManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Менеджер</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStTransactionManagers</DataSetName>
+          <ValueField>ManagerID</ValueField>
+          <LabelField>ManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -4734,6 +4779,11 @@
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>EndDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Manager</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
