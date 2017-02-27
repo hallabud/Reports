@@ -1,0 +1,965 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="2/24/2017 5:34:02 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="MVA-RABOTA"
+  DTS:CreatorName="RABOTA\michael"
+  DTS:DTSID="{FC51FA43-AE45-4DF9-BAFC-C34298FCD54D}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.4001.0"
+  DTS:LocaleID="1058"
+  DTS:ObjectName="SRV16PerformanceGatherData"
+  DTS:PackageType="5"
+  DTS:VersionBuild="3"
+  DTS:VersionGUID="{8B0CF6C7-9C3D-4431-9422-9759BCE89C74}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[REPORTS.Reporting]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{FE4597F6-7531-4470-8F77-CF2AB915BBAB}"
+      DTS:ObjectName="REPORTS.Reporting">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=REPORTS;Initial Catalog=Reporting;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[srv16.rabota.ua.RabotaUA2]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{FBFC9450-7A9E-4FE0-BDC8-5CD7644B6934}"
+      DTS:ObjectName="srv16.rabota.ua.RabotaUA2">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=srv16.rabota.ua;Initial Catalog=RabotaUA2;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Gather Performance Data"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{A87399B8-C5EC-49D8-82B2-7FC5275A9A26}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Gather Performance Data"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Gather Performance Data\REPORTS"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="REPORTS"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[Monitoring_ActiveTasks]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1251</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Gather Performance Data\REPORTS.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[REPORTS.Reporting]"
+                  connectionManagerRefId="Package.ConnectionManagers[REPORTS.Reporting]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[DB_ServerName]"
+                      cachedCodepage="1251"
+                      cachedDataType="str"
+                      cachedLength="7"
+                      cachedName="DB_ServerName"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[DB_ServerName]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[DB_ServerName]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[LogAddDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="LogAddDate"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[LogAddDate]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[LogAddDate]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[HostName]"
+                      cachedDataType="wstr"
+                      cachedLength="128"
+                      cachedName="HostName"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[HostName]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[HostName]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[program_name]"
+                      cachedDataType="wstr"
+                      cachedLength="128"
+                      cachedName="program_name"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[program_name]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[program_name]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[SPID]"
+                      cachedDataType="i2"
+                      cachedName="SPID"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[SPID]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SPID]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[original_login_name]"
+                      cachedDataType="wstr"
+                      cachedLength="128"
+                      cachedName="original_login_name"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[original_login_name]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[original_login_name]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[Status]"
+                      cachedDataType="wstr"
+                      cachedLength="30"
+                      cachedName="Status"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[Status]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[Status]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[DatabaseName]"
+                      cachedDataType="wstr"
+                      cachedLength="128"
+                      cachedName="DatabaseName"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[DatabaseName]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[DatabaseName]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[LastWaitType]"
+                      cachedDataType="wstr"
+                      cachedLength="32"
+                      cachedName="LastWaitType"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[LastWaitType]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[LastWaitType]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[WaitResource]"
+                      cachedDataType="wstr"
+                      cachedLength="256"
+                      cachedName="WaitResource"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[WaitResource]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[WaitResource]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[BlockedBy]"
+                      cachedDataType="i2"
+                      cachedName="BlockedBy"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[BlockedBy]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[BlockedBy]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[LoginTime]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="LoginTime"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[LoginTime]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[LoginTime]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[SQLBatchText]"
+                      cachedDataType="nText"
+                      cachedName="SQLBatchText"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[SQLBatchText]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SQLBatchText]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[SQLStatementText]"
+                      cachedDataType="nText"
+                      cachedName="SQLStatementText"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[SQLStatementText]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SQLStatementText]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[ThreadsCount]"
+                      cachedDataType="i4"
+                      cachedName="ThreadsCount"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[ThreadsCount]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[ThreadsCount]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[AvgWaitTimeSec]"
+                      cachedDataType="i8"
+                      cachedName="AvgWaitTimeSec"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[AvgWaitTimeSec]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[AvgWaitTimeSec]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[SumPhysical_IO]"
+                      cachedDataType="i8"
+                      cachedName="SumPhysical_IO"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[SumPhysical_IO]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SumPhysical_IO]" />
+                    <inputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].Columns[Sum_CPU]"
+                      cachedDataType="i4"
+                      cachedName="Sum_CPU"
+                      externalMetadataColumnId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[Sum_CPU]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[Sum_CPU]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[DB_ServerName]"
+                      codePage="1251"
+                      dataType="str"
+                      length="128"
+                      name="DB_ServerName" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[LogAddDate]"
+                      dataType="dbTimeStamp"
+                      name="LogAddDate" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[HostName]"
+                      dataType="wstr"
+                      length="128"
+                      name="HostName" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[program_name]"
+                      dataType="wstr"
+                      length="128"
+                      name="program_name" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[SPID]"
+                      dataType="i2"
+                      name="SPID" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[original_login_name]"
+                      dataType="wstr"
+                      length="128"
+                      name="original_login_name" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[Status]"
+                      dataType="wstr"
+                      length="30"
+                      name="Status" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[DatabaseName]"
+                      dataType="wstr"
+                      length="128"
+                      name="DatabaseName" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[LastWaitType]"
+                      dataType="wstr"
+                      length="32"
+                      name="LastWaitType" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[WaitResource]"
+                      dataType="wstr"
+                      length="256"
+                      name="WaitResource" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[BlockedBy]"
+                      dataType="i2"
+                      name="BlockedBy" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[LoginTime]"
+                      dataType="dbTimeStamp"
+                      name="LoginTime" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[SQLBatchText]"
+                      dataType="nText"
+                      name="SQLBatchText" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[SQLStatementText]"
+                      dataType="nText"
+                      name="SQLStatementText" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[ThreadsCount]"
+                      dataType="i4"
+                      name="ThreadsCount" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[AvgWaitTimeSec]"
+                      dataType="i8"
+                      name="AvgWaitTimeSec" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[SumPhysical_IO]"
+                      dataType="i8"
+                      name="SumPhysical_IO" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input].ExternalColumns[Sum_CPU]"
+                      dataType="i4"
+                      name="Sum_CPU" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Gather Performance Data\REPORTS.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Gather Performance Data\REPORTS.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\REPORTS.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Gather Performance Data\REPORTS.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Gather Performance Data\SRV16"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="SRV16"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">WITH CTE AS
+ (
+SELECT
+ SP.hostname Hostname
+ , SP.[program_name]
+, SP.SPID,s.original_login_name
+, SP.status Status
+, DB_NAME(SP.dbid) AS DatabaseName
+--, SP.cmd Command
+, SP.lastwaittype LastWaitType
+, SP.waitresource WaitResource
+, SP.physical_io Physical_IO
+, SP.cpu CPU
+, SP.Blocked BlockedBy
+--, A.percent_complete PercentComplete
+--, SP.waittype WaitType
+, SP.waittime WaitTimeSec
+, SP.login_time LoginTime
+--, A.total_elapsed_time / 1000 BatchElapsedTimeSec
+, (SELECT SUBSTRING(C.text
+     , A.statement_start_offset/2
+     , (CASE 
+      WHEN A.statement_end_offset = -1 THEN LEN(CONVERT(nvarchar(max), C.text)) * 2 
+      ELSE A.statement_end_offset 
+        END - A.statement_start_offset)/2) ) SQLBatchText
+ , C.text SQLStatementText
+ --, B.query_plan as QueryPlan
+FROM sys.sysprocesses AS SP
+ INNER JOIN sys.dm_exec_requests as A ON SP.SPID = A.session_id
+ CROSS APPLY sys.dm_exec_query_plan(A.plan_handle) as B 
+ CROSS APPLY sys.dm_exec_sql_text(A.sql_handle) as C
+ join sys.dm_exec_sessions s on s.session_id = A.session_id
+-- TO SHOW
+ )
+SELECT 
+   'SRV16' AS DB_ServerName
+ , GETDATE() AS LogAddDate
+ , HostName
+ , [program_name]
+ , SPID
+ , original_login_name
+ , [Status]
+ , DatabaseName
+ , LastWaitType
+ , WaitResource
+ , BlockedBy
+ , LoginTime
+ , SQLBatchText
+ , SQLStatementText
+ , COUNT(*) AS ThreadsCount
+ , AVG(WaitTimeSec) AS AvgWaitTimeSec
+ , SUM(Physical_IO) AS SumPhysical_IO
+ , SUM(CPU) AS Sum_CPU
+FROM CTE
+GROUP BY 
+   HostName
+ , [program_name]
+ , SPID
+ , original_login_name
+ , [Status]
+ , DatabaseName
+ , LastWaitType
+ , WaitResource
+ , BlockedBy
+ , LoginTime
+ , SQLBatchText
+ , SQLStatementText;</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1251</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Gather Performance Data\SRV16.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[srv16.rabota.ua.RabotaUA2]"
+                  connectionManagerRefId="Package.ConnectionManagers[srv16.rabota.ua.RabotaUA2]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[DB_ServerName]"
+                      codePage="1251"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[DB_ServerName]"
+                      length="7"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[DB_ServerName]"
+                      name="DB_ServerName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[LogAddDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[LogAddDate]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[LogAddDate]"
+                      name="LogAddDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[HostName]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[HostName]"
+                      length="128"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[HostName]"
+                      name="HostName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[program_name]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[program_name]"
+                      length="128"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[program_name]"
+                      name="program_name"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SPID]"
+                      dataType="i2"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[SPID]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SPID]"
+                      name="SPID"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[original_login_name]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[original_login_name]"
+                      length="128"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[original_login_name]"
+                      name="original_login_name"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[Status]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[Status]"
+                      length="30"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[Status]"
+                      name="Status"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[DatabaseName]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[DatabaseName]"
+                      length="128"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[DatabaseName]"
+                      name="DatabaseName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[LastWaitType]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[LastWaitType]"
+                      length="32"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[LastWaitType]"
+                      name="LastWaitType"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[WaitResource]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[WaitResource]"
+                      length="256"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[WaitResource]"
+                      name="WaitResource"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[BlockedBy]"
+                      dataType="i2"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[BlockedBy]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[BlockedBy]"
+                      name="BlockedBy"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[LoginTime]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[LoginTime]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[LoginTime]"
+                      name="LoginTime"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SQLBatchText]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[SQLBatchText]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SQLBatchText]"
+                      name="SQLBatchText"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SQLStatementText]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[SQLStatementText]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SQLStatementText]"
+                      name="SQLStatementText"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[ThreadsCount]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[ThreadsCount]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[ThreadsCount]"
+                      name="ThreadsCount"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[AvgWaitTimeSec]"
+                      dataType="i8"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[AvgWaitTimeSec]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[AvgWaitTimeSec]"
+                      name="AvgWaitTimeSec"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SumPhysical_IO]"
+                      dataType="i8"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[SumPhysical_IO]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[SumPhysical_IO]"
+                      name="SumPhysical_IO"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[Sum_CPU]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[Sum_CPU]"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].Columns[Sum_CPU]"
+                      name="Sum_CPU"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[DB_ServerName]"
+                      codePage="1251"
+                      dataType="str"
+                      length="5"
+                      name="DB_ServerName" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[LogAddDate]"
+                      dataType="dbTimeStamp"
+                      name="LogAddDate" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[HostName]"
+                      dataType="wstr"
+                      length="128"
+                      name="HostName" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[program_name]"
+                      dataType="wstr"
+                      length="128"
+                      name="program_name" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[SPID]"
+                      dataType="i2"
+                      name="SPID" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[original_login_name]"
+                      dataType="wstr"
+                      length="128"
+                      name="original_login_name" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[Status]"
+                      dataType="wstr"
+                      length="30"
+                      name="Status" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[DatabaseName]"
+                      dataType="wstr"
+                      length="128"
+                      name="DatabaseName" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[LastWaitType]"
+                      dataType="wstr"
+                      length="32"
+                      name="LastWaitType" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[WaitResource]"
+                      dataType="wstr"
+                      length="256"
+                      name="WaitResource" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[BlockedBy]"
+                      dataType="i2"
+                      name="BlockedBy" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[LoginTime]"
+                      dataType="dbTimeStamp"
+                      name="LoginTime" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[SQLBatchText]"
+                      dataType="nText"
+                      name="SQLBatchText" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[SQLStatementText]"
+                      dataType="nText"
+                      name="SQLStatementText" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[ThreadsCount]"
+                      dataType="i4"
+                      name="ThreadsCount" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[AvgWaitTimeSec]"
+                      dataType="i8"
+                      name="AvgWaitTimeSec" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[SumPhysical_IO]"
+                      dataType="i8"
+                      name="SumPhysical_IO" />
+                    <externalMetadataColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output].ExternalColumns[Sum_CPU]"
+                      dataType="i4"
+                      name="Sum_CPU" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[DB_ServerName]"
+                      codePage="1251"
+                      dataType="str"
+                      length="5"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[DB_ServerName]"
+                      name="DB_ServerName" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[LogAddDate]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[LogAddDate]"
+                      name="LogAddDate" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[HostName]"
+                      dataType="wstr"
+                      length="128"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[HostName]"
+                      name="HostName" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[program_name]"
+                      dataType="wstr"
+                      length="128"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[program_name]"
+                      name="program_name" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[SPID]"
+                      dataType="i2"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[SPID]"
+                      name="SPID" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[original_login_name]"
+                      dataType="wstr"
+                      length="128"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[original_login_name]"
+                      name="original_login_name" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[Status]"
+                      dataType="wstr"
+                      length="30"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[Status]"
+                      name="Status" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[DatabaseName]"
+                      dataType="wstr"
+                      length="128"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[DatabaseName]"
+                      name="DatabaseName" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[LastWaitType]"
+                      dataType="wstr"
+                      length="32"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[LastWaitType]"
+                      name="LastWaitType" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[WaitResource]"
+                      dataType="wstr"
+                      length="256"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[WaitResource]"
+                      name="WaitResource" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[BlockedBy]"
+                      dataType="i2"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[BlockedBy]"
+                      name="BlockedBy" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[LoginTime]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[LoginTime]"
+                      name="LoginTime" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[SQLBatchText]"
+                      dataType="nText"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[SQLBatchText]"
+                      name="SQLBatchText" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[SQLStatementText]"
+                      dataType="nText"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[SQLStatementText]"
+                      name="SQLStatementText" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[ThreadsCount]"
+                      dataType="i4"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[ThreadsCount]"
+                      name="ThreadsCount" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[AvgWaitTimeSec]"
+                      dataType="i8"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[AvgWaitTimeSec]"
+                      name="AvgWaitTimeSec" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[SumPhysical_IO]"
+                      dataType="i8"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[SumPhysical_IO]"
+                      name="SumPhysical_IO" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[Sum_CPU]"
+                      dataType="i4"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[Sum_CPU]"
+                      name="Sum_CPU" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Gather Performance Data.Paths[OLE DB Source Output]"
+              endId="Package\Gather Performance Data\REPORTS.Inputs[OLE DB Destination Input]"
+              name="OLE DB Source Output"
+              startId="Package\Gather Performance Data\SRV16.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph">
+        <NodeLayout
+          Size="199,42"
+          Id="Package\Gather Performance Data"
+          TopLeft="228,80" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Gather Performance Data">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="110,42"
+          Id="Package\Gather Performance Data\SRV16"
+          TopLeft="368,46" />
+        <NodeLayout
+          Size="124,42"
+          Id="Package\Gather Performance Data\REPORTS"
+          TopLeft="414,144" />
+        <EdgeLayout
+          Id="Package\Gather Performance Data.Paths[OLE DB Source Output]"
+          TopLeft="423,88">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="53,56"
+              Start="0,0"
+              End="53,48.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,24" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,24"
+                    Point2="0,28"
+                    Point3="4,28" />
+                  <mssgle:LineSegment
+                    End="49,28" />
+                  <mssgle:CubicBezierSegment
+                    Point1="49,28"
+                    Point2="53,28"
+                    Point3="53,32" />
+                  <mssgle:LineSegment
+                    End="53,48.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Gather Performance Data\SRV16">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Gather Performance Data\REPORTS">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>
