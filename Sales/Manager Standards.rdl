@@ -139,6 +139,14 @@
           <DataField>TeamLead_ManagerID</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="IsLoyaltyGroup">
+          <DataField>IsLoyaltyGroup</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IsSTM">
+          <DataField>IsSTM</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
@@ -153,6 +161,13 @@
           <Operator>NotEqual</Operator>
           <FilterValues>
             <FilterValue>=IIf(Fields!TeamLead_ManagerID.Value &lt;&gt; 0, Fields!TeamLead_ManagerID.Value, Nothing)</FilterValue>
+          </FilterValues>
+        </Filter>
+        <Filter>
+          <FilterExpression>=Fields!IsSTM.Value</FilterExpression>
+          <Operator>NotEqual</Operator>
+          <FilterValues>
+            <FilterValue>=IIF(Parameters!IncludeSTM.Value = True, 0, 1)</FilterValue>
           </FilterValues>
         </Filter>
       </Filters>
@@ -1835,6 +1850,15 @@
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="IncludeSTM">
+      <DataType>Boolean</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>false</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Учитывать STM</Prompt>
+    </ReportParameter>
     <ReportParameter Name="Manager">
       <DataType>String</DataType>
       <DefaultValue>
@@ -1887,7 +1911,7 @@
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>3</NumberOfRows>
+      <NumberOfRows>4</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -1905,19 +1929,24 @@
           <ParameterName>SalesTeam</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>1</RowIndex>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
           <ParameterName>Manager</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>2</RowIndex>
           <ParameterName>CompanyFilter</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>2</RowIndex>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>3</RowIndex>
           <ParameterName>ManagerAge</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>IncludeSTM</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
