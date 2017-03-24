@@ -71,6 +71,10 @@
           <DataField>FullDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
+        <Field Name="FullDate1YearAgo">
+          <DataField>FullDate1YearAgo</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
         <Field Name="CardColor">
           <DataField>CardColor</DataField>
           <rd:TypeName>System.String</rd:TypeName>
@@ -118,6 +122,42 @@ ORDER BY CASE WHEN ID = 12 THEN 'яяя' ELSE Name END</CommandText>
     <DataSet Name="DStManagers">
       <SharedDataSet>
         <SharedDataSetReference>DStManagersDistinct</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="ManagerID">
+          <DataField>ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TeamLead_ManagerID">
+          <DataField>TeamLead_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="STM_ManagerID">
+          <DataField>STM_ManagerID</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
+        </Field>
+        <Field Name="Real_STM_ManagerID">
+          <DataField>Real_STM_ManagerID</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
+        </Field>
+      </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!Real_STM_ManagerID.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!STM.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
+    </DataSet>
+    <DataSet Name="DStSTMs">
+      <SharedDataSet>
+        <SharedDataSetReference>DStSTMs</SharedDataSetReference>
       </SharedDataSet>
       <Fields>
         <Field Name="ManagerID">
@@ -1713,30 +1753,6 @@ ORDER BY CASE WHEN ID = 12 THEN 'яяя' ELSE Name END</CommandText>
       </DefaultValue>
       <Prompt>Укажите конечную дату:</Prompt>
     </ReportParameter>
-    <ReportParameter Name="SalesTeam">
-      <DataType>Integer</DataType>
-      <Prompt>Sales-команда</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>DStSalesTeams</DataSetName>
-          <ValueField>SalesManagerID</ValueField>
-          <LabelField>SalesTeamName</LabelField>
-        </DataSetReference>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="ManagerID">
-      <DataType>String</DataType>
-      <Prompt>Выберите менеджеров:</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>DStManagers</DataSetName>
-          <ValueField>ManagerID</ValueField>
-          <LabelField>ManagerName</LabelField>
-        </DataSetReference>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
     <ReportParameter Name="BranchID">
       <DataType>Integer</DataType>
       <DefaultValue>
@@ -1755,11 +1771,53 @@ ORDER BY CASE WHEN ID = 12 THEN 'яяя' ELSE Name END</CommandText>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="SalesTeam">
+      <DataType>Integer</DataType>
+      <Prompt>Sales-команда</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStSalesTeams</DataSetName>
+          <ValueField>SalesManagerID</ValueField>
+          <LabelField>SalesTeamName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="STM">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStSTMs</DataSetName>
+          <ValueField>ManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt> STM</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStSTMs</DataSetName>
+          <ValueField>ManagerID</ValueField>
+          <LabelField>ManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="ManagerID">
+      <DataType>Integer</DataType>
+      <Prompt>Выберите менеджеров:</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStManagers</DataSetName>
+          <ValueField>ManagerID</ValueField>
+          <LabelField>ManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>3</NumberOfRows>
+      <NumberOfColumns>3</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -1777,14 +1835,19 @@ ORDER BY CASE WHEN ID = 12 THEN 'яяя' ELSE Name END</CommandText>
           <ParameterName>SalesTeam</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
+          <ColumnIndex>2</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>ManagerID</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>2</RowIndex>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
           <ParameterName>BranchID</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>STM</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
