@@ -225,9 +225,13 @@ ORDER BY RowNum</CommandText>
     <DataSet Name="DStUniqueVacancies">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>DECLARE @TodayDate DATETIME; SET @TodayDate = dbo.fnGetDatePart(GETDATE());
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+
+DECLARE @TodayDate DATETIME; SET @TodayDate = dbo.fnGetDatePart(GETDATE());
 DECLARE @12WeekAgo DATETIME; SET @12WeekAgo = DATEADD(WEEK, -12, GETDATE());
 
+WITH UnqAll AS
+ (
 SELECT 
 	  DD.FullDate
 	, DD.YearNum
@@ -250,7 +254,37 @@ GROUP BY
 	, DD.YearNum
 	, DD.WeekNum
 	, DD.WeekName
-ORDER BY YearNum, WeekNum</CommandText>
+ )
+ , UnqPaid AS
+ (
+SELECT 
+	  DD.FullDate
+	, DD.YearNum
+	, DD.WeekNum
+	, DD.WeekName
+	, SUM(ISNULL(FCS.VacancyNum, 0)) AS VacancyNum	   
+	, SUM(ISNULL(FCS.UnqVacancyNum, 0)) AS UnqVacancyNum	   
+	, SUM(ISNULL(FCS.UnqWorkVacancyNum, 0)) AS UnqWorkVacancyNum
+	, SUM(ISNULL(FCS.VacancyNum,0)) + SUM(ISNULL(FCS.UnqWorkVacancyNum,0)) AS UnqVacancyTotal
+	, 100. * SUM(ISNULL(FCS.VacancyNum, 0)) / NULLIF((SUM(ISNULL(FCS.VacancyNum,0)) + SUM(ISNULL(FCS.UnqWorkVacancyNum,0))),0) AS UnqTarget
+FROM dbo.DimCompany DC
+ JOIN dbo.FactCompanyStatuses FCS ON DC.Company_key = FCS.Company_key
+ JOIN dbo.DimDate DD ON FCS.Date_key = DD.Date_key
+WHERE DD.FullDate &gt;= @12WeekAgo
+	AND (DD.WeekDayNum = 6 OR DD.FullDate = @TodayDate)
+	AND DC.IndexAttraction &gt; 0
+	AND DC.WorkConnectionGroup = 'Привязанные компании'
+	AND FCS.HasPaidServices = 1
+GROUP BY 
+	  DD.FullDate
+	, DD.YearNum
+	, DD.WeekNum
+	, DD.WeekName
+ )
+SELECT UA.*, UP.VacancyNum AS PaidVacancyNum, UP.UnqVacancyTotal AS PaidUnqVacancyTotal
+FROM UnqAll UA
+ LEFT JOIN UnqPaid UP ON UA.FullDate = UP.FullDate
+ORDER BY YearNum, WeekNum;</CommandText>
       </Query>
       <Fields>
         <Field Name="FullDate">
@@ -288,6 +322,14 @@ ORDER BY YearNum, WeekNum</CommandText>
         <Field Name="UnqTarget">
           <DataField>UnqTarget</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="PaidVacancyNum">
+          <DataField>PaidVacancyNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PaidUnqVacancyTotal">
+          <DataField>PaidUnqVacancyTotal</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -7967,6 +8009,9 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
                 <ChartMember>
                   <Label />
                 </ChartMember>
+                <ChartMember>
+                  <Label>Paid Unq Vacancy Total</Label>
+                </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
             <ChartData>
@@ -8053,6 +8098,53 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
                   </ChartEmptyPoints>
                   <ChartItemInLegend>
                     <LegendText>Цель</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="PaidUnq">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PaidVacancyNum.Value) / Sum(Fields!PaidUnqVacancyTotal.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <Format>0.0 %</Format>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style>
+                        <Border>
+                          <Width>2pt</Width>
+                        </Border>
+                        <Color>#5d478b</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Type>Square</Type>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Удельный вес уникальных вакансий по компаниям с признаком "платная", %</LegendText>
                   </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
@@ -8175,7 +8267,7 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
                     </ChartMinorTickMarks>
                     <CrossAt>NaN</CrossAt>
                     <Minimum>NaN</Minimum>
-                    <Maximum>1</Maximum>
+                    <Maximum>NaN</Maximum>
                     <IncludeZero>false</IncludeZero>
                     <ChartAxisScaleBreak>
                       <Style />
