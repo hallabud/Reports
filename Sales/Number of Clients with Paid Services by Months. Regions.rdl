@@ -22,56 +22,9 @@
           <QueryParameter Name="@CityID">
             <Value>=Parameters!CityID.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@DepartmentIDs">
-            <Value>=Parameters!DepartmentIDs.Value</Value>
-          </QueryParameter>
         </QueryParameters>
-        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
-
-SELECT
-   CS.Company_key
- , NC.Name AS 'CompanyName'
- , NC.HeadQuarterCityID
- , M.Name AS 'ManagerName'
- , M.Id AS ManagerID
- , C.Name AS CityName
- , C.Id AS CityId
- , DD.YearNum
- , DD.MonthNameRus
- , DD.MonthNum
- , DD.FullDate
- , CASE 
-    WHEN CAST(HasPaidPublishedVacs AS INT) &gt; 0 OR CAST(HasPaidPublicationsLeft AS INT) &gt; 0 THEN 'Есть платные публикации на счету или опубликованные платные вакансии'
-    WHEN CAST(HasHotPublishedVacs AS INT) &gt; 0 OR CAST(HasHotPublicationsLeft AS INT) &gt; 0 THEN 'Есть горячие публикации на счету или опубликованные горячие вакансии'
-	WHEN CAST(HasCVDBAccess AS INT) &gt; 0 THEN 'Есть доступ к базе резюме'
-	WHEN CAST(HasActivatedLogo AS INT) &gt; 0 OR CAST(HasActivatedProfile AS INT) &gt; 0 THEN 'Клиенты по другому сервису (профиль/логотип)'
-    ELSE 'Не использовали платный сервис'
-   END AS 'CompanyGroup'
- , CASE 
-    WHEN CAST(HasPaidPublishedVacs AS INT) &gt; 0 OR CAST(HasPaidPublicationsLeft AS INT) &gt; 0 THEN 'green'
-    WHEN CAST(HasHotPublishedVacs AS INT) &gt; 0 OR CAST(HasHotPublicationsLeft AS INT) &gt; 0 THEN 'orange'
-	WHEN CAST(HasCVDBAccess AS INT) &gt; 0 THEN 'blue'
-	WHEN CAST(HasActivatedLogo AS INT) &gt; 0 OR CAST(HasActivatedProfile AS INT) &gt; 0 THEN 'yellow'
-    ELSE 'red'
-   END AS 'CardColor'
-FROM Reporting.dbo.DimCompany DC
- JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON DC.NotebookId = NC.NotebookId
- JOIN SRV16.RabotaUA2.dbo.Manager M ON NC.ManagerId = M.Id
- JOIN SRV16.RabotaUA2.dbo.City C ON NC.HeadquarterCityId = C.Id
- JOIN Reporting.dbo.FactCompanyStatuses CS ON DC.Company_key = CS.Company_key
- JOIN Reporting.dbo.DimDate DD ON CS.Date_key = DD.Date_key
-WHERE DD.FullDate BETWEEN @StartDate AND @EndDate
- AND (DD.DayNum = 1 OR DD.FullDate = @EndDate)
- AND NOT EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.NotebookCompanyMerged WHERE SourceNotebookID = NC.NotebookID)
- AND NC.IsNetworkCompany = 0
- AND M.DepartmentID IN (@DepartmentIDs)
- AND NC.HeadquarterCityID IN (@CityID)
- AND EXISTS (SELECT * 
-			 FROM Reporting.dbo.FactCompanyStatuses CS2
-			  JOIN Reporting.dbo.DimDate DD2 ON CS2.Date_key = DD2.Date_key
-			 WHERE CS2.Company_key = CS.Company_key 
-			  AND DD2.FullDate BETWEEN DATEADD(MONTH, -12, DD.FullDate) AND DD.FullDate
-			  AND (HasPaidPublicationsLeft = 1 OR HasPaidPublishedVacs = 1 OR HasHotPublishedVacs = 1 OR HasHotPublicationsLeft = 1 OR HasCVDBAccess = 1 OR HasActivatedLogo = 1 OR HasActivatedProfile = 1))</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_NumberOfClientsWithPaidServicesByMonthsRegions</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -107,13 +60,13 @@ WHERE DD.FullDate BETWEEN @StartDate AND @EndDate
           <DataField>MonthNameRus</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CityId">
-          <DataField>CityId</DataField>
-          <rd:TypeName>System.Int16</rd:TypeName>
-        </Field>
         <Field Name="MonthNum">
           <DataField>MonthNum</DataField>
           <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="FullDate1YearAgo">
+          <DataField>FullDate1YearAgo</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="CompanyGroup">
           <DataField>CompanyGroup</DataField>
@@ -132,33 +85,14 @@ WHERE DD.FullDate BETWEEN @StartDate AND @EndDate
     <DataSet Name="DStRegions">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>SELECT ID, Name
-FROM SRV16.RabotaUA2.dbo.City
-WHERE Name IN ('Днепропетровск','Донецк','Харьков','Одесса','Львов')</CommandText>
+        <CommandText>SELECT ID, Name 
+FROM SRV16.RabotaUA2.dbo.City WITH (NOLOCK) 
+WHERE Id IN (2,3,4,9,21,31,82);</CommandText>
       </Query>
       <Fields>
         <Field Name="ID">
           <DataField>ID</DataField>
           <rd:TypeName>System.Int16</rd:TypeName>
-        </Field>
-        <Field Name="Name">
-          <DataField>Name</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="DStDepartments">
-      <Query>
-        <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>SELECT ID, Name
-FROM SRV16.RabotaUA2.dbo.Departments
-WHERE ID IN (2,3)</CommandText>
-        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
-      </Query>
-      <Fields>
-        <Field Name="ID">
-          <DataField>ID</DataField>
-          <rd:TypeName>System.Byte</rd:TypeName>
         </Field>
         <Field Name="Name">
           <DataField>Name</DataField>
@@ -564,35 +498,6 @@ WHERE ID IN (2,3)</CommandText>
                                       <UseValueAsLabel>true</UseValueAsLabel>
                                       <Visible>true</Visible>
                                     </ChartDataLabel>
-                                    <ActionInfo>
-                                      <Actions>
-                                        <Action>
-                                          <Drillthrough>
-                                            <ReportName>List. Clients With Paid Services. Regions</ReportName>
-                                            <Parameters>
-                                              <Parameter Name="StartDate">
-                                                <Value>=Parameters!StartDate.Value</Value>
-                                              </Parameter>
-                                              <Parameter Name="EndDate">
-                                                <Value>=Parameters!EndDate.Value</Value>
-                                              </Parameter>
-                                              <Parameter Name="CityID">
-                                                <Value>=Fields!CityId.Value</Value>
-                                              </Parameter>
-                                              <Parameter Name="SelectedDate">
-                                                <Value>=Fields!FullDate.Value</Value>
-                                              </Parameter>
-                                              <Parameter Name="SelectedCompanyGroup">
-                                                <Value>=Fields!CompanyGroup.Value</Value>
-                                              </Parameter>
-                                              <Parameter Name="DepartmentIDs">
-                                                <Value>=Parameters!DepartmentIDs.Value()</Value>
-                                              </Parameter>
-                                            </Parameters>
-                                          </Drillthrough>
-                                        </Action>
-                                      </Actions>
-                                    </ActionInfo>
                                     <Style>
                                       <Color>=First(Fields!CardColor.Value, "Chart5_SeriesGroup")</Color>
                                     </Style>
@@ -841,6 +746,7 @@ WHERE ID IN (2,3)</CommandText>
                             <BackgroundGradientType>None</BackgroundGradientType>
                           </Style>
                         </Chart>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                   </TablixCells>
@@ -921,24 +827,6 @@ WHERE ID IN (2,3)</CommandText>
       </DefaultValue>
       <Prompt>Укажите конечную дату:</Prompt>
     </ReportParameter>
-    <ReportParameter Name="DepartmentIDs">
-      <DataType>Integer</DataType>
-      <DefaultValue>
-        <DataSetReference>
-          <DataSetName>DStDepartments</DataSetName>
-          <ValueField>ID</ValueField>
-        </DataSetReference>
-      </DefaultValue>
-      <Prompt>Выберите отдел(ы):</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>DStDepartments</DataSetName>
-          <ValueField>ID</ValueField>
-          <LabelField>Name</LabelField>
-        </DataSetReference>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
     <ReportParameter Name="CityID">
       <DataType>String</DataType>
       <DefaultValue>
@@ -975,11 +863,6 @@ WHERE ID IN (2,3)</CommandText>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>DepartmentIDs</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>CityID</ParameterName>
         </CellDefinition>
