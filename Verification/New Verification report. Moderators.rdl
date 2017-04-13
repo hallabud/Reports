@@ -49,16 +49,13 @@
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT DISTINCT
- CASE NCL.LoginEmail
-   	WHEN 'Annakr@rabota.ua' THEN 'Кравченко Анна'
-	WHEN 'NataliyaM@rabota.ua' THEN 'Манжула Наталья'
-	WHEN 'Evgeniyak@rabota.ua' THEN 'Коротич Евгения'
-	WHEN 'juliap@rabota.ua' THEN 'Пичугина Юлия'
-	WHEN 'YuraK@rabota.ua' THEN 'Ковалев Юрий'
-	ELSE NCL.LoginEmail
-   END AS Verificator
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+SELECT DISTINCT REPLACE(NE.Name + ' ' + NE.SurName, '  ', ' ') AS Verificator
 FROM SRV16.RabotaUA2.dbo.NotebookCompany_Log NCL WITH (NOLOCK)
+ LEFT JOIN SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON NCL.LoginEmail = MMB.Email
+ LEFT JOIN SRV16.RabotaUA2.dbo.Notebook NTBK ON MMB.UserID = NTBK.aspnet_UserUIN
+ LEFT JOIN SRV16.RabotaUA2.dbo.NotebookEmployee NE ON NTBK.ID = NE.NotebookID
 WHERE NCL.AddDate BETWEEN @StartDate AND @EndDate + 1
  AND NCL.PageID = 1
  AND NCL.EventID IN (2,3,4,11)
