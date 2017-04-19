@@ -24,6 +24,12 @@
           <QueryParameter Name="@OrderType">
             <Value>=Parameters!OrderType.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@Manager">
+            <Value>=Parameters!Manager.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ByManager">
+            <Value>=Parameters!ByManager.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT 
    DD.YearNum
@@ -66,12 +72,16 @@ FROM SRV16.RabotaUA2.dbo.Orders O WITH (NOLOCK)
  JOIN SRV16.RabotaUA2.dbo.OrderService_Group AS OSG WITH (NOLOCK) ON OS.GroupID = OSG.ID
  JOIN SRV16.RabotaUA2.dbo.OrderService_Unit AS OSU WITH (NOLOCK) ON OD.UnitID = OSU.ID 
  JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC WITH (NOLOCK) ON O.NotebookID = NC.NotebookID
- JOIN SRV16.RabotaUA2.dbo.Manager M WITH (NOLOCK) ON NC.ManagerID = M.ID
+ --JOIN SRV16.RabotaUA2.dbo.Manager M WITH (NOLOCK) ON NC.ManagerID = M.ID
  JOIN Reporting.dbo.DimDate DD ON OD.ActivationStartDate = DD.FullDate
+ LEFT JOIN SRV16.RabotaUA2.dbo.aspnet_Membership MMB with(nolock) on MMB.Email = O.LoginEMail_OrderOwner
+ LEFT JOIN SRV16.RabotaUA2.dbo.Manager M WITH (NOLOCK) ON M.aspnet_UserUIN = MMB.UserId
 WHERE O.NotebookID NOT IN (853455, 1448295) /*не включаем тестовые компании*/
  AND O.State IN (4,5) /*выбираем только активированные или выполненные заказы*/ 
  AND OD.ActivationStartDate BETWEEN @StartDate AND @EndDate
  AND O.Type IN (@OrderType)
+ --AND (M.ID IN (SELECT Value FROM dbo.udf_SplitString (@Managers,',')) 
+ AND (M.ID IN (@Manager) or @ByManager = 0)
 GROUP BY 
    DD.YearNum
  , DD.MonthNum
@@ -156,6 +166,103 @@ WHERE Type = 'OrderType'</CommandText>
         </Field>
         <Field Name="Name">
           <DataField>Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DStManagers">
+      <SharedDataSet>
+        <SharedDataSetReference>DStManagersDistinct</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="ManagerID">
+          <DataField>ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TeamLead_ManagerID">
+          <DataField>TeamLead_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IsLoyaltyGroup">
+          <DataField>IsLoyaltyGroup</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="Email">
+          <DataField>Email</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DepartmentID">
+          <DataField>DepartmentID</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="STM_ManagerID">
+          <DataField>STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Real_STM_ManagerID">
+          <DataField>Real_STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!Real_STM_ManagerID.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!STM.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
+    </DataSet>
+    <DataSet Name="DStSTMs">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_STM_List</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ManagerID">
+          <DataField>ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TeamLead_ManagerID">
+          <DataField>TeamLead_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!TeamLead_ManagerID.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!SalesTeam.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
+    </DataSet>
+    <DataSet Name="DStSalesTeam">
+      <SharedDataSet>
+        <SharedDataSetReference>DStSalesTeamDistinct</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="SalesTeamName">
+          <DataField>SalesTeamName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SalesManagerID">
+          <DataField>SalesManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="SalesManagerName">
+          <DataField>SalesManagerName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -1824,6 +1931,24 @@ WHERE Type = 'OrderType'</CommandText>
       </DefaultValue>
       <Prompt>Конечная дата</Prompt>
     </ReportParameter>
+    <ReportParameter Name="SalesTeam">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStSalesTeam</DataSetName>
+          <ValueField>SalesManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Команда</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStSalesTeam</DataSetName>
+          <ValueField>SalesManagerID</ValueField>
+          <LabelField>SalesManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
     <ReportParameter Name="OrderType">
       <DataType>String</DataType>
       <DefaultValue>
@@ -1842,11 +1967,56 @@ WHERE Type = 'OrderType'</CommandText>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="ByManager">
+      <DataType>Boolean</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>false</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Фильтр по менеджерам</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="STM">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStSTMs</DataSetName>
+          <ValueField>ManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>STM</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStSTMs</DataSetName>
+          <ValueField>ManagerID</ValueField>
+          <LabelField>ManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="Manager">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStManagers</DataSetName>
+          <ValueField>ManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Менеджер</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStManagers</DataSetName>
+          <ValueField>ManagerID</ValueField>
+          <LabelField>ManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
+      <NumberOfColumns>3</NumberOfColumns>
+      <NumberOfRows>3</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -1862,6 +2032,26 @@ WHERE Type = 'OrderType'</CommandText>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>OrderType</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>Manager</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ByManager</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>SalesTeam</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>STM</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
