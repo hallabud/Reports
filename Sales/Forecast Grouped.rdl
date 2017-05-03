@@ -53,6 +53,15 @@
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!Department.Value</FilterExpression>
+          <Operator>NotEqual</Operator>
+          <FilterValues>
+            <FilterValue>=IIf(Parameters!RipFilter.Value = False, "RIP", "")</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
     </DataSet>
   </DataSets>
   <ReportSections>
@@ -624,7 +633,7 @@
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=IIf(Fields!Department.Value = "RIP", "Свободные менеджеры", Fields!Department.Value)</Value>
+                                <Value>=IIf(Fields!Department.Value = "RIP", "Менеджеры, которые уже не работают", Fields!Department.Value)</Value>
                                 <Style>
                                   <FontFamily>Tahoma</FontFamily>
                                   <Color>White</Color>
@@ -963,11 +972,20 @@
       </DefaultValue>
       <Prompt>Укажите конечную дату:</Prompt>
     </ReportParameter>
+    <ReportParameter Name="RipFilter">
+      <DataType>Boolean</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>false</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Все менеджеры</Prompt>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>1</NumberOfRows>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -978,6 +996,11 @@
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>EndDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>RipFilter</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
