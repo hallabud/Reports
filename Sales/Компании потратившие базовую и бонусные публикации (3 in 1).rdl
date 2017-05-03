@@ -470,8 +470,7 @@ order by m.STM_Name</CommandText>
     <DataSet Name="DSt3BonusSpentByCategory">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>
-select
+        <CommandText>select
  Cast(c.MonthNum as Varchar(4)) + '-' + Cast(c.YearNum as Varchar(4)) as PeriodName,
  CategoryId = Case when c.Category = 'Paid' then 1
                    when c.Category = 'RealizedWoPaiment' then 2
@@ -483,7 +482,14 @@ select
 				   when c.Category = 'Action' then 8
 				   when c.Category = 'WoAction' then 9
                end,
- c.* 
+ c.YearNum, c.MonthNum, c.NotebookId, c.SpentDate, c.lastMonthdate, c.IsPaid, c.IsActionExists, c.IsPaymentExists, 
+ Category = case when c.Category = 'InProgress+Stage1' then 'InProgress+ВП'
+                 when c.Category = 'InProgress+Stage2' then 'InProgress+КП'
+				 when c.Category = 'InProgress+Stage3' then 'InProgress+Счет'
+				 when c.Category = 'InProgress+Stage4' then 'InProgress+Договор'
+				 else c.Category
+            end
+ ,c.ManagerId
 from CompanyWith3BonusSpent c with(nolock)</CommandText>
       </Query>
       <Fields>
@@ -512,7 +518,7 @@ from CompanyWith3BonusSpent c with(nolock)</CommandText>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="LastMonthDate">
-          <DataField>LastMonthDate</DataField>
+          <DataField>lastMonthdate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="IsPaid">
