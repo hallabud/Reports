@@ -94,10 +94,16 @@
       </Fields>
     </DataSet>
     <DataSet Name="DStTeamLead">
-      <SharedDataSet>
-        <SharedDataSetReference>DStSalesTeamsDistinct</SharedDataSetReference>
-      </SharedDataSet>
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_DataSet_SalesTeamsListWithMachanics</CommandText>
+      </Query>
       <Fields>
+        <Field Name="SalesMachanics">
+          <DataField>SalesMachanics</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="SalesTeamName">
           <DataField>SalesTeamName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
@@ -111,6 +117,15 @@
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!SalesMachanics.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!SalesMechanics.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
     </DataSet>
     <DataSet Name="DStSMDefault">
       <Query>
@@ -119,6 +134,10 @@
         <CommandText>usp_ssrs_CompaniesAttractionCompetitionDefaultSM</CommandText>
       </Query>
       <Fields>
+        <Field Name="SalesMachanics">
+          <DataField>SalesMachanics</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="SalesTeamName">
           <DataField>SalesTeamName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
@@ -130,6 +149,29 @@
         <Field Name="SalesManagerName">
           <DataField>SalesManagerName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!SalesMachanics.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!SalesMechanics.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
+    </DataSet>
+    <DataSet Name="DStStartDate">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>select dd.FirstMonthDate
+from DimDate dd with(nolock) 
+where dd.FullDate =  cast(getdate() as date)  </CommandText>
+      </Query>
+      <Fields>
+        <Field Name="FirstMonthDate">
+          <DataField>FirstMonthDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -1684,9 +1726,10 @@
     <ReportParameter Name="StartDate">
       <DataType>DateTime</DataType>
       <DefaultValue>
-        <Values>
-          <Value>=CDate("01/03/2017")</Value>
-        </Values>
+        <DataSetReference>
+          <DataSetName>DStStartDate</DataSetName>
+          <ValueField>FirstMonthDate</ValueField>
+        </DataSetReference>
       </DefaultValue>
       <Prompt>StartDate</Prompt>
     </ReportParameter>
@@ -1698,6 +1741,28 @@
         </Values>
       </DefaultValue>
       <Prompt>EndDate</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="SalesMechanics">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>Relation</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Mechanics</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>Relation</Value>
+            <Label>Relation</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Telesales</Value>
+            <Label>Telesales</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
     </ReportParameter>
     <ReportParameter Name="TeamLead">
       <DataType>String</DataType>
@@ -1734,9 +1799,14 @@
           <ParameterName>EndDate</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
+          <ColumnIndex>3</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>TeamLead</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>SalesMechanics</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
