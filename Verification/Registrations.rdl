@@ -23,65 +23,112 @@
             <Value>=Parameters!CityGroup.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>IF OBJECT_ID('tempdb..#NotebookCompany_All','U') IS NOT NULL DROP TABLE #NotebookCompany_All;
+        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+SET NOCOUNT ON;
 
-CREATE TABLE #NotebookCompany_All (NotebookID INT /*PRIMARY KEY*/, AddDate DATETIME, IsConfirmed BIT, HeadquarterCityID INT);
+--DECLARE @StartDate DATETIME = '2017-07-01';
+--DECLARE @EndDate DATETIME = '2017-07-31';
 
-INSERT INTO #NotebookCompany_All
-SELECT NotebookId, dbo.fnGetDatePart(AddDate), IsConfirmed, HeadquarterCityId
-FROM SRV16.RabotaUA2.dbo.NotebookCompany_Deleted
-WHERE AddDate BETWEEN @StartDate AND @EndDate + 1
+IF OBJECT_ID('tempdb..#NotebookCompany_All','U') IS NOT NULL DROP TABLE #NotebookCompany_All;
+IF OBJECT_ID('tempdb..#NotebookCompany_All_Detailed','U') IS NOT NULL DROP TABLE #NotebookCompany_All_Detailed;
+IF OBJECT_ID('tempdb..#NotebookCompanySpent','U') IS NOT NULL DROP TABLE #NotebookCompanySpent;
+IF OBJECT_ID('tempdb..#NotebooksWithVacancy','U') IS NOT NULL DROP TABLE #NotebooksWithVacancy;
+IF OBJECT_ID('tempdb..#DailyViewedResume','U') IS NOT NULL DROP TABLE #DailyViewedResume;
+IF OBJECT_ID('tempdb..#NotebooksWithView','U') IS NOT NULL DROP TABLE #NotebooksWithView;
+IF OBJECT_ID('tempdb..#NotebookCompanyMerged','U') IS NOT NULL DROP TABLE #NotebookCompanyMerged;
+
+SELECT NCD.NotebookId, NCD.AddDate, IsConfirmed, HeadquarterCityId, IsCorporativeEMail, N.NotebookStateId, NS.Name AS NotebookState, C.Name AS CityName
+INTO #NotebookCompany_All
+FROM SRV16.RabotaUA2.dbo.NotebookCompany_Deleted NCD
+ JOIN SRV16.RabotaUA2.dbo.Notebook N ON NCD.NotebookId = N.Id
+ JOIN SRV16.RabotaUA2.dbo.NotebookState NS ON N.NotebookStateId = NS.Id
+ JOIN SRV16.RabotaUA2.dbo.City C ON NCD.HeadquarterCityId = C.Id
+WHERE NCD.AddDate BETWEEN @StartDate AND @EndDate + 1
+
 UNION ALL
-SELECT NotebookID, dbo.fnGetDatePart(AddDate), IsConfirmed, HeadquarterCityId
-FROM SRV16.RabotaUA2.dbo.NotebookCompany
-WHERE AddDate BETWEEN @StartDate AND @EndDate + 1;
 
-WITH C AS
- (
+SELECT NC.NotebookID, NC.AddDate, IsConfirmed, HeadquarterCityId, IsCorporativeEMail, N.NotebookStateId, NS.Name, C.Name
+FROM SRV16.RabotaUA2.dbo.NotebookCompany NC WITH (NOLOCK)
+ JOIN SRV16.RabotaUA2.dbo.Notebook N WITH (NOLOCK) ON NC.NotebookId = N.Id
+ JOIN SRV16.RabotaUA2.dbo.NotebookState NS WITH (NOLOCK) ON N.NotebookStateId = NS.Id
+ JOIN SRV16.RabotaUA2.dbo.City C ON NC.HeadquarterCityId = C.Id
+WHERE NC.AddDate BETWEEN @StartDate AND @EndDate + 1;
+
+
 SELECT 
    NCA.NotebookID
  , NCA.AddDate
  , DD.YearNum
  , DD.WeekNum
  , DD.WeekName
- , CASE ISNULL(COALESCE(NC.IsConfirmed, NCA.IsConfirmed),0) WHEN 1 THEN 'Подтвердили email' ELSE 'Не подтвердили email' END AS IsConfirmed
- , CASE NC.IsCorporativeEMail WHEN 1 THEN 'Корпоративный email' ELSE 'Фришный email' END AS IsCorporativeEmail
- , ISNULL(NS.Name, 'удаленный') AS NotebookState
- , CASE WHEN NS.Id IN (5,7) THEN 'Проверенный и МЕГА проверенный' ELSE 'Другой' END AS NotebookStateGroup
+ , DD.LastWeekDate
+ , DD.LastWeekDate + 1 AS LastWeekDatePlus1
+ , CASE NCA.IsConfirmed WHEN 1 THEN 'Подтвердили email' ELSE 'Не подтвердили email' END AS IsConfirmed
+ , CASE NCA.IsCorporativeEMail WHEN 1 THEN 'Корпоративный email' ELSE 'Фришный email' END AS IsCorporativeEmail
+ , ISNULL(NotebookState, 'удаленный') AS NotebookState
+ , CASE WHEN NotebookStateId IN (5,7) THEN 'Проверенный и МЕГА проверенный' ELSE 'Другой' END AS NotebookStateGroup
  , CASE 
-    WHEN C.Id IN (1,2,3,4,6,9,21) THEN C.Name
+    WHEN HeadquarterCityId IN (1,2,3,4,6,9,21) THEN CityName
 	ELSE 'Мелкие города'
    END AS CityGroup
+INTO #NotebookCompany_All_Detailed
+FROM #NotebookCompany_All NCA
+ JOIN Reporting.dbo.DimDate DD ON CONVERT(DATE, NCA.AddDate) = DD.FullDate;
+
+DECLARE @MinAddDate DATETIME = (SELECT MIN(AddDate) FROM #NotebookCompany_All_Detailed);
+
+SELECT *
+INTO #NotebookCompanySpent
+FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent
+WHERE AddDate &gt;= @MinAddDate;
+
+SELECT DISTINCT NCAD.NotebookId
+INTO #NotebooksWithVacancy
+FROM #NotebookCompany_All_Detailed NCAD
+ JOIN #NotebookCompanySpent NCS ON NCAD.NotebookId = NCS.NotebookId
+WHERE NCS.AddDate &lt;= NCAD.LastWeekDatePlus1;
+
+SELECT *
+INTO #DailyViewedResume
+FROM SRV16.RabotaUA2.dbo.DailyViewedResume DVR
+WHERE AddDate &gt;= @MinAddDate;
+
+SELECT DISTINCT EmployerNotebookId 
+INTO #NotebooksWithView
+FROM #NotebookCompany_All_Detailed NCAD
+ JOIN #DailyViewedResume DVR ON NCAD.NotebookId = DVR.EmployerNotebookID
+WHERE DVR.ViewDate &lt;= NCAD.LastWeekDate;
+
+SELECT DISTINCT SourceNotebookID 
+INTO #NotebookCompanyMerged
+FROM SRV16.RabotaUA2.dbo.NotebookCompanyMerged
+WHERE AddDate &gt;= @MinAddDate;
+
+WITH C AS
+ (
+SELECT NCAD.*
  , CASE 
-    WHEN EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS WHERE NCS.NotebookID = NCA.NotebookId AND NCS.AddDate &lt;= DD.LastWeekDate + 1) THEN 'С добавленной вакансией'
-	WHEN EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.DailyViewedResume DVR WHERE DVR.EmployerNotebookID = NCA.NotebookId AND DVR.ViewDate &lt;= DD.LastWeekDate) THEN 'С открытием контакта в базе (без вакансии)'
+	WHEN NWV.NotebookId IS NOT NULL THEN 'С добавленной вакансией'
+	WHEN NWVW.EmployerNotebookId IS NOT NULL THEN 'С открытием контакта в базе (без вакансии)'
 	ELSE 'Без добавления вакансии и открытия контактов'
-   END HasVacancyOrView
+   END AS HasVacancyOrView
  , CASE
-    WHEN EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.NotebookCompanyMerged NCM WHERE NCM.SourceNotebookID = NCA.NotebookID) THEN 'Слиты в другой блокнот'
+    WHEN NCM.SourceNotebookId IS NOT NULL THEN 'Слиты в другой блокнот'
 	ELSE 'Не слиты в другой блокнот'
    END AS IsMerged
-FROM #NotebookCompany_All NCA
- LEFT JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC ON NCA.NotebookID = NC.NotebookId
- LEFT JOIN SRV16.RabotaUA2.dbo.Notebook N ON NC.NotebookId = N.Id
- LEFT JOIN SRV16.RabotaUA2.dbo.NotebookState NS ON N.NotebookStateId = NS.Id
- LEFT JOIN SRV16.RabotaUA2.dbo.City C ON NCA.HeadquarterCityID = C.Id
- JOIN Reporting.dbo.DimDate DD ON NCA.AddDate = DD.FullDate
+FROM #NotebookCompany_All_Detailed NCAD
+ LEFT JOIN #NotebooksWithVacancy NWV ON NCAD.NotebookId = NWV.NotebookId
+ LEFT JOIN #NotebooksWithView NWVW ON NCAD.NotebookId = NWVW.EmployerNotebookId
+ LEFT JOIN #NotebookCompanyMerged NCM ON NCAD.NotebookId = NCM.SourceNotebookId
+WHERE CityGroup IN (@CityGroup)
  )
-SELECT * FROM C WHERE CityGroup IN (@CityGroup);
-
-DROP TABLE #NotebookCompany_All;</CommandText>
+SELECT YearNum, WeekNum, WeekName, IsConfirmed, IsCorporativeEmail, NotebookState, NotebookStateGroup, HasVacancyOrView, IsMerged, COUNT(*) AS NotebookCount
+FROM C
+GROUP BY YearNum, WeekNum, WeekName, IsConfirmed, IsCorporativeEmail, NotebookState, NotebookStateGroup, HasVacancyOrView, IsMerged
+ORDER BY YearNum, WeekNum, WeekName, IsConfirmed, IsCorporativeEmail, NotebookState, NotebookStateGroup, HasVacancyOrView, IsMerged;</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
-        <Field Name="NotebookID">
-          <DataField>NotebookID</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="AddDate">
-          <DataField>AddDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
         <Field Name="YearNum">
           <DataField>YearNum</DataField>
           <rd:TypeName>System.Int16</rd:TypeName>
@@ -106,9 +153,9 @@ DROP TABLE #NotebookCompany_All;</CommandText>
           <DataField>NotebookState</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CityGroup">
-          <DataField>CityGroup</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="NotebookCount">
+          <DataField>NotebookCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="NotebookStateGroup">
           <DataField>NotebookStateGroup</DataField>
@@ -274,14 +321,14 @@ WHERE CityGroup IN (@CityGroup)
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox11">
+                        <Textbox Name="NotebookCount">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -291,7 +338,7 @@ WHERE CityGroup IN (@CityGroup)
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox11</rd:DefaultName>
+                          <rd:DefaultName>NotebookCount</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -312,14 +359,14 @@ WHERE CityGroup IN (@CityGroup)
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="NotebookID">
+                        <Textbox Name="NotebookCount1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                   </Style>
@@ -328,7 +375,7 @@ WHERE CityGroup IN (@CityGroup)
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>NotebookID</rd:DefaultName>
+                          <rd:DefaultName>NotebookCount1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -357,7 +404,7 @@ WHERE CityGroup IN (@CityGroup)
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value) / Count(Fields!NotebookID.Value, "WeekName")</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value) / Sum(Fields!NotebookCount.Value, "WeekName")</Value>
                                   <Style>
                                     <FontStyle>Italic</FontStyle>
                                     <FontSize>12pt</FontSize>
@@ -644,14 +691,14 @@ WHERE CityGroup IN (@CityGroup)
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox20">
+                        <Textbox Name="NotebookCount2">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -661,7 +708,7 @@ WHERE CityGroup IN (@CityGroup)
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox20</rd:DefaultName>
+                          <rd:DefaultName>NotebookCount2</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -682,14 +729,14 @@ WHERE CityGroup IN (@CityGroup)
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="NotebookID1">
+                        <Textbox Name="NotebookCount3">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                   </Style>
@@ -698,7 +745,7 @@ WHERE CityGroup IN (@CityGroup)
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>NotebookID1</rd:DefaultName>
+                          <rd:DefaultName>NotebookCount3</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -727,7 +774,7 @@ WHERE CityGroup IN (@CityGroup)
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value) / Count(Fields!NotebookID.Value, "WeekName1")</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value) / Sum(Fields!NotebookCount.Value, "WeekName1")</Value>
                                   <Style>
                                     <FontStyle>Italic</FontStyle>
                                     <FontSize>12pt</FontSize>
@@ -1033,14 +1080,14 @@ WHERE CityGroup IN (@CityGroup)
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox60">
+                        <Textbox Name="NotebookCount7">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1050,7 +1097,7 @@ WHERE CityGroup IN (@CityGroup)
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox60</rd:DefaultName>
+                          <rd:DefaultName>NotebookCount7</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1071,14 +1118,14 @@ WHERE CityGroup IN (@CityGroup)
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="NotebookID2">
+                        <Textbox Name="NotebookCount8">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                   </Style>
@@ -1087,7 +1134,7 @@ WHERE CityGroup IN (@CityGroup)
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>NotebookID2</rd:DefaultName>
+                          <rd:DefaultName>NotebookCount8</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1115,7 +1162,7 @@ WHERE CityGroup IN (@CityGroup)
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value) / Count(Fields!NotebookID.Value, "WeekName2")</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value) / Sum(Fields!NotebookCount.Value, "WeekName2")</Value>
                                   <Style>
                                     <FontStyle>Italic</FontStyle>
                                     <FontSize>12pt</FontSize>
@@ -1437,7 +1484,7 @@ WHERE CityGroup IN (@CityGroup)
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1475,7 +1522,7 @@ WHERE CityGroup IN (@CityGroup)
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                   </Style>
@@ -1512,7 +1559,7 @@ WHERE CityGroup IN (@CityGroup)
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value) / Count(Fields!NotebookID.Value, "WeekName3")</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value) / Sum(Fields!NotebookCount.Value, "WeekName3")</Value>
                                   <Style>
                                     <FontStyle>Italic</FontStyle>
                                     <FontSize>12pt</FontSize>
@@ -1828,14 +1875,14 @@ WHERE CityGroup IN (@CityGroup)
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox81">
+                        <Textbox Name="NotebookCount5">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1845,7 +1892,7 @@ WHERE CityGroup IN (@CityGroup)
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox81</rd:DefaultName>
+                          <rd:DefaultName>NotebookCount5</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1867,14 +1914,14 @@ WHERE CityGroup IN (@CityGroup)
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="NotebookID4">
+                        <Textbox Name="NotebookCount6">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                   </Style>
@@ -1883,7 +1930,7 @@ WHERE CityGroup IN (@CityGroup)
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>NotebookID4</rd:DefaultName>
+                          <rd:DefaultName>NotebookCount6</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1912,7 +1959,7 @@ WHERE CityGroup IN (@CityGroup)
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)/Count(Fields!NotebookID.Value, "WeekName4")</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)/Sum(Fields!NotebookCount.Value, "WeekName4")</Value>
                                   <Style>
                                     <FontStyle>Italic</FontStyle>
                                     <FontSize>12pt</FontSize>
@@ -2639,7 +2686,7 @@ WHERE CityGroup IN (@CityGroup)
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -2678,7 +2725,7 @@ WHERE CityGroup IN (@CityGroup)
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                   </Style>
@@ -2716,7 +2763,7 @@ WHERE CityGroup IN (@CityGroup)
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value) / Count(Fields!NotebookID.Value, "WeekName6")</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value) / Sum(Fields!NotebookCount.Value, "WeekName6")</Value>
                                   <Style>
                                     <FontStyle>Italic</FontStyle>
                                     <FontSize>12pt</FontSize>
@@ -2851,10 +2898,7 @@ WHERE CityGroup IN (@CityGroup)
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Microsoft.VisualBasic.Interaction.IIf(Fields!NotebookState.Value = "МЕГА проверенный", 1, Microsoft.VisualBasic.Interaction.IIf(Fields!NotebookState.Value = "проверенный", 2, Microsoft.VisualBasic.Interaction.IIf(Fields!NotebookState.Value = "удаленный", 9, 3)))</Value>
-                    </SortExpression>
-                    <SortExpression>
-                      <Value>=Fields!NotebookState.Value</Value>
+                      <Value>=Fields!IsMerged.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixMembers>
@@ -2891,6 +2935,7 @@ WHERE CityGroup IN (@CityGroup)
                               <PaddingBottom>2pt</PaddingBottom>
                             </Style>
                           </Textbox>
+                          <rd:Selected>true</rd:Selected>
                         </CellContents>
                       </TablixHeader>
                       <TablixMembers>
@@ -3017,14 +3062,14 @@ WHERE CityGroup IN (@CityGroup)
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="NotebookID6">
+                        <Textbox Name="NotebookCount4">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value)</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value)</Value>
                                   <Style>
                                     <FontSize>12pt</FontSize>
                                   </Style>
@@ -3033,7 +3078,7 @@ WHERE CityGroup IN (@CityGroup)
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>NotebookID6</rd:DefaultName>
+                          <rd:DefaultName>NotebookCount4</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -3061,7 +3106,7 @@ WHERE CityGroup IN (@CityGroup)
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Count(Fields!NotebookID.Value) / Count(Fields!NotebookID.Value, "WeekName7")</Value>
+                                  <Value>=Sum(Fields!NotebookCount.Value) / Sum(Fields!NotebookCount.Value, "WeekName7")</Value>
                                   <Style>
                                     <FontStyle>Italic</FontStyle>
                                     <FontSize>12pt</FontSize>
