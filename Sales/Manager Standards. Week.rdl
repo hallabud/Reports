@@ -143,6 +143,14 @@
           <DataField>TeamLead_ManagerID</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="IsLoyaltyGroup">
+          <DataField>IsLoyaltyGroup</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IsSTM">
+          <DataField>IsSTM</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
@@ -157,6 +165,13 @@
           <Operator>NotEqual</Operator>
           <FilterValues>
             <FilterValue>=IIf(Fields!TeamLead_ManagerID.Value &lt;&gt; 0, Fields!TeamLead_ManagerID.Value, Nothing)</FilterValue>
+          </FilterValues>
+        </Filter>
+        <Filter>
+          <FilterExpression>=Fields!IsSTM.Value</FilterExpression>
+          <Operator>LessThanOrEqual</Operator>
+          <FilterValues>
+            <FilterValue>=IIF(Parameters!IncludeSTM.Value = True, 1, 0)</FilterValue>
           </FilterValues>
         </Filter>
       </Filters>
@@ -836,10 +851,14 @@
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>135.96472cm</Top>
+            <Top>137.53458cm</Top>
             <Height>34cm</Height>
             <Width>26cm</Width>
             <ZIndex>1</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+              <ToggleItem>Textbox1</ToggleItem>
+            </Visibility>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -1136,10 +1155,14 @@
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>101.96472cm</Top>
+            <Top>103.28764cm</Top>
             <Height>34cm</Height>
             <Width>26cm</Width>
             <ZIndex>2</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+              <ToggleItem>Textbox1</ToggleItem>
+            </Visibility>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -2089,10 +2112,14 @@
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>170.14111cm</Top>
+            <Top>171.67569cm</Top>
             <Height>34cm</Height>
             <Width>26cm</Width>
             <ZIndex>5</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+              <ToggleItem>Textbox1</ToggleItem>
+            </Visibility>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -2102,8 +2129,41 @@
               <BackgroundGradientType>None</BackgroundGradientType>
             </Style>
           </Chart>
+          <Textbox Name="Textbox1">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Отображение скрытых графиков</Value>
+                    <Style />
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox1</rd:DefaultName>
+            <Top>102.28157cm</Top>
+            <Left>0.36407cm</Left>
+            <Height>0.6cm</Height>
+            <Width>13.87708cm</Width>
+            <ZIndex>6</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
         </ReportItems>
-        <Height>80.5884in</Height>
+        <Height>81.04673in</Height>
         <Style />
       </Body>
       <Width>10.23622in</Width>
@@ -2158,23 +2218,26 @@
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
-    <ReportParameter Name="Manager">
-      <DataType>String</DataType>
+    <ReportParameter Name="IncludeSTM">
+      <DataType>Boolean</DataType>
       <DefaultValue>
-        <DataSetReference>
-          <DataSetName>DStManagers</DataSetName>
-          <ValueField>ManagerName</ValueField>
-        </DataSetReference>
+        <Values>
+          <Value>false</Value>
+        </Values>
       </DefaultValue>
-      <Prompt>Менеджер</Prompt>
+      <Prompt>Учитывать STM</Prompt>
       <ValidValues>
-        <DataSetReference>
-          <DataSetName>DStManagers</DataSetName>
-          <ValueField>ManagerName</ValueField>
-          <LabelField>ManagerName</LabelField>
-        </DataSetReference>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>true</Value>
+            <Label>Да</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>false</Value>
+            <Label>Нет</Label>
+          </ParameterValue>
+        </ParameterValues>
       </ValidValues>
-      <MultiValue>true</MultiValue>
     </ReportParameter>
     <ReportParameter Name="CompanyFilter">
       <DataType>Integer</DataType>
@@ -2196,6 +2259,24 @@
           </ParameterValue>
         </ParameterValues>
       </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="Manager">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStManagers</DataSetName>
+          <ValueField>ManagerName</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Менеджер</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStManagers</DataSetName>
+          <ValueField>ManagerName</ValueField>
+          <LabelField>ManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
@@ -2220,13 +2301,18 @@
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
-          <RowIndex>1</RowIndex>
+          <RowIndex>2</RowIndex>
           <ParameterName>Manager</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>2</RowIndex>
           <ParameterName>CompanyFilter</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>IncludeSTM</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
