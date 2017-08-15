@@ -181,6 +181,9 @@ WHERE IsSpecialOffer = 1;</CommandText>
           <QueryParameter Name="@ReportLevel">
             <Value>=Parameters!ReportLevel.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@Interval">
+            <Value>=Parameters!Interval.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_SpecialOffers</CommandText>
@@ -322,10 +325,16 @@ WHERE IsSpecialOffer = 1;</CommandText>
                                   <Value>=Parameters!Interval.Value</Value>
                                 </Parameter>
                                 <Parameter Name="SalesTeam">
-                                  <Value>=Fields!ManagerID.Value</Value>
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 1, Fields!ManagerID.Value, Parameters!SalesTeam.Value)</Value>
                                 </Parameter>
                                 <Parameter Name="ReportLevel">
-                                  <Value>=Parameters!ReportLevel.Value + 1</Value>
+                                  <Value>=IIf(Parameters!ReportLevel.Value &lt; 3, Parameters!ReportLevel.Value + 1, Parameters!ReportLevel.Value)</Value>
+                                </Parameter>
+                                <Parameter Name="STM">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 2, Fields!ManagerID.Value, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!Real_STM_ManagerID.Value, "DStManagers"))</Value>
+                                </Parameter>
+                                <Parameter Name="Manager">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 3, Fields!ManagerID.Value, IIf(Parameters!ReportLevel.Value = 1, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!ManagerID.Value, "DStManagers"), LookupSet(Fields!ManagerID.Value, Fields!Real_STM_ManagerID.Value, Fields!ManagerID.Value, "DStManagers")))</Value>
                                 </Parameter>
                               </Parameters>
                             </Drillthrough>
@@ -646,7 +655,6 @@ WHERE IsSpecialOffer = 1;</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStSpecialOffers</DataSetName>
-            <Left>0cm</Left>
             <Height>16cm</Height>
             <Width>34cm</Width>
             <Style>
@@ -724,6 +732,41 @@ WHERE IsSpecialOffer = 1;</CommandText>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
                       </ChartDataLabel>
+                      <ActionInfo>
+                        <Actions>
+                          <Action>
+                            <Drillthrough>
+                              <ReportName>Special Offers</ReportName>
+                              <Parameters>
+                                <Parameter Name="SpecOffer">
+                                  <Value>=Parameters!SpecOffer.Value</Value>
+                                </Parameter>
+                                <Parameter Name="StartDate">
+                                  <Value>=Parameters!StartDate.Value</Value>
+                                </Parameter>
+                                <Parameter Name="EndDate">
+                                  <Value>=Parameters!EndDate.Value</Value>
+                                </Parameter>
+                                <Parameter Name="Interval">
+                                  <Value>=Parameters!Interval.Value</Value>
+                                </Parameter>
+                                <Parameter Name="SalesTeam">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 1, Fields!ManagerID.Value, Parameters!SalesTeam.Value)</Value>
+                                </Parameter>
+                                <Parameter Name="ReportLevel">
+                                  <Value>=IIf(Parameters!ReportLevel.Value &lt; 3, Parameters!ReportLevel.Value + 1, Parameters!ReportLevel.Value)</Value>
+                                </Parameter>
+                                <Parameter Name="STM">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 2, Fields!ManagerID.Value, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!Real_STM_ManagerID.Value, "DStManagers"))</Value>
+                                </Parameter>
+                                <Parameter Name="Manager">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 3, Fields!ManagerID.Value, IIf(Parameters!ReportLevel.Value = 1, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!ManagerID.Value, "DStManagers"), LookupSet(Fields!ManagerID.Value, Fields!Real_STM_ManagerID.Value, Fields!ManagerID.Value, "DStManagers")))</Value>
+                                </Parameter>
+                              </Parameters>
+                            </Drillthrough>
+                          </Action>
+                        </Actions>
+                      </ActionInfo>
                       <Style>
                         <Border>
                           <Width>=IIf(Fields!ManagerID.Value = 0, "2pt", "1pt")</Width>
@@ -1039,7 +1082,6 @@ WHERE IsSpecialOffer = 1;</CommandText>
             </ChartNoDataMessage>
             <DataSetName>DStSpecialOffers</DataSetName>
             <Top>19.28222cm</Top>
-            <Left>0cm</Left>
             <Height>16cm</Height>
             <Width>34cm</Width>
             <ZIndex>1</ZIndex>
@@ -1118,6 +1160,41 @@ WHERE IsSpecialOffer = 1;</CommandText>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
                       </ChartDataLabel>
+                      <ActionInfo>
+                        <Actions>
+                          <Action>
+                            <Drillthrough>
+                              <ReportName>Special Offers</ReportName>
+                              <Parameters>
+                                <Parameter Name="SpecOffer">
+                                  <Value>=Parameters!SpecOffer.Value</Value>
+                                </Parameter>
+                                <Parameter Name="StartDate">
+                                  <Value>=Parameters!StartDate.Value</Value>
+                                </Parameter>
+                                <Parameter Name="EndDate">
+                                  <Value>=Parameters!EndDate.Value</Value>
+                                </Parameter>
+                                <Parameter Name="Interval">
+                                  <Value>=Parameters!Interval.Value</Value>
+                                </Parameter>
+                                <Parameter Name="SalesTeam">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 1, Fields!ManagerID.Value, Parameters!SalesTeam.Value)</Value>
+                                </Parameter>
+                                <Parameter Name="ReportLevel">
+                                  <Value>=IIf(Parameters!ReportLevel.Value &lt; 3, Parameters!ReportLevel.Value + 1, Parameters!ReportLevel.Value)</Value>
+                                </Parameter>
+                                <Parameter Name="STM">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 2, Fields!ManagerID.Value, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!Real_STM_ManagerID.Value, "DStManagers"))</Value>
+                                </Parameter>
+                                <Parameter Name="Manager">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 3, Fields!ManagerID.Value, IIf(Parameters!ReportLevel.Value = 1, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!ManagerID.Value, "DStManagers"), LookupSet(Fields!ManagerID.Value, Fields!Real_STM_ManagerID.Value, Fields!ManagerID.Value, "DStManagers")))</Value>
+                                </Parameter>
+                              </Parameters>
+                            </Drillthrough>
+                          </Action>
+                        </Actions>
+                      </ActionInfo>
                       <Style>
                         <Border>
                           <Width>=IIf(Fields!ManagerID.Value = 0, "2pt", "1pt")</Width>
@@ -1433,7 +1510,6 @@ WHERE IsSpecialOffer = 1;</CommandText>
             </ChartNoDataMessage>
             <DataSetName>DStSpecialOffers</DataSetName>
             <Top>38.59972cm</Top>
-            <Left>0cm</Left>
             <Height>16cm</Height>
             <Width>34cm</Width>
             <ZIndex>2</ZIndex>
@@ -1844,7 +1920,6 @@ WHERE IsSpecialOffer = 1;</CommandText>
               </Filter>
             </Filters>
             <Top>54.74083cm</Top>
-            <Left>0cm</Left>
             <Height>3cm</Height>
             <Width>6.93146cm</Width>
             <ZIndex>3</ZIndex>
@@ -2252,7 +2327,6 @@ WHERE IsSpecialOffer = 1;</CommandText>
               </Filter>
             </Filters>
             <Top>16.17639cm</Top>
-            <Left>0cm</Left>
             <Height>3cm</Height>
             <Width>6.93146cm</Width>
             <ZIndex>4</ZIndex>
@@ -2660,7 +2734,6 @@ WHERE IsSpecialOffer = 1;</CommandText>
               </Filter>
             </Filters>
             <Top>35.45861cm</Top>
-            <Left>0cm</Left>
             <Height>3cm</Height>
             <Width>6.93146cm</Width>
             <ZIndex>5</ZIndex>
@@ -2736,6 +2809,41 @@ WHERE IsSpecialOffer = 1;</CommandText>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
                       </ChartDataLabel>
+                      <ActionInfo>
+                        <Actions>
+                          <Action>
+                            <Drillthrough>
+                              <ReportName>Special Offers</ReportName>
+                              <Parameters>
+                                <Parameter Name="SpecOffer">
+                                  <Value>=Parameters!SpecOffer.Value</Value>
+                                </Parameter>
+                                <Parameter Name="StartDate">
+                                  <Value>=Parameters!StartDate.Value</Value>
+                                </Parameter>
+                                <Parameter Name="EndDate">
+                                  <Value>=Parameters!EndDate.Value</Value>
+                                </Parameter>
+                                <Parameter Name="Interval">
+                                  <Value>=Parameters!Interval.Value</Value>
+                                </Parameter>
+                                <Parameter Name="SalesTeam">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 1, Fields!ManagerID.Value, Parameters!SalesTeam.Value)</Value>
+                                </Parameter>
+                                <Parameter Name="ReportLevel">
+                                  <Value>=IIf(Parameters!ReportLevel.Value &lt; 3, Parameters!ReportLevel.Value + 1, Parameters!ReportLevel.Value)</Value>
+                                </Parameter>
+                                <Parameter Name="STM">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 2, Fields!ManagerID.Value, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!Real_STM_ManagerID.Value, "DStManagers"))</Value>
+                                </Parameter>
+                                <Parameter Name="Manager">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 3, Fields!ManagerID.Value, IIf(Parameters!ReportLevel.Value = 1, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!ManagerID.Value, "DStManagers"), LookupSet(Fields!ManagerID.Value, Fields!Real_STM_ManagerID.Value, Fields!ManagerID.Value, "DStManagers")))</Value>
+                                </Parameter>
+                              </Parameters>
+                            </Drillthrough>
+                          </Action>
+                        </Actions>
+                      </ActionInfo>
                       <Style>
                         <Border>
                           <Width>=IIf(Fields!ManagerID.Value = 0, "2pt", "1pt")</Width>
@@ -3051,7 +3159,6 @@ WHERE IsSpecialOffer = 1;</CommandText>
             </ChartNoDataMessage>
             <DataSetName>DStSpecialOffers</DataSetName>
             <Top>57.91722cm</Top>
-            <Left>0cm</Left>
             <Height>16cm</Height>
             <Width>34cm</Width>
             <ZIndex>6</ZIndex>
@@ -3462,7 +3569,6 @@ WHERE IsSpecialOffer = 1;</CommandText>
               </Filter>
             </Filters>
             <Top>74.05833cm</Top>
-            <Left>0cm</Left>
             <Height>3cm</Height>
             <Width>6.93146cm</Width>
             <ZIndex>7</ZIndex>
@@ -3538,6 +3644,41 @@ WHERE IsSpecialOffer = 1;</CommandText>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
                       </ChartDataLabel>
+                      <ActionInfo>
+                        <Actions>
+                          <Action>
+                            <Drillthrough>
+                              <ReportName>Special Offers</ReportName>
+                              <Parameters>
+                                <Parameter Name="SpecOffer">
+                                  <Value>=Parameters!SpecOffer.Value</Value>
+                                </Parameter>
+                                <Parameter Name="StartDate">
+                                  <Value>=Parameters!StartDate.Value</Value>
+                                </Parameter>
+                                <Parameter Name="EndDate">
+                                  <Value>=Parameters!EndDate.Value</Value>
+                                </Parameter>
+                                <Parameter Name="Interval">
+                                  <Value>=Parameters!Interval.Value</Value>
+                                </Parameter>
+                                <Parameter Name="SalesTeam">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 1, Fields!ManagerID.Value, Parameters!SalesTeam.Value)</Value>
+                                </Parameter>
+                                <Parameter Name="ReportLevel">
+                                  <Value>=IIf(Parameters!ReportLevel.Value &lt; 3, Parameters!ReportLevel.Value + 1, Parameters!ReportLevel.Value)</Value>
+                                </Parameter>
+                                <Parameter Name="STM">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 2, Fields!ManagerID.Value, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!Real_STM_ManagerID.Value, "DStManagers"))</Value>
+                                </Parameter>
+                                <Parameter Name="Manager">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 3, Fields!ManagerID.Value, IIf(Parameters!ReportLevel.Value = 1, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!ManagerID.Value, "DStManagers"), LookupSet(Fields!ManagerID.Value, Fields!Real_STM_ManagerID.Value, Fields!ManagerID.Value, "DStManagers")))</Value>
+                                </Parameter>
+                              </Parameters>
+                            </Drillthrough>
+                          </Action>
+                        </Actions>
+                      </ActionInfo>
                       <Style>
                         <Border>
                           <Width>=IIf(Fields!ManagerID.Value = 0, "2pt", "1pt")</Width>
@@ -3853,7 +3994,6 @@ WHERE IsSpecialOffer = 1;</CommandText>
             </ChartNoDataMessage>
             <DataSetName>DStSpecialOffers</DataSetName>
             <Top>77.30347cm</Top>
-            <Left>0cm</Left>
             <Height>16cm</Height>
             <Width>34cm</Width>
             <ZIndex>8</ZIndex>
@@ -4264,7 +4404,6 @@ WHERE IsSpecialOffer = 1;</CommandText>
               </Filter>
             </Filters>
             <Top>93.44458cm</Top>
-            <Left>0cm</Left>
             <Height>3cm</Height>
             <Width>6.93146cm</Width>
             <ZIndex>9</ZIndex>
@@ -4340,6 +4479,41 @@ WHERE IsSpecialOffer = 1;</CommandText>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
                       </ChartDataLabel>
+                      <ActionInfo>
+                        <Actions>
+                          <Action>
+                            <Drillthrough>
+                              <ReportName>Special Offers</ReportName>
+                              <Parameters>
+                                <Parameter Name="SpecOffer">
+                                  <Value>=Parameters!SpecOffer.Value</Value>
+                                </Parameter>
+                                <Parameter Name="StartDate">
+                                  <Value>=Parameters!StartDate.Value</Value>
+                                </Parameter>
+                                <Parameter Name="EndDate">
+                                  <Value>=Parameters!EndDate.Value</Value>
+                                </Parameter>
+                                <Parameter Name="Interval">
+                                  <Value>=Parameters!Interval.Value</Value>
+                                </Parameter>
+                                <Parameter Name="SalesTeam">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 1, Fields!ManagerID.Value, Parameters!SalesTeam.Value)</Value>
+                                </Parameter>
+                                <Parameter Name="ReportLevel">
+                                  <Value>=IIf(Parameters!ReportLevel.Value &lt; 3, Parameters!ReportLevel.Value + 1, Parameters!ReportLevel.Value)</Value>
+                                </Parameter>
+                                <Parameter Name="STM">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 2, Fields!ManagerID.Value, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!Real_STM_ManagerID.Value, "DStManagers"))</Value>
+                                </Parameter>
+                                <Parameter Name="Manager">
+                                  <Value>=IIf(Parameters!ReportLevel.Value = 3, Fields!ManagerID.Value, IIf(Parameters!ReportLevel.Value = 1, LookupSet(Fields!ManagerID.Value, Fields!TeamLead_ManagerID.Value, Fields!ManagerID.Value, "DStManagers"), LookupSet(Fields!ManagerID.Value, Fields!Real_STM_ManagerID.Value, Fields!ManagerID.Value, "DStManagers")))</Value>
+                                </Parameter>
+                              </Parameters>
+                            </Drillthrough>
+                          </Action>
+                        </Actions>
+                      </ActionInfo>
                       <Style>
                         <Border>
                           <Width>=IIf(Fields!ManagerID.Value = 0, "2pt", "1pt")</Width>
@@ -5154,6 +5328,7 @@ WHERE IsSpecialOffer = 1;</CommandText>
         </DataSetReference>
       </DefaultValue>
       <Prompt>SalesTeam</Prompt>
+      <Hidden>true</Hidden>
       <ValidValues>
         <DataSetReference>
           <DataSetName>DStSalesTeams</DataSetName>
@@ -5172,6 +5347,7 @@ WHERE IsSpecialOffer = 1;</CommandText>
         </DataSetReference>
       </DefaultValue>
       <Prompt>STM</Prompt>
+      <Hidden>true</Hidden>
       <ValidValues>
         <DataSetReference>
           <DataSetName>DStSTMs</DataSetName>
@@ -5190,6 +5366,7 @@ WHERE IsSpecialOffer = 1;</CommandText>
         </DataSetReference>
       </DefaultValue>
       <Prompt>Manager</Prompt>
+      <Hidden>true</Hidden>
       <ValidValues>
         <DataSetReference>
           <DataSetName>DStManagers</DataSetName>
@@ -5207,6 +5384,7 @@ WHERE IsSpecialOffer = 1;</CommandText>
         </Values>
       </DefaultValue>
       <Prompt>Уровень отчета</Prompt>
+      <Hidden>true</Hidden>
       <ValidValues>
         <ParameterValues>
           <ParameterValue>
