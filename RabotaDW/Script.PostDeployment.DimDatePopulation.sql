@@ -17,3 +17,6 @@ IF NOT EXISTS (SELECT * FROM dbo.DimDate)
 
 	EXECUTE [dbo].[uspDimDatePopulate]  @StartDate, @EndDate;
 
+IF NOT EXISTS (SELECT * FROM dbo.DimNotebookState)
+
+	EXECUTE dbo.uspDimNotebookStatePopulate;
