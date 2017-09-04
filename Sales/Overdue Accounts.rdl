@@ -85,6 +85,10 @@
           <DataField>ClientPriceSum</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="PossibilityBit">
+          <DataField>PossibilityBit</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
@@ -120,6 +124,13 @@
           <Operator>In</Operator>
           <FilterValues>
             <FilterValue>=Parameters!OrderState.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+        <Filter>
+          <FilterExpression>=Fields!PossibilityBit.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!Possibility.Value</FilterValue>
           </FilterValues>
         </Filter>
       </Filters>
@@ -1909,6 +1920,13 @@ order by OA.Year</CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>OrderID</rd:DefaultName>
+                          <ActionInfo>
+                            <Actions>
+                              <Action>
+                                <Hyperlink>="javascript:void(window.open('http://admin5.rabota.ua/pages/editorder.aspx?id=" &amp; CStr(Fields!OrderID.Value) &amp; "','_blank'))"</Hyperlink>
+                              </Action>
+                            </Actions>
+                          </ActionInfo>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -2260,6 +2278,28 @@ order by OA.Year</CommandText>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="Possibility">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>1</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Вероятности оплаты</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>1</Value>
+            <Label>&gt; 0</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>0</Value>
+            <Label> = 0</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -2315,6 +2355,11 @@ order by OA.Year</CommandText>
           <ColumnIndex>3</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>AccDateFirstEndDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>Possibility</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
