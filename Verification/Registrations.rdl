@@ -236,7 +236,8 @@ SELECT DD.YearNum, DD.WeekNum, DD.WeekName, C.NotebookID
 FROM C
  JOIN Reporting.dbo.DimDate DD ON dbo.fnGetDatePart(C.ConfirmDate) = DD.FullDate
 WHERE CityGroup IN (@CityGroup)
- AND C.ConfirmDate BETWEEN @StartDate AND @EndDate + 1;</CommandText>
+ AND C.ConfirmDate BETWEEN @StartDate AND @EndDate + 1
+ AND NOT EXISTS (select M.SourceNotebookID from SRV16.RabotaUA2.dbo.NotebookCompanyMerged M where M.SourceNotebookID = C.NotebookID);</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -2935,7 +2936,6 @@ WHERE CityGroup IN (@CityGroup)
                               <PaddingBottom>2pt</PaddingBottom>
                             </Style>
                           </Textbox>
-                          <rd:Selected>true</rd:Selected>
                         </CellContents>
                       </TablixHeader>
                       <TablixMembers>
