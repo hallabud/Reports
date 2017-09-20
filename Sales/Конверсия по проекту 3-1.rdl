@@ -153,9 +153,13 @@ SELECT
 	 LEFT JOIN SRV16.RabotaUA2.dbo.Manager STM with(nolock) ON M.STM_ManagerID = STM.Id
 	 LEFT JOIN SRV16.RabotaUA2.dbo.Manager TL with(nolock) ON M.TeamLead_ManagerID = TL.Id
 ) x
---s--elect * from SRV16.RabotaUA2.dbo.Manager M where Id = 1
 
-select distinct TeamLead_ManagerID, m.TeamLead_Name, m.STM_ManagerID, m.STM_Name
+/*Отображать все компании на Rabota.ua на Сторожевой (BI-724)*/
+
+select distinct 
+ case when m.STM_ManagerID= 1 then 162 else TeamLead_ManagerID end as TeamLead_ManagerID,
+ case when m.STM_ManagerID= 1 then 'Елена Сторожева' else m.TeamLead_Name end as TeamLead_Name,
+ m.STM_ManagerID, m.STM_Name
 from [dbo].[CompanyWith3Bonus]  b with(nolock)
 left join #ManagerList m on m.ManagerID = b.ManagerId
 order by m.STM_Name</CommandText>
@@ -219,7 +223,7 @@ SELECT
 select distinct TeamLead_ManagerID, m.TeamLead_Name
 from [dbo].[CompanyWith3Bonus]  b with(nolock)
 join #ManagerList m on m.ManagerID = b.ManagerId
-and TeamLead_ManagerID not in (190)
+and TeamLead_ManagerID not in (190,1)
 order by m.TeamLead_Name</CommandText>
       </Query>
       <Fields>
