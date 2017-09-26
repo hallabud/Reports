@@ -754,6 +754,201 @@ IF @Mode = 2
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="DStSpentTicket">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@YearNum">
+            <Value>=Parameters!YearNum.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>DECLARE @StartDate DATETIME;
+	
+	IF @YearNum = YEAR(GETDATE())
+		SET @StartDate = DATEADD(YEAR, -2, DATEADD(DAY, 1 - DAY(GETDATE()), GETDATE()))
+	ELSE 
+		SELECT @StartDate = MIN(FullDate) FROM Reporting.dbo.DimDate WHERE YearNum = @YearNum - 1;
+	
+	DECLARE @EndDate DATETIME = CASE 
+							 WHEN @YearNum = YEAR(GETDATE()) THEN GETDATE() 
+							 ELSE DATEADD(DAY, -1, DATEADD(YEAR, 2, @StartDate))
+							END;
+
+	;WITH C AS
+	 (
+	SELECT
+	   YEAR(NCS.AddDate) AS YearNum
+	 , DATEPART(MONTH, NCS.AddDate) AS MonthNum
+	 , DATENAME(MONTH, NCS.AddDate) AS MonthNameEng
+	 , 'Paid' as Category
+     , CAST(SUM(NCS.SpendCount) AS FLOAT) AS PubsSpent
+	 , CAST(LAG(SUM(NCS.SpendCount),1,NULL) OVER(PARTITION BY DATEPART(MONTH, NCS.AddDate) ORDER BY YEAR(NCS.AddDate))AS FLOAT) AS PubsSpent_Prv
+	FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS with(nolock)
+	 LEFT JOIN SRV16.RabotaUA2.dbo.TicketPayment TP with(nolock) ON NCS.TicketPaymentID = TP.Id AND NCS.RegionalPackageID IS NULL
+	        --AND TP.TicketPaymentTypeID IN (SELECT ID FROM SRV16.RabotaUA2.dbo.TicketPaymentType with(nolock))-- WHERE IsPaid = 1) 
+     LEFT JOIN SRV16.RabotaUA2.dbo.RegionalTicketPayment RTP with(nolock) ON NCS.TicketPaymentID = RTP.ID AND NCS.RegionalPackageID IS NOT NULL
+	       -- AND RTP.TicketPaymentTypeID IN (SELECT ID FROM SRV16.RabotaUA2.dbo.TicketPaymentType with(nolock))-- WHERE IsPaid = 1)
+     LEFT JOIN SRV16.RabotaUA2.dbo.TicketPaymentType TPT with(nolock) on TPT.ID = COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID)
+	WHERE NCS.AddDate BETWEEN @StartDate AND @EndDate
+	 AND (TP.TicketPaymentTypeID is not null or RTP.TicketPaymentTypeID is not null) 
+	-- AND NCS.SpendType &lt;&gt; 5 -- исключаем горячку
+	 And ISNULL(TP.SummStandart,0) + ISNULL(TP.SummDesigned,0) + ISNULL(TP.SummHot,0) + ISNULL(RTP.TicketSumm,0) &gt; 0
+	 --and COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID) = 1
+	 and TPT.IsPaid = 1
+	GROUP BY 
+	   YEAR(NCS.AddDate)
+	 , DATEPART(MONTH, NCS.AddDate)
+	 , DATENAME(MONTH, NCS.AddDate)
+	
+	union
+
+	SELECT
+	   YEAR(NCS.AddDate) AS YearNum
+	 , DATEPART(MONTH, NCS.AddDate) AS MonthNum
+	 , DATENAME(MONTH, NCS.AddDate) AS MonthNameEng
+	 , 'All' as Category
+     , cast(SUM(NCS.SpendCount)AS FLOAT) AS PubsSpent
+	 , cast(LAG(SUM(NCS.SpendCount),1,NULL) OVER(PARTITION BY DATEPART(MONTH, NCS.AddDate) ORDER BY YEAR(NCS.AddDate))AS FLOAT) AS PubsSpent_Prv
+	FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS with(nolock)
+	 LEFT JOIN SRV16.RabotaUA2.dbo.TicketPayment TP with(nolock) ON NCS.TicketPaymentID = TP.Id AND NCS.RegionalPackageID IS NULL
+	   --     AND TP.TicketPaymentTypeID IN (SELECT ID FROM SRV16.RabotaUA2.dbo.TicketPaymentType with(nolock) WHERE IsPaid = 1) 
+     LEFT JOIN SRV16.RabotaUA2.dbo.RegionalTicketPayment RTP with(nolock) ON NCS.TicketPaymentID = RTP.ID AND NCS.RegionalPackageID IS NOT NULL
+	   --     AND RTP.TicketPaymentTypeID IN (SELECT ID FROM SRV16.RabotaUA2.dbo.TicketPaymentType with(nolock) WHERE IsPaid = 1)
+     LEFT JOIN SRV16.RabotaUA2.dbo.TicketPaymentType TPT with(nolock) on TPT.ID = COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID)
+	WHERE NCS.AddDate BETWEEN @StartDate AND @EndDate
+	 AND (TP.TicketPaymentTypeID is not null or RTP.TicketPaymentTypeID is not null) 
+	-- AND NCS.SpendType &lt;&gt; 5 -- исключаем горячку
+
+	GROUP BY 
+	   YEAR(NCS.AddDate)
+	 , DATEPART(MONTH, NCS.AddDate)
+	 , DATENAME(MONTH, NCS.AddDate)
+	 )
+
+	 , pubs as (
+	 select distinct
+	 c.YearNum, c.MonthNum , c.MonthNameEng,
+	 (select c1.PubsSpent from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'Paid') /
+	    (select c1.PubsSpent from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'All')  as PaidPubsPart,
+     (select c1.PubsSpent_Prv from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'Paid') /
+	    (select c1.PubsSpent_Prv from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'All')  as PaidPubsPartPrv
+	 
+	 from c c 
+	 )
+	 
+	 select * from pubs
+	 where  PaidPubsPartPrv is not null order by 1,2</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="YearNum">
+          <DataField>YearNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="MonthNum">
+          <DataField>MonthNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="MonthNameEng">
+          <DataField>MonthNameEng</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="PaidPubsPart">
+          <DataField>PaidPubsPart</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="PaidPubsPartPrv">
+          <DataField>PaidPubsPartPrv</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DStPartOfPaidVacancies">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>
+;with Spent as
+(
+select 
+DD.YearNum,
+DD.MonthNum,
+DD.MonthNameEng,
+DD.FullDate,
+P.PaymentStatus as Category,
+sum(P.VacancyCnt) as VacancyCnt
+from 
+PublishedVacanciesByPaymentStatus P with(nolock)
+join DimDate DD with(nolock) on DD.FullDate = P.ReportDate
+group by 
+DD.YearNum,
+DD.MonthNum,
+DD.MonthNameEng,
+DD.FullDate,
+P.PaymentStatus
+
+union 
+
+select 
+DD.YearNum,
+DD.MonthNum,
+DD.MonthNameEng,
+DD.FullDate,
+'All' as Category,
+sum(P.VacancyCnt) VacancyCnt
+from 
+PublishedVacanciesByPaymentStatus P with(nolock)
+join DimDate DD with(nolock) on DD.FullDate = P.ReportDate
+group by 
+DD.YearNum,
+DD.MonthNum,
+DD.MonthNameEng,
+DD.FullDate
+) 
+
+select 
+x.YearNum,
+x.MonthNum,
+x.MonthNameEng,
+avg(x.PaidPart) as PartOfPaidVacancies,
+CAST(LAG(avg(x.PaidPart),1,NULL) OVER (PARTITION BY x.MonthNum ORDER BY x.YearNum) AS FLOAT) AS PartOfPaidVacancies_Prv
+from 
+	(select distinct
+	s.YearNum,
+	s.MonthNum,
+	s.MonthNameEng,
+	s.FullDate as ReportDate
+	, cast((select sum(s1.VacancyCnt) from Spent S1 where S1.YearNum = s.YearNum and S1.MonthNum = S.MonthNum and s.FullDate = s1.FullDate and S1.Category = 'Paid' ) as float)
+		 / cast((select sum(s1.VacancyCnt) from Spent S1 where S1.YearNum = s.YearNum and S1.MonthNum = S.MonthNum and s.FullDate = s1.FullDate and S1.Category = 'All') as float) as PaidPart
+	from Spent s
+	) x
+group by 
+x.YearNum,
+x.MonthNum,
+x.MonthNameEng
+</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="YearNum">
+          <DataField>YearNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="MonthNum">
+          <DataField>MonthNum</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="MonthNameEng">
+          <DataField>MonthNameEng</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="PartOfPaidVacancies">
+          <DataField>PartOfPaidVacancies</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="PartOfPaidVacancies_Prv">
+          <DataField>PartOfPaidVacancies_Prv</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -778,7 +973,7 @@ IF @Mode = 2
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
             <Top>41.32033cm</Top>
-            <Left>0.10306cm</Left>
+            <Left>0.20434cm</Left>
             <Height>0.67938cm</Height>
             <Width>33cm</Width>
             <Style>
@@ -810,7 +1005,7 @@ IF @Mode = 2
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
             <Top>55.31721cm</Top>
-            <Left>0.10342cm</Left>
+            <Left>0.2047cm</Left>
             <Height>0.6cm</Height>
             <Width>33cm</Width>
             <ZIndex>1</ZIndex>
@@ -1202,8 +1397,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStPublications</DataSetName>
-            <Top>55.98776cm</Top>
-            <Left>0.10322cm</Left>
+            <Top>56.02304cm</Top>
+            <Left>0.2045cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>2</ZIndex>
@@ -1494,8 +1689,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStPaidServices</DataSetName>
-            <Top>69.96672cm</Top>
-            <Left>0.10342cm</Left>
+            <Top>98.18964cm</Top>
+            <Left>0.10235cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>3</ZIndex>
@@ -1526,8 +1721,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>69.12887cm</Top>
-            <Left>0.10342cm</Left>
+            <Top>97.41325cm</Top>
+            <Left>0.11097cm</Left>
             <Height>0.6cm</Height>
             <Width>33cm</Width>
             <ZIndex>4</ZIndex>
@@ -1559,8 +1754,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>110.63239cm</Top>
-            <Left>0.10306cm</Left>
+            <Top>138.85531cm</Top>
+            <Left>0.10199cm</Left>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>5</ZIndex>
@@ -1958,8 +2153,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStVacancyCount</DataSetName>
-            <Top>111.3735cm</Top>
-            <Left>0.10306cm</Left>
+            <Top>139.59642cm</Top>
+            <Left>0.10199cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>6</ZIndex>
@@ -1990,8 +2185,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>180.04351cm</Top>
-            <Left>0.07622cm</Left>
+            <Top>208.26643cm</Top>
+            <Left>0.07515cm</Left>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>7</ZIndex>
@@ -2385,8 +2580,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStContactsOpened</DataSetName>
-            <Top>180.78462cm</Top>
-            <Left>0.07622cm</Left>
+            <Top>209.00754cm</Top>
+            <Left>0.07515cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>8</ZIndex>
@@ -2417,8 +2612,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>221.54907cm</Top>
-            <Left>0.07621cm</Left>
+            <Top>249.77199cm</Top>
+            <Left>0.07514cm</Left>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>9</ZIndex>
@@ -2810,8 +3005,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStResponsers</DataSetName>
-            <Top>222.29019cm</Top>
-            <Left>0.07621cm</Left>
+            <Top>250.51311cm</Top>
+            <Left>0.07514cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>10</ZIndex>
@@ -3212,8 +3407,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DstResumeCount</DataSetName>
-            <Top>249.9841cm</Top>
-            <Left>0.07645cm</Left>
+            <Top>278.20702cm</Top>
+            <Left>0.07538cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>11</ZIndex>
@@ -3244,8 +3439,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>249.2077cm</Top>
-            <Left>0.07644cm</Left>
+            <Top>277.43062cm</Top>
+            <Left>0.07537cm</Left>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>12</ZIndex>
@@ -3277,8 +3472,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>193.89045cm</Top>
-            <Left>0.07624cm</Left>
+            <Top>222.11337cm</Top>
+            <Left>0.07517cm</Left>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>13</ZIndex>
@@ -3682,8 +3877,8 @@ IF @Mode = 2
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>194.66685cm</Top>
-            <Left>0.07622cm</Left>
+            <Top>222.88977cm</Top>
+            <Left>0.07515cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>14</ZIndex>
@@ -3714,8 +3909,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>207.77268cm</Top>
-            <Left>0.07624cm</Left>
+            <Top>235.9956cm</Top>
+            <Left>0.07517cm</Left>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>15</ZIndex>
@@ -3747,8 +3942,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>166.12601cm</Top>
-            <Left>0.07592cm</Left>
+            <Top>194.34893cm</Top>
+            <Left>0.07485cm</Left>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>16</ZIndex>
@@ -4157,8 +4352,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStResponsesViewed</DataSetName>
-            <Top>166.93768cm</Top>
-            <Left>0.07576cm</Left>
+            <Top>195.1606cm</Top>
+            <Left>0.07469cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>17</ZIndex>
@@ -4189,8 +4384,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>235.36075cm</Top>
-            <Left>0.0767cm</Left>
+            <Top>263.58367cm</Top>
+            <Left>0.07563cm</Left>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>18</ZIndex>
@@ -4582,8 +4777,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStResponsesViewed</DataSetName>
-            <Top>236.10187cm</Top>
-            <Left>0.07645cm</Left>
+            <Top>264.32479cm</Top>
+            <Left>0.07538cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>19</ZIndex>
@@ -4853,8 +5048,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStSubscribeCompetitor</DataSetName>
-            <Top>263.86632cm</Top>
-            <Left>0.0767cm</Left>
+            <Top>292.08924cm</Top>
+            <Left>0.07563cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>20</ZIndex>
@@ -4885,8 +5080,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>263.08993cm</Top>
-            <Left>0.07683cm</Left>
+            <Top>291.31285cm</Top>
+            <Left>0.07576cm</Left>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>21</ZIndex>
@@ -5279,8 +5474,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStRevenue</DataSetName>
-            <Top>42.14082cm</Top>
-            <Left>0.10322cm</Left>
+            <Top>42.1761cm</Top>
+            <Left>0.2045cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>22</ZIndex>
@@ -5683,8 +5878,8 @@ IF @Mode = 2
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>208.44324cm</Top>
-            <Left>0.07644cm</Left>
+            <Top>236.66616cm</Top>
+            <Left>0.07537cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>23</ZIndex>
@@ -5715,7 +5910,7 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox13</rd:DefaultName>
-            <Left>0.10306cm</Left>
+            <Left>0.20434cm</Left>
             <Height>0.63527cm</Height>
             <Width>33cm</Width>
             <ZIndex>24</ZIndex>
@@ -6108,7 +6303,7 @@ IF @Mode = 2
             </ChartNoDataMessage>
             <DataSetName>DStTotalSales1C</DataSetName>
             <Top>0.71288cm</Top>
-            <Left>0.10306cm</Left>
+            <Left>0.20434cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>25</ZIndex>
@@ -6503,7 +6698,7 @@ IF @Mode = 2
             </ChartNoDataMessage>
             <DataSetName>DStActiveCustomers</DataSetName>
             <Top>14.45399cm</Top>
-            <Left>0.11204cm</Left>
+            <Left>0.21332cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>26</ZIndex>
@@ -6535,7 +6730,7 @@ IF @Mode = 2
             </Paragraphs>
             <rd:DefaultName>Textbox14</rd:DefaultName>
             <Top>13.78344cm</Top>
-            <Left>0.1098cm</Left>
+            <Left>0.21108cm</Left>
             <Height>0.6cm</Height>
             <Width>33cm</Width>
             <ZIndex>27</ZIndex>
@@ -6568,7 +6763,7 @@ IF @Mode = 2
             </Paragraphs>
             <rd:DefaultName>Textbox15</rd:DefaultName>
             <Top>27.55983cm</Top>
-            <Left>0.11204cm</Left>
+            <Left>0.21332cm</Left>
             <Height>0.65292cm</Height>
             <Width>33cm</Width>
             <ZIndex>28</ZIndex>
@@ -6878,7 +7073,7 @@ IF @Mode = 2
             </ChartNoDataMessage>
             <DataSetName>DStActiveCustomersDetails</DataSetName>
             <Top>28.2833cm</Top>
-            <Left>0.10306cm</Left>
+            <Left>0.20434cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>29</ZIndex>
@@ -6909,8 +7104,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>83.07255cm</Top>
-            <Left>0.10306cm</Left>
+            <Top>111.29547cm</Top>
+            <Left>0.10199cm</Left>
             <Height>0.6cm</Height>
             <Width>33cm</Width>
             <ZIndex>30</ZIndex>
@@ -7220,8 +7415,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStPaidServicesStructure</DataSetName>
-            <Top>83.77839cm</Top>
-            <Left>0.10306cm</Left>
+            <Top>112.00131cm</Top>
+            <Left>0.10199cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>31</ZIndex>
@@ -7252,8 +7447,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>96.84894cm</Top>
-            <Left>0.10306cm</Left>
+            <Top>125.07186cm</Top>
+            <Left>0.10199cm</Left>
             <Height>0.6cm</Height>
             <Width>33cm</Width>
             <ZIndex>32</ZIndex>
@@ -7578,8 +7773,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStPublicationsRabotaWork</DataSetName>
-            <Top>97.57947cm</Top>
-            <Left>0.10306cm</Left>
+            <Top>125.80239cm</Top>
+            <Left>0.10199cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>33</ZIndex>
@@ -7610,8 +7805,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>124.44406cm</Top>
-            <Left>0.07576cm</Left>
+            <Top>152.66698cm</Top>
+            <Left>0.07469cm</Left>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>34</ZIndex>
@@ -8076,8 +8271,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStVacancyApplyRabotaWork</DataSetName>
-            <Top>125.18518cm</Top>
-            <Left>0.07576cm</Left>
+            <Top>153.4081cm</Top>
+            <Left>0.07469cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>35</ZIndex>
@@ -8108,8 +8303,7 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>152.24379cm</Top>
-            <Left>0.00107cm</Left>
+            <Top>180.46671cm</Top>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>36</ZIndex>
@@ -8507,8 +8701,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStVacancyCount</DataSetName>
-            <Top>152.9849cm</Top>
-            <Left>0.07469cm</Left>
+            <Top>181.20782cm</Top>
+            <Left>0.07362cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>37</ZIndex>
@@ -8949,8 +9143,8 @@ IF @Mode = 2
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DstApllicationsByPlatform</DataSetName>
-            <Top>139.10268cm</Top>
-            <Left>0.11204cm</Left>
+            <Top>167.3256cm</Top>
+            <Left>0.11097cm</Left>
             <Height>13cm</Height>
             <Width>33cm</Width>
             <ZIndex>38</ZIndex>
@@ -8981,8 +9175,8 @@ IF @Mode = 2
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Top>138.32629cm</Top>
-            <Left>0.11204cm</Left>
+            <Top>166.54921cm</Top>
+            <Left>0.11097cm</Left>
             <Height>0.67056cm</Height>
             <Width>33cm</Width>
             <ZIndex>39</ZIndex>
@@ -8996,11 +9190,804 @@ IF @Mode = 2
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
+          <Chart Name="Chart22">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart22_CategoryGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!YearNum.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart22_CategoryGroup1">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!MonthNameEng.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!MonthNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!MonthNameEng.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label>Paid Pubs Part Prv</Label>
+                </ChartMember>
+                <ChartMember>
+                  <Label>Paid Pubs Part</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="PaidPubsPartPrv">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PaidPubsPartPrv.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <Format>0.0%</Format>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Previous</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="PaidPubsPart">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PaidPubsPart.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <Format>0.0%</Format>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Actual</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                      <Format>0.00;(0.00)</Format>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <Interval>1</Interval>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <Border>
+                        <Color>Gainsboro</Color>
+                        <Style>None</Style>
+                      </Border>
+                      <FontSize>8pt</FontSize>
+                      <Color>#5c5c5c</Color>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>None</Style>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                      <Format>0.0%</Format>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <Border>
+                        <Color>Gainsboro</Color>
+                        <Style>None</Style>
+                      </Border>
+                      <FontSize>8pt</FontSize>
+                      <Color>#5c5c5c</Color>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>None</Style>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundColor>#00ffffff</BackgroundColor>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartLegends>
+              <ChartLegend Name="Default">
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <Position>BottomCenter</Position>
+                <ChartLegendTitle>
+                  <Caption />
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                    <FontWeight>Bold</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </ChartLegendTitle>
+                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
+                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
+              </ChartLegend>
+            </ChartLegends>
+            <ChartTitles>
+              <ChartTitle Name="Default">
+                <Caption>Share of Paid Publications Spent from All, %</Caption>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontWeight>Normal</FontWeight>
+                  <TextAlign>Left</TextAlign>
+                  <VerticalAlign>Top</VerticalAlign>
+                </Style>
+                <DockOutsideChartArea>true</DockOutsideChartArea>
+              </ChartTitle>
+            </ChartTitles>
+            <Palette>BrightPastel</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <FontWeight>Bold</FontWeight>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStSpentTicket</DataSetName>
+            <Top>69.19943cm</Top>
+            <Left>0.17591cm</Left>
+            <Height>13.59896cm</Height>
+            <Width>32.89771cm</Width>
+            <ZIndex>40</ZIndex>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
+          <Chart Name="Chart23">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart23_CategoryGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!YearNum.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart23_CategoryGroup1">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!MonthNameEng.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!MonthNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!MonthNameEng.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label>Part Of Paid Vacancies</Label>
+                </ChartMember>
+                <ChartMember>
+                  <Label>Part Of Paid Vacancies Prv</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="PartOfPaidVacancies">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PartOfPaidVacancies.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <Format>0.0%</Format>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Actual</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="PartOfPaidVacancies_Prv">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PartOfPaidVacancies_Prv.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Previous</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Interval>1</Interval>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <Border>
+                        <Color>Gainsboro</Color>
+                        <Style>None</Style>
+                      </Border>
+                      <FontSize>8pt</FontSize>
+                      <Color>#5c5c5c</Color>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>None</Style>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <Border>
+                        <Color>Gainsboro</Color>
+                        <Style>None</Style>
+                      </Border>
+                      <FontSize>8pt</FontSize>
+                      <Color>#5c5c5c</Color>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>None</Style>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundColor>#00ffffff</BackgroundColor>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartLegends>
+              <ChartLegend Name="Default">
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <Position>BottomCenter</Position>
+                <ChartLegendTitle>
+                  <Caption />
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                    <FontWeight>Bold</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </ChartLegendTitle>
+                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
+                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
+              </ChartLegend>
+            </ChartLegends>
+            <ChartTitles>
+              <ChartTitle Name="Default">
+                <Caption>Share of Vacancies, published with paid publications, %</Caption>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontWeight>Normal</FontWeight>
+                  <TextAlign>Left</TextAlign>
+                  <VerticalAlign>Top</VerticalAlign>
+                </Style>
+              </ChartTitle>
+            </ChartTitles>
+            <Palette>BrightPastel</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <FontWeight>Bold</FontWeight>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStPartOfPaidVacancies</DataSetName>
+            <Top>83.46645cm</Top>
+            <Left>0.07576cm</Left>
+            <Height>13.41763cm</Height>
+            <Width>33cm</Width>
+            <ZIndex>41</ZIndex>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
         </ReportItems>
-        <Height>109.00249in</Height>
+        <Height>120.36571in</Height>
         <Style />
       </Body>
-      <Width>13.09076in</Width>
+      <Width>13.28688in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
