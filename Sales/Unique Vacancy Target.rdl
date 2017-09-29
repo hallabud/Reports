@@ -57,12 +57,18 @@
           <DataField>DecreaseUnqWorkVacancy</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="PercentOfLoyalCompanies">
+          <DataField>PercentOfLoyalCompanies</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="DStManagersDistinct">
-      <SharedDataSet>
-        <SharedDataSetReference>DStManagersDistinct</SharedDataSetReference>
-      </SharedDataSet>
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_DataSet_Managers_UniqueVacancyTarget</CommandText>
+      </Query>
       <Fields>
         <Field Name="ManagerID">
           <DataField>ManagerID</DataField>
@@ -76,6 +82,26 @@
           <DataField>TeamLead_ManagerID</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="IsLoyaltyGroup">
+          <DataField>IsLoyaltyGroup</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Email">
+          <DataField>Email</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DepartmentID">
+          <DataField>DepartmentID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="STM_ManagerID">
+          <DataField>STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Real_STM_ManagerID">
+          <DataField>Real_STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
@@ -85,11 +111,18 @@
             <FilterValue>=Parameters!SalesTeam.Value</FilterValue>
           </FilterValues>
         </Filter>
+        <Filter>
+          <FilterExpression>=Fields!Real_STM_ManagerID.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!STM.Value</FilterValue>
+          </FilterValues>
+        </Filter>
       </Filters>
     </DataSet>
     <DataSet Name="DStSalesTeamsDistinct">
       <SharedDataSet>
-        <SharedDataSetReference>DStSalesTeamsDistinct</SharedDataSetReference>
+        <SharedDataSetReference>DStSalesTeams</SharedDataSetReference>
       </SharedDataSet>
       <Fields>
         <Field Name="SalesTeamName">
@@ -154,7 +187,41 @@
           <DataField>UnqCompanyNum</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="OrderNum">
+          <DataField>OrderNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
+    </DataSet>
+    <DataSet Name="DStStms">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_DataSet_STMs_UniqueVacancyTarget</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ManagerID">
+          <DataField>ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TeamLead_ManagerID">
+          <DataField>TeamLead_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!TeamLead_ManagerID.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!SalesTeam.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
     </DataSet>
   </DataSets>
   <ReportSections>
@@ -181,6 +248,9 @@
                 </TablixColumn>
                 <TablixColumn>
                   <Width>4.15932cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>4.02256cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -415,6 +485,44 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>% Лояльных компаний</Value>
+                                  <Style>
+                                    <FontStyle>Normal</FontStyle>
+                                    <FontWeight>Bold</FontWeight>
+                                    <TextDecoration>None</TextDecoration>
+                                    <Color>#000000</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -593,6 +701,38 @@
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>DecreaseUnqWorkVacancy</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="PercentOfLoyalCompanies">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!PercentOfLoyalCompanies.Value</Value>
+                                  <Style>
+                                    <Format>0.0%</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>PercentOfLoyalCompanies</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -810,12 +950,46 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox5">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=avg(Fields!PercentOfLoyalCompanies.Value)</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Format>0.0%</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox5</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -840,7 +1014,7 @@
             <DataSetName>DStUnqVacancyTarget</DataSetName>
             <Top>33.85806cm</Top>
             <Height>1.8cm</Height>
-            <Width>21.97744cm</Width>
+            <Width>26cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -870,6 +1044,9 @@
                         </GroupExpressions>
                       </Group>
                       <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!OrderNum.Value</Value>
+                        </SortExpression>
                         <SortExpression>
                           <Value>=Fields!UnqTarget.Value</Value>
                         </SortExpression>
@@ -1206,6 +1383,24 @@
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="STM">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStStms</DataSetName>
+          <ValueField>ManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>STM</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStStms</DataSetName>
+          <ValueField>ManagerID</ValueField>
+          <LabelField>ManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
     <ReportParameter Name="Manager">
       <DataType>Integer</DataType>
       <DefaultValue>
@@ -1288,7 +1483,7 @@
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>2</NumberOfColumns>
+      <NumberOfColumns>3</NumberOfColumns>
       <NumberOfRows>3</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
@@ -1297,7 +1492,7 @@
           <ParameterName>SalesTeam</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
+          <ColumnIndex>2</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>Manager</ParameterName>
         </CellDefinition>
@@ -1320,6 +1515,11 @@
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>2</RowIndex>
           <ParameterName>ManagerAge</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>STM</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
