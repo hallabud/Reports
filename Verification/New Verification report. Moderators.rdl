@@ -54,7 +54,9 @@
         </QueryParameters>
         <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
-SELECT DISTINCT REPLACE(NE.Name + ' ' + NE.SurName, '  ', ' ') AS Verificator
+SELECT DISTINCT 
+--REPLACE(NE.Name + ' ' + NE.SurName, '  ', ' ') AS Verificator
+REPLACE(case when NE.Name = 'IrinaSh' then '' else ne.name + ' ' end + NE.SurName, '  ', ' ')  Verificator
 FROM SRV16.RabotaUA2.dbo.NotebookCompany_Log NCL WITH (NOLOCK)
  LEFT JOIN SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON NCL.LoginEmail = MMB.Email
  LEFT JOIN SRV16.RabotaUA2.dbo.Notebook NTBK ON MMB.UserID = NTBK.aspnet_UserUIN
