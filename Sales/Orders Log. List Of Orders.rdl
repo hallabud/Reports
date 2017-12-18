@@ -106,6 +106,9 @@
                       <CellContents>
                         <Textbox Name="Textbox1">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!OrderID.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -141,6 +144,9 @@
                       <CellContents>
                         <Textbox Name="Textbox3">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!NotebookID.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -176,6 +182,9 @@
                       <CellContents>
                         <Textbox Name="Textbox5">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!ClientPriceSum.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -211,6 +220,9 @@
                       <CellContents>
                         <Textbox Name="Textbox7">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!AccSum.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -246,6 +258,9 @@
                       <CellContents>
                         <Textbox Name="Textbox9">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!AVRSum.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -281,6 +296,9 @@
                       <CellContents>
                         <Textbox Name="Textbox11">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!PaySum.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -316,6 +334,9 @@
                       <CellContents>
                         <Textbox Name="Textbox67">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!AwaySum.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -351,6 +372,9 @@
                       <CellContents>
                         <Textbox Name="Textbox13">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!SumRevenue.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -386,6 +410,9 @@
                       <CellContents>
                         <Textbox Name="Textbox15">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!SumRevenueCorrection.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -421,6 +448,9 @@
                       <CellContents>
                         <Textbox Name="Textbox17">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!RevenueCorrected.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -1059,7 +1089,6 @@
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -1192,9 +1221,32 @@
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStOrders</DataSetName>
+            <Filters>
+              <Filter>
+                <FilterExpression>=Abs(Fields!SumRevenueCorrection.Value)</FilterExpression>
+                <Operator>GreaterThanOrEqual</Operator>
+                <FilterValues>
+                  <FilterValue>=Parameters!CorrectionGraterThan.Value</FilterValue>
+                </FilterValues>
+              </Filter>
+              <Filter>
+                <FilterExpression>=Abs(Fields!SumRevenueCorrection.Value)</FilterExpression>
+                <Operator>LessThanOrEqual</Operator>
+                <FilterValues>
+                  <FilterValue>=Parameters!CorrectionLessThan.Value</FilterValue>
+                </FilterValues>
+              </Filter>
+              <Filter>
+                <FilterExpression>=IIf(IsNothing(Parameters!AvrEqualRevenueCorrected.Value), Parameters!AvrEqualRevenueCorrected.Value, Fields!AVRSum.Value = Fields!RevenueCorrected.Value)</FilterExpression>
+                <Operator>Equal</Operator>
+                <FilterValues>
+                  <FilterValue DataType="Boolean">=Parameters!AvrEqualRevenueCorrected.Value</FilterValue>
+                </FilterValues>
+              </Filter>
+            </Filters>
             <Top>1.04775cm</Top>
             <Height>1.95875cm</Height>
-            <Width>32.35542cm</Width>
+            <Width>32.35541cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1252,10 +1304,52 @@
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="CorrectionGraterThan">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>0</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Корректировка &gt;=</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="CorrectionLessThan">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>10000000</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Корректировка &lt;=</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="AvrEqualRevenueCorrected">
+      <DataType>Boolean</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>Сумма по актам = RR с учетом корректировки</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>CorrectionGraterThan</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>CorrectionLessThan</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>AvrEqualRevenueCorrected</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <Language>uk-UA</Language>
