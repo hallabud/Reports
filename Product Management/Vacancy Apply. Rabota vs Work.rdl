@@ -28,13 +28,11 @@ SELECT *
  , CASE
     WHEN DATEPART(HOUR, WFA.AddDate) &gt;= 23 THEN CONVERT(DATE, WFA.AddDate)
 	WHEN DATEPART(HOUR, WFA.AddDate) &lt;= 1 THEN CONVERT(DATE, DATEADD(DAY, -1, WFA.AddDate))
+when id = 959 then convert(date, WFA.AddDate)
    END AS FullDate
 FROM SRV16.RabotaUA2.dbo.SpiderLoad_WorkFormApply WFA
-WHERE WFA.AddDate BETWEEN @StartDate AND @EndDate + 1
- AND DATEPART(HOUR, WFA.AddDate) IN (0,23) 
- AND DATEPART(HOUR, WFA.AddDate) IN (0,23)
-union all
- select -1 id, 124901158, '2018-01-02', '2018-01-02'
+WHERE (WFA.AddDate BETWEEN @StartDate AND @EndDate + 1
+ AND DATEPART(HOUR, WFA.AddDate) IN (0,23)) or id = 959
  )
  , SelectedResume AS
  (
