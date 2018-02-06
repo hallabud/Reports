@@ -740,6 +740,61 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="DStOLXVacancyCount">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@Period">
+            <Value>=Parameters!Period.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>set dateformat dmy;
+set transaction isolation level read uncommitted;
+
+if object_id('tempdb..#period','U') is not null drop table #period
+select
+	*
+into #period
+from (
+select distinct
+	YearNum,
+	WeekNum,
+	WeekName,
+	FirstWeekDate,
+	LastWeekDate,
+	dense_rank() over(order by YearNum desc, weeknum desc) rn
+from DimDate dd
+where FullDate &lt;= getdate()) x
+where rn &lt;= @Period
+
+select
+	YearNum,
+	WeekNum,
+	WeekName,
+	sum(VacancyCount)/count(*) avgVacancyCount
+from #period p left join srv16.rabotaua2.dbo.SpiderLoad_OLX olx with(nolock) on olx.date between p.FirstWeekDate and p.LastWeekDate
+group by YearNum, WeekNum, WeekName
+order by 1,2</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="YearNum">
+          <DataField>YearNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="WeekNum">
+          <DataField>WeekNum</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="WeekName">
+          <DataField>WeekName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="avgVacancyCount">
+          <DataField>avgVacancyCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -1082,8 +1137,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>141.49728cm</Top>
-            <Left>0.34385cm</Left>
+            <Top>153.09792cm</Top>
+            <Left>0.3611cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <Style>
@@ -1485,8 +1540,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>153.49728cm</Top>
-            <Left>0.34385cm</Left>
+            <Top>165.09792cm</Top>
+            <Left>0.3611cm</Left>
             <Height>3cm</Height>
             <Width>5.635cm</Width>
             <ZIndex>1</ZIndex>
@@ -1791,8 +1846,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>193.38634cm</Top>
-            <Left>0.30391cm</Left>
+            <Top>204.98698cm</Top>
+            <Left>0.32116cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>2</ZIndex>
@@ -2099,8 +2154,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>242.67552cm</Top>
-            <Left>0.12706cm</Left>
+            <Top>254.27616cm</Top>
+            <Left>0.14431cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>3</ZIndex>
@@ -2407,8 +2462,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>279.03535cm</Top>
-            <Left>0.09091cm</Left>
+            <Top>290.63599cm</Top>
+            <Left>0.10816cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>4</ZIndex>
@@ -2740,8 +2795,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>291.21403cm</Top>
-            <Left>0.0585cm</Left>
+            <Top>302.81467cm</Top>
+            <Left>0.07575cm</Left>
             <Height>2.4cm</Height>
             <Width>5.63499cm</Width>
             <ZIndex>5</ZIndex>
@@ -3130,8 +3185,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>306.2725cm</Top>
-            <Left>0.12361cm</Left>
+            <Top>317.87314cm</Top>
+            <Left>0.14086cm</Left>
             <Height>3cm</Height>
             <Width>5.63499cm</Width>
             <ZIndex>6</ZIndex>
@@ -3161,7 +3216,7 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox7</rd:DefaultName>
-            <Left>0.45376cm</Left>
+            <Left>0.47101cm</Left>
             <Height>1.03188cm</Height>
             <Width>35cm</Width>
             <ZIndex>7</ZIndex>
@@ -5138,782 +5193,11 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
                   <BackgroundGradientType>None</BackgroundGradientType>
                 </Style>
               </Chart>
-              <Textbox Name="Textbox10">
-                <CanGrow>true</CanGrow>
-                <KeepTogether>true</KeepTogether>
-                <Paragraphs>
-                  <Paragraph>
-                    <TextRuns>
-                      <TextRun>
-                        <Value>Кол-во откликов</Value>
-                        <Style>
-                          <FontSize>12pt</FontSize>
-                          <FontWeight>Bold</FontWeight>
-                        </Style>
-                      </TextRun>
-                    </TextRuns>
-                    <Style>
-                      <TextAlign>Center</TextAlign>
-                    </Style>
-                  </Paragraph>
-                </Paragraphs>
-                <rd:DefaultName>Textbox7</rd:DefaultName>
-                <Top>24.17639cm</Top>
-                <Height>0.82021cm</Height>
-                <Width>35cm</Width>
-                <ZIndex>6</ZIndex>
-                <Style>
-                  <Border>
-                    <Style>None</Style>
-                  </Border>
-                  <VerticalAlign>Middle</VerticalAlign>
-                  <PaddingLeft>2pt</PaddingLeft>
-                  <PaddingRight>2pt</PaddingRight>
-                  <PaddingTop>2pt</PaddingTop>
-                  <PaddingBottom>2pt</PaddingBottom>
-                </Style>
-              </Textbox>
-              <Chart Name="Chart13">
-                <ChartCategoryHierarchy>
-                  <ChartMembers>
-                    <ChartMember>
-                      <Group Name="Chart13_CategoryGroup">
-                        <GroupExpressions>
-                          <GroupExpression>=Fields!YearNum.Value</GroupExpression>
-                        </GroupExpressions>
-                      </Group>
-                      <SortExpressions>
-                        <SortExpression>
-                          <Value>=Fields!YearNum.Value</Value>
-                        </SortExpression>
-                      </SortExpressions>
-                      <ChartMembers>
-                        <ChartMember>
-                          <Group Name="Chart13_CategoryGroup1">
-                            <GroupExpressions>
-                              <GroupExpression>=Fields!WeekName.Value</GroupExpression>
-                            </GroupExpressions>
-                          </Group>
-                          <SortExpressions>
-                            <SortExpression>
-                              <Value>=Fields!WeekNum.Value</Value>
-                            </SortExpression>
-                          </SortExpressions>
-                          <Label>=Fields!WeekName.Value</Label>
-                        </ChartMember>
-                      </ChartMembers>
-                      <Label>=Fields!YearNum.Value</Label>
-                    </ChartMember>
-                  </ChartMembers>
-                </ChartCategoryHierarchy>
-                <ChartSeriesHierarchy>
-                  <ChartMembers>
-                    <ChartMember>
-                      <Label>Rabota Responses Cnt</Label>
-                    </ChartMember>
-                    <ChartMember>
-                      <Label>Work Responses Cnt</Label>
-                    </ChartMember>
-                    <ChartMember>
-                      <Label>Rabota Selected Resume Count</Label>
-                    </ChartMember>
-                  </ChartMembers>
-                </ChartSeriesHierarchy>
-                <ChartData>
-                  <ChartSeriesCollection>
-                    <ChartSeries Name="Rabota_ResponsesCnt">
-                      <ChartDataPoints>
-                        <ChartDataPoint>
-                          <ChartDataPointValues>
-                            <Y>=Sum(Fields!Rabota_ResponsesCnt.Value)</Y>
-                          </ChartDataPointValues>
-                          <ChartDataLabel>
-                            <Style>
-                              <FontSize>8pt</FontSize>
-                              <Format>#,0;(#,0)</Format>
-                            </Style>
-                            <UseValueAsLabel>true</UseValueAsLabel>
-                            <Visible>true</Visible>
-                          </ChartDataLabel>
-                          <Style>
-                            <Color>Red</Color>
-                          </Style>
-                          <ChartMarker>
-                            <Type>Auto</Type>
-                            <Style />
-                          </ChartMarker>
-                          <DataElementOutput>Output</DataElementOutput>
-                        </ChartDataPoint>
-                      </ChartDataPoints>
-                      <Type>Line</Type>
-                      <Style />
-                      <ChartEmptyPoints>
-                        <Style />
-                        <ChartMarker>
-                          <Style />
-                        </ChartMarker>
-                        <ChartDataLabel>
-                          <Style />
-                        </ChartDataLabel>
-                      </ChartEmptyPoints>
-                      <ChartItemInLegend>
-                        <LegendText>rabota.ua</LegendText>
-                      </ChartItemInLegend>
-                      <ValueAxisName>Primary</ValueAxisName>
-                      <CategoryAxisName>Primary</CategoryAxisName>
-                      <ChartSmartLabel>
-                        <CalloutLineColor>Black</CalloutLineColor>
-                        <MinMovingDistance>0pt</MinMovingDistance>
-                      </ChartSmartLabel>
-                    </ChartSeries>
-                    <ChartSeries Name="Work_ResponsesCnt">
-                      <ChartDataPoints>
-                        <ChartDataPoint>
-                          <ChartDataPointValues>
-                            <Y>=Sum(Fields!Work_ResponsesCnt.Value)</Y>
-                          </ChartDataPointValues>
-                          <ChartDataLabel>
-                            <Style>
-                              <FontSize>8pt</FontSize>
-                              <Format>#,0;(#,0)</Format>
-                            </Style>
-                            <UseValueAsLabel>true</UseValueAsLabel>
-                            <Visible>true</Visible>
-                          </ChartDataLabel>
-                          <Style>
-                            <Color>RoyalBlue</Color>
-                          </Style>
-                          <ChartMarker>
-                            <Type>Auto</Type>
-                            <Style />
-                          </ChartMarker>
-                          <DataElementOutput>Output</DataElementOutput>
-                        </ChartDataPoint>
-                      </ChartDataPoints>
-                      <Type>Line</Type>
-                      <Style />
-                      <ChartEmptyPoints>
-                        <Style />
-                        <ChartMarker>
-                          <Style />
-                        </ChartMarker>
-                        <ChartDataLabel>
-                          <Style />
-                        </ChartDataLabel>
-                      </ChartEmptyPoints>
-                      <ChartItemInLegend>
-                        <LegendText>work.ua</LegendText>
-                      </ChartItemInLegend>
-                      <ValueAxisName>Primary</ValueAxisName>
-                      <CategoryAxisName>Primary</CategoryAxisName>
-                      <ChartSmartLabel>
-                        <CalloutLineColor>Black</CalloutLineColor>
-                        <MinMovingDistance>0pt</MinMovingDistance>
-                      </ChartSmartLabel>
-                    </ChartSeries>
-                    <ChartSeries Name="Rabota_SelectedResumeCount">
-                      <ChartDataPoints>
-                        <ChartDataPoint>
-                          <ChartDataPointValues>
-                            <Y>=Sum(Fields!Rabota_SelectedResumeCount.Value)</Y>
-                          </ChartDataPointValues>
-                          <ChartDataLabel>
-                            <Style>
-                              <FontSize>8pt</FontSize>
-                              <Format>#,0;(#,0)</Format>
-                            </Style>
-                            <UseValueAsLabel>true</UseValueAsLabel>
-                            <Visible>true</Visible>
-                          </ChartDataLabel>
-                          <Style>
-                            <Color>Orange</Color>
-                          </Style>
-                          <ChartMarker>
-                            <Type>Auto</Type>
-                            <Style />
-                          </ChartMarker>
-                          <DataElementOutput>Output</DataElementOutput>
-                        </ChartDataPoint>
-                      </ChartDataPoints>
-                      <Type>Line</Type>
-                      <Style />
-                      <ChartEmptyPoints>
-                        <Style />
-                        <ChartMarker>
-                          <Style />
-                        </ChartMarker>
-                        <ChartDataLabel>
-                          <Style />
-                        </ChartDataLabel>
-                      </ChartEmptyPoints>
-                      <ChartItemInLegend>
-                        <LegendText>rabota.ua - selected CVs</LegendText>
-                      </ChartItemInLegend>
-                      <ValueAxisName>Primary</ValueAxisName>
-                      <CategoryAxisName>Primary</CategoryAxisName>
-                      <ChartSmartLabel>
-                        <CalloutLineColor>Black</CalloutLineColor>
-                        <MinMovingDistance>0pt</MinMovingDistance>
-                      </ChartSmartLabel>
-                    </ChartSeries>
-                  </ChartSeriesCollection>
-                </ChartData>
-                <ChartAreas>
-                  <ChartArea Name="Default">
-                    <ChartCategoryAxes>
-                      <ChartAxis Name="Primary">
-                        <Style>
-                          <FontSize>8pt</FontSize>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption />
-                          <Style>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <Margin>False</Margin>
-                        <Interval>1</Interval>
-                        <ChartMajorGridLines>
-                          <Enabled>True</Enabled>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMinorTickMarks>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <Angle>90</Angle>
-                        <LabelsAutoFitDisabled>true</LabelsAutoFitDisabled>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                      <ChartAxis Name="Secondary">
-                        <Style>
-                          <FontSize>8pt</FontSize>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption>Axis Title</Caption>
-                          <Style>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <ChartMajorGridLines>
-                          <Enabled>False</Enabled>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMinorTickMarks>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Location>Opposite</Location>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                    </ChartCategoryAxes>
-                    <ChartValueAxes>
-                      <ChartAxis Name="Primary">
-                        <Visible>False</Visible>
-                        <Style>
-                          <FontSize>8pt</FontSize>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption />
-                          <Style>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <ChartMajorGridLines>
-                          <Enabled>False</Enabled>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMinorTickMarks>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <HideLabels>true</HideLabels>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                      <ChartAxis Name="Secondary">
-                        <Style>
-                          <FontSize>8pt</FontSize>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption>Axis Title</Caption>
-                          <Style>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <ChartMajorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMinorTickMarks>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Location>Opposite</Location>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                    </ChartValueAxes>
-                    <Style>
-                      <BackgroundGradientType>None</BackgroundGradientType>
-                    </Style>
-                  </ChartArea>
-                </ChartAreas>
-                <ChartLegends>
-                  <ChartLegend Name="Default">
-                    <Style>
-                      <BackgroundGradientType>None</BackgroundGradientType>
-                      <FontSize>8pt</FontSize>
-                    </Style>
-                    <Position>BottomCenter</Position>
-                    <ChartLegendTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>8pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <TextAlign>Center</TextAlign>
-                      </Style>
-                    </ChartLegendTitle>
-                    <HeaderSeparatorColor>Black</HeaderSeparatorColor>
-                    <ColumnSeparatorColor>Black</ColumnSeparatorColor>
-                  </ChartLegend>
-                </ChartLegends>
-                <Palette>BrightPastel</Palette>
-                <ChartBorderSkin>
-                  <Style>
-                    <BackgroundColor>Gray</BackgroundColor>
-                    <BackgroundGradientType>None</BackgroundGradientType>
-                    <Color>White</Color>
-                  </Style>
-                </ChartBorderSkin>
-                <ChartNoDataMessage Name="NoDataMessage">
-                  <Caption>No Data Available</Caption>
-                  <Style>
-                    <BackgroundGradientType>None</BackgroundGradientType>
-                    <TextAlign>General</TextAlign>
-                    <VerticalAlign>Top</VerticalAlign>
-                  </Style>
-                </ChartNoDataMessage>
-                <DataSetName>DStMetricsWeekly</DataSetName>
-                <Top>24.9966cm</Top>
-                <Height>10cm</Height>
-                <Width>21cm</Width>
-                <ZIndex>7</ZIndex>
-                <Style>
-                  <Border>
-                    <Color>LightGrey</Color>
-                    <Style>None</Style>
-                  </Border>
-                  <BackgroundColor>White</BackgroundColor>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                </Style>
-              </Chart>
-              <Chart Name="Chart17">
-                <ChartCategoryHierarchy>
-                  <ChartMembers>
-                    <ChartMember>
-                      <Group Name="Chart14_CategoryGroup6">
-                        <GroupExpressions>
-                          <GroupExpression>=Fields!YearNum.Value</GroupExpression>
-                        </GroupExpressions>
-                      </Group>
-                      <SortExpressions>
-                        <SortExpression>
-                          <Value>=Fields!YearNum.Value</Value>
-                        </SortExpression>
-                      </SortExpressions>
-                      <ChartMembers>
-                        <ChartMember>
-                          <Group Name="Chart14_CategoryGroup7">
-                            <GroupExpressions>
-                              <GroupExpression>=Fields!WeekName.Value</GroupExpression>
-                            </GroupExpressions>
-                          </Group>
-                          <SortExpressions>
-                            <SortExpression>
-                              <Value>=Fields!WeekNum.Value</Value>
-                            </SortExpression>
-                          </SortExpressions>
-                          <Label>=Fields!WeekName.Value</Label>
-                        </ChartMember>
-                      </ChartMembers>
-                      <Label>=Fields!YearNum.Value</Label>
-                    </ChartMember>
-                  </ChartMembers>
-                </ChartCategoryHierarchy>
-                <ChartSeriesHierarchy>
-                  <ChartMembers>
-                    <ChartMember>
-                      <Label />
-                    </ChartMember>
-                    <ChartMember>
-                      <Label>Work Responses Cnt</Label>
-                    </ChartMember>
-                  </ChartMembers>
-                </ChartSeriesHierarchy>
-                <ChartData>
-                  <ChartSeriesCollection>
-                    <ChartSeries Name="Series">
-                      <ChartDataPoints>
-                        <ChartDataPoint>
-                          <ChartDataPointValues>
-                            <Y>= 0</Y>
-                          </ChartDataPointValues>
-                          <ChartDataLabel>
-                            <Style />
-                          </ChartDataLabel>
-                          <Style>
-                            <Color>LightGrey</Color>
-                          </Style>
-                          <ChartMarker>
-                            <Type>Auto</Type>
-                            <Style />
-                          </ChartMarker>
-                          <DataElementOutput>Output</DataElementOutput>
-                        </ChartDataPoint>
-                      </ChartDataPoints>
-                      <Type>Line</Type>
-                      <Style />
-                      <ChartEmptyPoints>
-                        <Style />
-                        <ChartMarker>
-                          <Style />
-                        </ChartMarker>
-                        <ChartDataLabel>
-                          <Style />
-                        </ChartDataLabel>
-                      </ChartEmptyPoints>
-                      <ChartItemInLegend>
-                        <Hidden>true</Hidden>
-                      </ChartItemInLegend>
-                      <ValueAxisName>Primary</ValueAxisName>
-                      <CategoryAxisName>Primary</CategoryAxisName>
-                      <ChartSmartLabel>
-                        <CalloutLineColor>Black</CalloutLineColor>
-                        <MinMovingDistance>0pt</MinMovingDistance>
-                      </ChartSmartLabel>
-                    </ChartSeries>
-                    <ChartSeries Name="Rabota_ResponsesCnt">
-                      <ChartDataPoints>
-                        <ChartDataPoint>
-                          <ChartDataPointValues>
-                            <Y>= IIf(Math.Min(Sum(Fields!Rabota_ResponsesCnt.Value), Sum(Fields!Work_ResponsesCnt.Value)) = 0, 0, (Sum(Fields!Rabota_ResponsesCnt.Value) - Sum(Fields!Work_ResponsesCnt.Value)) / Math.Min(Sum(Fields!Rabota_ResponsesCnt.Value), Sum(Fields!Work_ResponsesCnt.Value)))</Y>
-                          </ChartDataPointValues>
-                          <ChartDataLabel>
-                            <Style>
-                              <FontSize>8pt</FontSize>
-                              <Format>0.0 %</Format>
-                            </Style>
-                            <UseValueAsLabel>true</UseValueAsLabel>
-                            <Visible>true</Visible>
-                          </ChartDataLabel>
-                          <Style />
-                          <ChartMarker>
-                            <Type>Auto</Type>
-                            <Style />
-                          </ChartMarker>
-                          <DataElementOutput>Output</DataElementOutput>
-                        </ChartDataPoint>
-                      </ChartDataPoints>
-                      <Type>Line</Type>
-                      <Style />
-                      <ChartEmptyPoints>
-                        <Style />
-                        <ChartMarker>
-                          <Style />
-                        </ChartMarker>
-                        <ChartDataLabel>
-                          <Style />
-                        </ChartDataLabel>
-                      </ChartEmptyPoints>
-                      <ChartItemInLegend>
-                        <LegendText>GAP, %</LegendText>
-                      </ChartItemInLegend>
-                      <ValueAxisName>Primary</ValueAxisName>
-                      <CategoryAxisName>Primary</CategoryAxisName>
-                      <ChartSmartLabel>
-                        <CalloutLineColor>Black</CalloutLineColor>
-                        <MinMovingDistance>0pt</MinMovingDistance>
-                      </ChartSmartLabel>
-                    </ChartSeries>
-                  </ChartSeriesCollection>
-                </ChartData>
-                <ChartAreas>
-                  <ChartArea Name="Default">
-                    <ChartCategoryAxes>
-                      <ChartAxis Name="Primary">
-                        <Style>
-                          <FontSize>8pt</FontSize>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption />
-                          <Style>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <Margin>False</Margin>
-                        <ChartMajorGridLines>
-                          <Enabled>True</Enabled>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMinorTickMarks>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <Angle>90</Angle>
-                        <LabelsAutoFitDisabled>true</LabelsAutoFitDisabled>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                      <ChartAxis Name="Secondary">
-                        <Style>
-                          <FontSize>8pt</FontSize>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption>Axis Title</Caption>
-                          <Style>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <ChartMajorGridLines>
-                          <Enabled>False</Enabled>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMinorTickMarks>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Location>Opposite</Location>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                    </ChartCategoryAxes>
-                    <ChartValueAxes>
-                      <ChartAxis Name="Primary">
-                        <Style>
-                          <FontSize>8pt</FontSize>
-                          <Format>0 %</Format>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption />
-                          <Style>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <ChartMajorGridLines>
-                          <Enabled>False</Enabled>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMinorTickMarks>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                      <ChartAxis Name="Secondary">
-                        <Style>
-                          <FontSize>8pt</FontSize>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption>Axis Title</Caption>
-                          <Style>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <ChartMajorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMinorTickMarks>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Location>Opposite</Location>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                    </ChartValueAxes>
-                    <Style>
-                      <BackgroundGradientType>None</BackgroundGradientType>
-                    </Style>
-                  </ChartArea>
-                </ChartAreas>
-                <ChartLegends>
-                  <ChartLegend Name="Legend1">
-                    <Style>
-                      <BackgroundGradientType>None</BackgroundGradientType>
-                      <FontSize>8pt</FontSize>
-                    </Style>
-                    <Position>BottomCenter</Position>
-                    <ChartLegendTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>8pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <TextAlign>Center</TextAlign>
-                      </Style>
-                    </ChartLegendTitle>
-                    <HeaderSeparatorColor>Black</HeaderSeparatorColor>
-                    <ColumnSeparatorColor>Black</ColumnSeparatorColor>
-                  </ChartLegend>
-                </ChartLegends>
-                <Palette>BrightPastel</Palette>
-                <ChartBorderSkin>
-                  <Style>
-                    <BackgroundColor>Gray</BackgroundColor>
-                    <BackgroundGradientType>None</BackgroundGradientType>
-                    <Color>White</Color>
-                  </Style>
-                </ChartBorderSkin>
-                <ChartNoDataMessage Name="NoDataMessage">
-                  <Caption>No Data Available</Caption>
-                  <Style>
-                    <BackgroundGradientType>None</BackgroundGradientType>
-                    <TextAlign>General</TextAlign>
-                    <VerticalAlign>Top</VerticalAlign>
-                  </Style>
-                </ChartNoDataMessage>
-                <DataSetName>DStMetricsWeekly</DataSetName>
-                <Top>24.9966cm</Top>
-                <Left>21cm</Left>
-                <Height>10cm</Height>
-                <Width>14cm</Width>
-                <ZIndex>8</ZIndex>
-                <Style>
-                  <Border>
-                    <Color>LightGrey</Color>
-                    <Style>None</Style>
-                  </Border>
-                  <BackgroundColor>White</BackgroundColor>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                </Style>
-              </Chart>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>1.03187cm</Top>
-            <Left>0.45376cm</Left>
-            <Height>34.9966cm</Height>
+            <Top>1.20827cm</Top>
+            <Left>0.47101cm</Left>
+            <Height>24.12223cm</Height>
             <Width>35.0354cm</Width>
             <ZIndex>8</ZIndex>
             <Style>
@@ -6309,8 +5593,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>122.02962cm</Top>
-            <Left>0.3116cm</Left>
+            <Top>133.63026cm</Top>
+            <Left>0.32885cm</Left>
             <Height>3cm</Height>
             <Width>5.63485cm</Width>
             <ZIndex>9</ZIndex>
@@ -6716,8 +6000,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStUniqueVacancies</DataSetName>
-            <Top>338.10201cm</Top>
-            <Left>0.08401cm</Left>
+            <Top>349.70265cm</Top>
+            <Left>0.10126cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>10</ZIndex>
@@ -7073,8 +6357,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>129.42155cm</Top>
-            <Left>0.34466cm</Left>
+            <Top>141.02219cm</Top>
+            <Left>0.36191cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>11</ZIndex>
@@ -7628,8 +6912,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>125.14112cm</Top>
-            <Left>0.31131cm</Left>
+            <Top>136.74176cm</Top>
+            <Left>0.32856cm</Left>
             <Height>4.2cm</Height>
             <Width>5.63529cm</Width>
             <ZIndex>12</ZIndex>
@@ -7657,8 +6941,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox15</rd:DefaultName>
-            <Top>350.55224cm</Top>
-            <Left>0.08071cm</Left>
+            <Top>362.15288cm</Top>
+            <Left>0.09796cm</Left>
             <Height>0.6cm</Height>
             <Width>8.13499cm</Width>
             <ZIndex>13</ZIndex>
@@ -7925,8 +7209,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsMonthly</DataSetName>
-            <Top>351.40325cm</Top>
-            <Left>0.07961cm</Left>
+            <Top>363.00389cm</Top>
+            <Left>0.09686cm</Left>
             <Height>1.8cm</Height>
             <Width>7.03729cm</Width>
             <ZIndex>14</ZIndex>
@@ -8208,8 +7492,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStRecognizedRevenues</DataSetName>
-            <Top>205.38634cm</Top>
-            <Left>0.30361cm</Left>
+            <Top>216.98698cm</Top>
+            <Left>0.32086cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>15</ZIndex>
@@ -8563,8 +7847,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>60.57678cm</Top>
-            <Left>0.34466cm</Left>
+            <Top>72.17742cm</Top>
+            <Left>0.36191cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>16</ZIndex>
@@ -8871,8 +8155,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>309.8193cm</Top>
-            <Left>0.19216cm</Left>
+            <Top>321.41994cm</Top>
+            <Left>0.20941cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>17</ZIndex>
@@ -9118,8 +8402,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>321.99569cm</Top>
-            <Left>0.12016cm</Left>
+            <Top>333.59633cm</Top>
+            <Left>0.13741cm</Left>
             <Height>1.8cm</Height>
             <Width>5.63499cm</Width>
             <ZIndex>18</ZIndex>
@@ -9423,8 +8707,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>323.86625cm</Top>
-            <Left>0.08511cm</Left>
+            <Top>335.46689cm</Top>
+            <Left>0.10236cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>19</ZIndex>
@@ -9670,8 +8954,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>336.1609cm</Top>
-            <Left>0.08761cm</Left>
+            <Top>347.76154cm</Top>
+            <Left>0.10486cm</Left>
             <Height>1.8cm</Height>
             <Width>5.63499cm</Width>
             <ZIndex>20</ZIndex>
@@ -10019,8 +9303,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>72.61206cm</Top>
-            <Left>0.34466cm</Left>
+            <Top>84.2127cm</Top>
+            <Left>0.36191cm</Left>
             <Height>10cm</Height>
             <Width>21.0011cm</Width>
             <ZIndex>21</ZIndex>
@@ -10420,8 +9704,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>82.62468cm</Top>
-            <Left>0.34466cm</Left>
+            <Top>94.22532cm</Top>
+            <Left>0.36191cm</Left>
             <Height>3cm</Height>
             <Width>5.63485cm</Width>
             <ZIndex>22</ZIndex>
@@ -10724,8 +10008,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>168.81478cm</Top>
-            <Left>0.30831cm</Left>
+            <Top>180.41542cm</Top>
+            <Left>0.32556cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>23</ZIndex>
@@ -11120,8 +10404,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>36.2875cm</Top>
-            <Left>0.45389cm</Left>
+            <Top>47.88814cm</Top>
+            <Left>0.47114cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>24</ZIndex>
@@ -11474,8 +10758,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>85.73051cm</Top>
-            <Left>0.34466cm</Left>
+            <Top>97.33115cm</Top>
+            <Left>0.36191cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>25</ZIndex>
@@ -11828,8 +11112,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>97.83635cm</Top>
-            <Left>0.34576cm</Left>
+            <Top>109.43699cm</Top>
+            <Left>0.36301cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>26</ZIndex>
@@ -12182,8 +11466,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>109.87162cm</Top>
-            <Left>0.37814cm</Left>
+            <Top>121.47226cm</Top>
+            <Left>0.39539cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>27</ZIndex>
@@ -12468,8 +11752,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStBusinessPlacement</DataSetName>
-            <Top>217.42488cm</Top>
-            <Left>0.30391cm</Left>
+            <Top>229.02552cm</Top>
+            <Left>0.32116cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>28</ZIndex>
@@ -12996,8 +12280,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>254.78841cm</Top>
-            <Left>0.12361cm</Left>
+            <Top>266.38905cm</Top>
+            <Left>0.14086cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>29</ZIndex>
@@ -13521,8 +12805,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>266.92952cm</Top>
-            <Left>0.12361cm</Left>
+            <Top>278.53016cm</Top>
+            <Left>0.14086cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>30</ZIndex>
@@ -13917,8 +13201,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>48.40039cm</Top>
-            <Left>0.45389cm</Left>
+            <Top>60.00103cm</Top>
+            <Left>0.47114cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>31</ZIndex>
@@ -14306,8 +13590,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStNewCvsByGroups</DataSetName>
-            <Top>156.63839cm</Top>
-            <Left>0.31131cm</Left>
+            <Top>168.23903cm</Top>
+            <Left>0.32856cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>32</ZIndex>
@@ -14660,8 +13944,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>293.93708cm</Top>
-            <Left>0.12016cm</Left>
+            <Top>305.53772cm</Top>
+            <Left>0.13741cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>33</ZIndex>
@@ -15130,8 +14414,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStCompaniesWithBonusSpentByOrderExists</DataSetName>
-            <Top>229.98496cm</Top>
-            <Left>0.12016cm</Left>
+            <Top>241.5856cm</Top>
+            <Left>0.13741cm</Left>
             <Height>12.51417cm</Height>
             <Width>21.0753cm</Width>
             <ZIndex>34</ZIndex>
@@ -15593,8 +14877,8 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>181.20996cm</Top>
-            <Left>0.30361cm</Left>
+            <Top>192.8106cm</Top>
+            <Left>0.32086cm</Left>
             <Height>12cm</Height>
             <Width>25cm</Width>
             <ZIndex>35</ZIndex>
@@ -15607,11 +14891,1121 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
               <BackgroundGradientType>None</BackgroundGradientType>
             </Style>
           </Chart>
+          <Textbox Name="Textbox11">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Среднее к-во вакансий OLX.ua</Value>
+                    <Style>
+                      <FontSize>12pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox7</rd:DefaultName>
+            <Top>25.50688cm</Top>
+            <Left>0.50641cm</Left>
+            <Height>1.03188cm</Height>
+            <Width>35cm</Width>
+            <ZIndex>36</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Chart Name="Chart18">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart13_CategoryGroup2">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!YearNum.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart13_CategoryGroup3">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label>avg Vacancy Count</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="Rabota_ResponsesCnt">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!avgVacancyCount.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <FontSize>8pt</FontSize>
+                          <Format>#,0;(#,0)</Format>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style>
+                        <Color>#eead0e</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Type>Auto</Type>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>OLX.ua</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <Margin>False</Margin>
+                    <Interval>1</Interval>
+                    <ChartMajorGridLines>
+                      <Enabled>True</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <Angle>90</Angle>
+                    <LabelsAutoFitDisabled>true</LabelsAutoFitDisabled>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Visible>False</Visible>
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <HideLabels>true</HideLabels>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartLegends>
+              <ChartLegend Name="Default">
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <Position>BottomCenter</Position>
+                <ChartLegendTitle>
+                  <Caption />
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                    <FontWeight>Bold</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </ChartLegendTitle>
+                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
+                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
+              </ChartLegend>
+            </ChartLegends>
+            <Palette>BrightPastel</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStOLXVacancyCount</DataSetName>
+            <Top>26.71515cm</Top>
+            <Left>0.50641cm</Left>
+            <Height>10cm</Height>
+            <Width>21cm</Width>
+            <ZIndex>37</ZIndex>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
+          <Textbox Name="Textbox10">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Кол-во откликов</Value>
+                    <Style>
+                      <FontSize>12pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox7</rd:DefaultName>
+            <Top>36.89154cm</Top>
+            <Left>0.50641cm</Left>
+            <Height>0.82021cm</Height>
+            <Width>35cm</Width>
+            <ZIndex>38</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Chart Name="Chart13">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart13_CategoryGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!YearNum.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart13_CategoryGroup1">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label>Rabota Responses Cnt</Label>
+                </ChartMember>
+                <ChartMember>
+                  <Label>Work Responses Cnt</Label>
+                </ChartMember>
+                <ChartMember>
+                  <Label>Rabota Selected Resume Count</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="Rabota_ResponsesCnt">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!Rabota_ResponsesCnt.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <FontSize>8pt</FontSize>
+                          <Format>#,0;(#,0)</Format>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style>
+                        <Color>Red</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Type>Auto</Type>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>rabota.ua</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="Work_ResponsesCnt">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!Work_ResponsesCnt.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <FontSize>8pt</FontSize>
+                          <Format>#,0;(#,0)</Format>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style>
+                        <Color>RoyalBlue</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Type>Auto</Type>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>work.ua</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="Rabota_SelectedResumeCount">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!Rabota_SelectedResumeCount.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <FontSize>8pt</FontSize>
+                          <Format>#,0;(#,0)</Format>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style>
+                        <Color>Orange</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Type>Auto</Type>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>rabota.ua - selected CVs</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <Margin>False</Margin>
+                    <Interval>1</Interval>
+                    <ChartMajorGridLines>
+                      <Enabled>True</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <Angle>90</Angle>
+                    <LabelsAutoFitDisabled>true</LabelsAutoFitDisabled>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Visible>False</Visible>
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <HideLabels>true</HideLabels>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartLegends>
+              <ChartLegend Name="Default">
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <Position>BottomCenter</Position>
+                <ChartLegendTitle>
+                  <Caption />
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                    <FontWeight>Bold</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </ChartLegendTitle>
+                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
+                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
+              </ChartLegend>
+            </ChartLegends>
+            <Palette>BrightPastel</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStMetricsWeekly</DataSetName>
+            <Top>37.71175cm</Top>
+            <Left>0.50641cm</Left>
+            <Height>10cm</Height>
+            <Width>21cm</Width>
+            <ZIndex>39</ZIndex>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
+          <Chart Name="Chart17">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart14_CategoryGroup6">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!YearNum.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!YearNum.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart14_CategoryGroup7">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!YearNum.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label />
+                </ChartMember>
+                <ChartMember>
+                  <Label>Work Responses Cnt</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="Series">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>= 0</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                      </ChartDataLabel>
+                      <Style>
+                        <Color>LightGrey</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Type>Auto</Type>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <Hidden>true</Hidden>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="Rabota_ResponsesCnt">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>= IIf(Math.Min(Sum(Fields!Rabota_ResponsesCnt.Value), Sum(Fields!Work_ResponsesCnt.Value)) = 0, 0, (Sum(Fields!Rabota_ResponsesCnt.Value) - Sum(Fields!Work_ResponsesCnt.Value)) / Math.Min(Sum(Fields!Rabota_ResponsesCnt.Value), Sum(Fields!Work_ResponsesCnt.Value)))</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <FontSize>8pt</FontSize>
+                          <Format>0.0 %</Format>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Type>Auto</Type>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>GAP, %</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <Margin>False</Margin>
+                    <ChartMajorGridLines>
+                      <Enabled>True</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <Angle>90</Angle>
+                    <LabelsAutoFitDisabled>true</LabelsAutoFitDisabled>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                      <Format>0 %</Format>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>Axis Title</Caption>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMinorTickMarks>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartLegends>
+              <ChartLegend Name="Legend1">
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <Position>BottomCenter</Position>
+                <ChartLegendTitle>
+                  <Caption />
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                    <FontWeight>Bold</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </ChartLegendTitle>
+                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
+                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
+              </ChartLegend>
+            </ChartLegends>
+            <Palette>BrightPastel</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStMetricsWeekly</DataSetName>
+            <Top>37.71175cm</Top>
+            <Left>21.50641cm</Left>
+            <Height>10cm</Height>
+            <Width>14cm</Width>
+            <ZIndex>40</ZIndex>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
         </ReportItems>
-        <Height>139.22207in</Height>
+        <Height>143.62358in</Height>
         <Style />
       </Body>
-      <Width>16.61826in</Width>
+      <Width>16.62505in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
