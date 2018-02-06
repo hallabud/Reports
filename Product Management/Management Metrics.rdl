@@ -740,61 +740,6 @@ SELECT * FROM C WHERE RowNum BETWEEN 1 AND @Period</CommandText>
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="DStOLXVacancyCount">
-      <Query>
-        <DataSourceName>DSrcReporting</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@Period">
-            <Value>=Parameters!Period.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandText>set dateformat dmy;
-set transaction isolation level read uncommitted;
-
-if object_id('tempdb..#period','U') is not null drop table #period
-select
-	*
-into #period
-from (
-select distinct
-	YearNum,
-	WeekNum,
-	WeekName,
-	FirstWeekDate,
-	LastWeekDate,
-	dense_rank() over(order by YearNum desc, weeknum desc) rn
-from DimDate dd
-where FullDate &lt;= getdate()) x
-where rn &lt;= @Period
-
-select
-	YearNum,
-	WeekNum,
-	WeekName,
-	sum(VacancyCount)/count(*) avgVacancyCount
-from #period p left join srv16.rabotaua2.dbo.SpiderLoad_OLX olx with(nolock) on olx.date between p.FirstWeekDate and p.LastWeekDate
-group by YearNum, WeekNum, WeekName
-order by 1,2</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="YearNum">
-          <DataField>YearNum</DataField>
-          <rd:TypeName>System.Int16</rd:TypeName>
-        </Field>
-        <Field Name="WeekNum">
-          <DataField>WeekNum</DataField>
-          <rd:TypeName>System.Byte</rd:TypeName>
-        </Field>
-        <Field Name="WeekName">
-          <DataField>WeekName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="avgVacancyCount">
-          <DataField>avgVacancyCount</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -2154,8 +2099,8 @@ order by 1,2</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>254.27616cm</Top>
-            <Left>0.14431cm</Left>
+            <Top>242.67552cm</Top>
+            <Left>0.12706cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>3</ZIndex>
@@ -2462,8 +2407,8 @@ order by 1,2</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>290.63599cm</Top>
-            <Left>0.10816cm</Left>
+            <Top>279.03535cm</Top>
+            <Left>0.09091cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>4</ZIndex>
@@ -2795,8 +2740,8 @@ order by 1,2</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>302.81467cm</Top>
-            <Left>0.07575cm</Left>
+            <Top>291.21403cm</Top>
+            <Left>0.0585cm</Left>
             <Height>2.4cm</Height>
             <Width>5.63499cm</Width>
             <ZIndex>5</ZIndex>
@@ -3185,8 +3130,8 @@ order by 1,2</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>317.87314cm</Top>
-            <Left>0.14086cm</Left>
+            <Top>306.2725cm</Top>
+            <Left>0.12361cm</Left>
             <Height>3cm</Height>
             <Width>5.63499cm</Width>
             <ZIndex>6</ZIndex>
@@ -6000,8 +5945,8 @@ order by 1,2</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStUniqueVacancies</DataSetName>
-            <Top>349.70265cm</Top>
-            <Left>0.10126cm</Left>
+            <Top>338.10201cm</Top>
+            <Left>0.08401cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>10</ZIndex>
@@ -6941,8 +6886,8 @@ order by 1,2</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox15</rd:DefaultName>
-            <Top>362.15288cm</Top>
-            <Left>0.09796cm</Left>
+            <Top>350.55224cm</Top>
+            <Left>0.08071cm</Left>
             <Height>0.6cm</Height>
             <Width>8.13499cm</Width>
             <ZIndex>13</ZIndex>
@@ -7209,8 +7154,8 @@ order by 1,2</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsMonthly</DataSetName>
-            <Top>363.00389cm</Top>
-            <Left>0.09686cm</Left>
+            <Top>351.40325cm</Top>
+            <Left>0.07961cm</Left>
             <Height>1.8cm</Height>
             <Width>7.03729cm</Width>
             <ZIndex>14</ZIndex>
@@ -8155,8 +8100,8 @@ order by 1,2</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>321.41994cm</Top>
-            <Left>0.20941cm</Left>
+            <Top>309.8193cm</Top>
+            <Left>0.19216cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>17</ZIndex>
@@ -8402,8 +8347,8 @@ order by 1,2</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>333.59633cm</Top>
-            <Left>0.13741cm</Left>
+            <Top>321.99569cm</Top>
+            <Left>0.12016cm</Left>
             <Height>1.8cm</Height>
             <Width>5.63499cm</Width>
             <ZIndex>18</ZIndex>
@@ -8707,8 +8652,8 @@ order by 1,2</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>335.46689cm</Top>
-            <Left>0.10236cm</Left>
+            <Top>323.86625cm</Top>
+            <Left>0.08511cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>19</ZIndex>
@@ -8954,8 +8899,8 @@ order by 1,2</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>347.76154cm</Top>
-            <Left>0.10486cm</Left>
+            <Top>336.1609cm</Top>
+            <Left>0.08761cm</Left>
             <Height>1.8cm</Height>
             <Width>5.63499cm</Width>
             <ZIndex>20</ZIndex>
@@ -12280,8 +12225,8 @@ order by 1,2</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>266.38905cm</Top>
-            <Left>0.14086cm</Left>
+            <Top>254.78841cm</Top>
+            <Left>0.12361cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>29</ZIndex>
@@ -12805,8 +12750,8 @@ order by 1,2</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>278.53016cm</Top>
-            <Left>0.14086cm</Left>
+            <Top>266.92952cm</Top>
+            <Left>0.12361cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>30</ZIndex>
@@ -13944,8 +13889,8 @@ order by 1,2</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStMetricsWeekly</DataSetName>
-            <Top>305.53772cm</Top>
-            <Left>0.13741cm</Left>
+            <Top>293.93708cm</Top>
+            <Left>0.12016cm</Left>
             <Height>12cm</Height>
             <Width>21cm</Width>
             <ZIndex>33</ZIndex>
@@ -14414,8 +14359,8 @@ order by 1,2</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStCompaniesWithBonusSpentByOrderExists</DataSetName>
-            <Top>241.5856cm</Top>
-            <Left>0.13741cm</Left>
+            <Top>229.98496cm</Top>
+            <Left>0.12016cm</Left>
             <Height>12.51417cm</Height>
             <Width>21.0753cm</Width>
             <ZIndex>34</ZIndex>
@@ -14881,7 +14826,7 @@ order by 1,2</CommandText>
             <Left>0.32086cm</Left>
             <Height>12cm</Height>
             <Width>25cm</Width>
-            <ZIndex>35</ZIndex>
+            <ZIndex>34</ZIndex>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -16002,7 +15947,7 @@ order by 1,2</CommandText>
             </Style>
           </Chart>
         </ReportItems>
-        <Height>143.62358in</Height>
+        <Height>139.22207in</Height>
         <Style />
       </Body>
       <Width>16.62505in</Width>
