@@ -762,7 +762,84 @@ IF @Mode = 2
             <Value>=Parameters!YearNum.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>DECLARE @StartDate DATETIME;
+        <CommandText>--DECLARE @StartDate DATETIME;
+	
+--	IF @YearNum = YEAR(GETDATE())
+--		SET @StartDate = DATEADD(YEAR, -2, DATEADD(DAY, 1 - DAY(GETDATE()), GETDATE()))
+--	ELSE 
+--		SELECT @StartDate = MIN(FullDate) FROM Reporting.dbo.DimDate WHERE YearNum = @YearNum - 1;
+	
+--	DECLARE @EndDate DATETIME = CASE 
+--							 WHEN @YearNum = YEAR(GETDATE()) THEN GETDATE() 
+--							 ELSE DATEADD(DAY, -1, DATEADD(YEAR, 2, @StartDate))
+--							END;
+
+--	;WITH C AS
+--	 (
+--	SELECT
+--	   YEAR(NCS.AddDate) AS YearNum
+--	 , DATEPART(MONTH, NCS.AddDate) AS MonthNum
+--	 , DATENAME(MONTH, NCS.AddDate) AS MonthNameEng
+--	 , 'Paid' as Category
+--     , CAST(SUM(NCS.SpendCount) AS FLOAT) AS PubsSpent
+--	 , CAST(LAG(SUM(NCS.SpendCount),1,NULL) OVER(PARTITION BY DATEPART(MONTH, NCS.AddDate) ORDER BY YEAR(NCS.AddDate))AS FLOAT) AS PubsSpent_Prv
+--	FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS with(nolock)
+--	 LEFT JOIN SRV16.RabotaUA2.dbo.TicketPayment TP with(nolock) ON NCS.TicketPaymentID = TP.Id AND NCS.RegionalPackageID IS NULL
+--	        --AND TP.TicketPaymentTypeID IN (SELECT ID FROM SRV16.RabotaUA2.dbo.TicketPaymentType with(nolock))-- WHERE IsPaid = 1) 
+--     LEFT JOIN SRV16.RabotaUA2.dbo.RegionalTicketPayment RTP with(nolock) ON NCS.TicketPaymentID = RTP.ID AND NCS.RegionalPackageID IS NOT NULL
+--	       -- AND RTP.TicketPaymentTypeID IN (SELECT ID FROM SRV16.RabotaUA2.dbo.TicketPaymentType with(nolock))-- WHERE IsPaid = 1)
+--     LEFT JOIN SRV16.RabotaUA2.dbo.TicketPaymentType TPT with(nolock) on TPT.ID = COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID)
+--	WHERE NCS.AddDate BETWEEN @StartDate AND @EndDate
+--	 AND (TP.TicketPaymentTypeID is not null or RTP.TicketPaymentTypeID is not null) 
+--	-- AND NCS.SpendType &lt;&gt; 5 -- исключаем горячку
+--	 And ISNULL(TP.SummStandart,0) + ISNULL(TP.SummDesigned,0) + ISNULL(TP.SummHot,0) + ISNULL(RTP.TicketSumm,0) &gt; 0
+--	 --and COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID) = 1
+--	 and TPT.IsPaid = 1
+--	GROUP BY 
+--	   YEAR(NCS.AddDate)
+--	 , DATEPART(MONTH, NCS.AddDate)
+--	 , DATENAME(MONTH, NCS.AddDate)
+	
+--	union
+
+--	SELECT
+--	   YEAR(NCS.AddDate) AS YearNum
+--	 , DATEPART(MONTH, NCS.AddDate) AS MonthNum
+--	 , DATENAME(MONTH, NCS.AddDate) AS MonthNameEng
+--	 , 'All' as Category
+--     , cast(SUM(NCS.SpendCount)AS FLOAT) AS PubsSpent
+--	 , cast(LAG(SUM(NCS.SpendCount),1,NULL) OVER(PARTITION BY DATEPART(MONTH, NCS.AddDate) ORDER BY YEAR(NCS.AddDate))AS FLOAT) AS PubsSpent_Prv
+--	FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS with(nolock)
+--	 LEFT JOIN SRV16.RabotaUA2.dbo.TicketPayment TP with(nolock) ON NCS.TicketPaymentID = TP.Id AND NCS.RegionalPackageID IS NULL
+--	   --     AND TP.TicketPaymentTypeID IN (SELECT ID FROM SRV16.RabotaUA2.dbo.TicketPaymentType with(nolock) WHERE IsPaid = 1) 
+--     LEFT JOIN SRV16.RabotaUA2.dbo.RegionalTicketPayment RTP with(nolock) ON NCS.TicketPaymentID = RTP.ID AND NCS.RegionalPackageID IS NOT NULL
+--	   --     AND RTP.TicketPaymentTypeID IN (SELECT ID FROM SRV16.RabotaUA2.dbo.TicketPaymentType with(nolock) WHERE IsPaid = 1)
+--     LEFT JOIN SRV16.RabotaUA2.dbo.TicketPaymentType TPT with(nolock) on TPT.ID = COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID)
+--	WHERE NCS.AddDate BETWEEN @StartDate AND @EndDate
+--	 AND (TP.TicketPaymentTypeID is not null or RTP.TicketPaymentTypeID is not null) 
+--	-- AND NCS.SpendType &lt;&gt; 5 -- исключаем горячку
+
+--	GROUP BY 
+--	   YEAR(NCS.AddDate)
+--	 , DATEPART(MONTH, NCS.AddDate)
+--	 , DATENAME(MONTH, NCS.AddDate)
+--	 )
+
+--	 , pubs as (
+--	 select distinct
+--	 c.YearNum, c.MonthNum , c.MonthNameEng,
+--	 (select c1.PubsSpent from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'Paid') /
+--	    (select c1.PubsSpent from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'All')  as PaidPubsPart,
+--     (select c1.PubsSpent_Prv from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'Paid') /
+--	    (select c1.PubsSpent_Prv from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'All')  as PaidPubsPartPrv
+	 
+--	 from c c 
+--	 )
+	 
+--	 select * from pubs
+--	 where  PaidPubsPartPrv is not null order by 1,2
+
+DECLARE @StartDate DATETIME;
 	
 	IF @YearNum = YEAR(GETDATE())
 		SET @StartDate = DATEADD(YEAR, -2, DATEADD(DAY, 1 - DAY(GETDATE()), GETDATE()))
@@ -774,8 +851,9 @@ IF @Mode = 2
 							 ELSE DATEADD(DAY, -1, DATEADD(YEAR, 2, @StartDate))
 							END;
 
-	;WITH C AS
-	 (
+	--;WITH C AS
+	-- (
+	if object_id('tempdb..#c','U') is not null drop table #c;
 	SELECT
 	   YEAR(NCS.AddDate) AS YearNum
 	 , DATEPART(MONTH, NCS.AddDate) AS MonthNum
@@ -783,6 +861,7 @@ IF @Mode = 2
 	 , 'Paid' as Category
      , CAST(SUM(NCS.SpendCount) AS FLOAT) AS PubsSpent
 	 , CAST(LAG(SUM(NCS.SpendCount),1,NULL) OVER(PARTITION BY DATEPART(MONTH, NCS.AddDate) ORDER BY YEAR(NCS.AddDate))AS FLOAT) AS PubsSpent_Prv
+	 into #c
 	FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS with(nolock)
 	 LEFT JOIN SRV16.RabotaUA2.dbo.TicketPayment TP with(nolock) ON NCS.TicketPaymentID = TP.Id AND NCS.RegionalPackageID IS NULL
 	        --AND TP.TicketPaymentTypeID IN (SELECT ID FROM SRV16.RabotaUA2.dbo.TicketPaymentType with(nolock))-- WHERE IsPaid = 1) 
@@ -791,7 +870,7 @@ IF @Mode = 2
      LEFT JOIN SRV16.RabotaUA2.dbo.TicketPaymentType TPT with(nolock) on TPT.ID = COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID)
 	WHERE NCS.AddDate BETWEEN @StartDate AND @EndDate
 	 AND (TP.TicketPaymentTypeID is not null or RTP.TicketPaymentTypeID is not null) 
-	-- AND NCS.SpendType &lt;&gt; 5 -- исключаем горячку
+	-- AND NCS.SpendType &amp;lt;&amp;gt; 5 -- исключаем горячку
 	 And ISNULL(TP.SummStandart,0) + ISNULL(TP.SummDesigned,0) + ISNULL(TP.SummHot,0) + ISNULL(RTP.TicketSumm,0) &gt; 0
 	 --and COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID) = 1
 	 and TPT.IsPaid = 1
@@ -817,26 +896,27 @@ IF @Mode = 2
      LEFT JOIN SRV16.RabotaUA2.dbo.TicketPaymentType TPT with(nolock) on TPT.ID = COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID)
 	WHERE NCS.AddDate BETWEEN @StartDate AND @EndDate
 	 AND (TP.TicketPaymentTypeID is not null or RTP.TicketPaymentTypeID is not null) 
-	-- AND NCS.SpendType &lt;&gt; 5 -- исключаем горячку
+	-- AND NCS.SpendType &amp;lt;&amp;gt; 5 -- исключаем горячку
 
 	GROUP BY 
 	   YEAR(NCS.AddDate)
 	 , DATEPART(MONTH, NCS.AddDate)
 	 , DATENAME(MONTH, NCS.AddDate)
-	 )
+	-- )
 
-	 , pubs as (
+	-- , pubs as (
+	if object_id('tempdb..#pubs','U') is not null drop table #pubs;
 	 select distinct
 	 c.YearNum, c.MonthNum , c.MonthNameEng,
-	 (select c1.PubsSpent from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'Paid') /
-	    (select c1.PubsSpent from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'All')  as PaidPubsPart,
-     (select c1.PubsSpent_Prv from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'Paid') /
-	    (select c1.PubsSpent_Prv from c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'All')  as PaidPubsPartPrv
+	 (select c1.PubsSpent from #c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'Paid') /
+	    (select c1.PubsSpent from #c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'All')  as PaidPubsPart,
+     (select c1.PubsSpent_Prv from #c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'Paid') /
+	    (select c1.PubsSpent_Prv from #c c1 where c1.YearNum = c.YearNum and c1.MonthNum = c.MonthNum and c1.Category = 'All')  as PaidPubsPartPrv
+	 into #pubs
+	 from #c c 
+	-- )
 	 
-	 from c c 
-	 )
-	 
-	 select * from pubs
+	 select * from #pubs
 	 where  PaidPubsPartPrv is not null order by 1,2</CommandText>
       </Query>
       <Fields>
