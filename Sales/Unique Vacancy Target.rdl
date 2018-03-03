@@ -98,7 +98,47 @@
         <DataSourceName>DSrcReporting</DataSourceName>
         <CommandText>set transaction isolation level read uncommitted;
 
+--if object_id('tempdb..#managers','U') is not null drop table #managers;
+--select 
+--	Id ManagerID,
+--	name ManagerName,
+--	case when m.id = 212 then 212 else 
+--		case when EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.Manager WHERE STM_ManagerID = M.Id AND DepartmentID IN (2,12)) OR (STM_ManagerID = TeamLead_ManagerID AND StatusInTransactionGroup IS NULL) then m.id else 
+--			coalesce(M.STM_ManagerID, M.Id) 
+--		end
+--	end STMid,
+--	case when m.id = 212 then 212 else coalesce(TeamLead_ManagerID, Id) end SMid,
+--	MMB.LoweredEmail Email
+--into #managers
+--from SRV16.RabotaUA2.dbo.Manager M join SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON M.aspnet_UserUIN = MMB.UserId
+--where ((DepartmentID in (2,10,12) and IsForTesting = 0 and IsReportExcluding = 0 and (TeamLead_ManagerID is not null or exists (select * from SRV16.RabotaUA2.dbo.Manager where TeamLead_ManagerID = M.Id))) or m.id in (1, 212))
+
+--select distinct
+--	N'Команда "' + Name + N'"' AS SalesTeamName,
+--	m.smid SalesManagerID,
+--	mm.name SalesManagerName
+--from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id
+
 if object_id('tempdb..#managers','U') is not null drop table #managers;
+select
+	ManagerID,
+	ManagerName,
+	STMid,
+	stm.name stmName,
+	IsSTM,
+	case when managerid = stmid and IsSTM!=1 then 1 else 0 end isKeyManager,
+	SMid,
+case when sm.name = 'Наталия Веремчук ' then 'Анна Космыкова' else sm.name end smName,
+	m.Email,
+	case when sm.name in ('rabota.ua', 'Елена Сторожева') then 'TS' else 'FS' end team,
+	case smid
+		when 212 then 1000
+		when 47 then 1001 
+		else dense_rank() over(order by sm.name)
+	end rnSM,
+	dense_rank() over(partition by smid order by case when managerid = stmid and IsSTM!=1 then 1 else 0 end, managerid) rnSTM
+into #managers
+from (
 select 
 	Id ManagerID,
 	name ManagerName,
@@ -107,17 +147,25 @@ select
 			coalesce(M.STM_ManagerID, M.Id) 
 		end
 	end STMid,
+	case when m.id = 212 then 1 else 
+	case when coalesce(M.STM_ManagerID, M.Id) = coalesce(TeamLead_ManagerID, Id) and M.StatusInTransactionGroup is null and coalesce(TeamLead_ManagerID, Id) &lt;&gt; M.Id 
+		and exists (select * from SRV16.RabotaUA2.dbo.Manager with(nolock) where STM_ManagerID = M.Id) then 1 else 0 end 
+	end IsSTM,
 	case when m.id = 212 then 212 else coalesce(TeamLead_ManagerID, Id) end SMid,
 	MMB.LoweredEmail Email
-into #managers
 from SRV16.RabotaUA2.dbo.Manager M join SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON M.aspnet_UserUIN = MMB.UserId
-where ((DepartmentID in (2,10,12) and IsForTesting = 0 and IsReportExcluding = 0 and (TeamLead_ManagerID is not null or exists (select * from SRV16.RabotaUA2.dbo.Manager where TeamLead_ManagerID = M.Id))) or m.id in (1, 212))
+where ((DepartmentID in (2,10,12) and IsForTesting = 0 and IsReportExcluding = 0 and (TeamLead_ManagerID is not null or exists (select * from SRV16.RabotaUA2.dbo.Manager where TeamLead_ManagerID = M.Id))) or m.id in (1, 212)) --and dbo.udf_FullMonthsSeparation(M.AddDate, @EndDate) &gt;= @ManagerAge
+) m left join srv16.rabotaua2.dbo.Manager stm on m.STMid = stm.id
+	left join srv16.rabotaua2.dbo.Manager sm on m.SMid = sm.id
+where smid != 199
 
 select distinct
-	N'Команда "' + Name + N'"' AS SalesTeamName,
-	m.smid SalesManagerID,
-	mm.name SalesManagerName
-from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</CommandText>
+	N'Команда "' + smName + N'"' AS SalesTeamName,
+	smid SalesManagerID,
+	smName SalesManagerName,
+	rnSM
+from #managers
+order by rnSM</CommandText>
       </Query>
       <Fields>
         <Field Name="SalesTeamName">
@@ -131,6 +179,10 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
         <Field Name="SalesManagerName">
           <DataField>SalesManagerName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="rnSM">
+          <DataField>rnSM</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -207,6 +259,10 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
           <DataField>TeamLead_ManagerID</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="rnSM">
+          <DataField>rnSM</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
@@ -237,6 +293,9 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
           <QueryParameter Name="@IsSTM">
             <Value>=Parameters!IsSTM.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@daysCount">
+            <Value>=Parameters!daysCount.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_UniqueVacancyTarget_daily</CommandText>
@@ -258,13 +317,25 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
           <DataField>ManagerName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="rnSM">
+          <DataField>rnSM</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
         <Field Name="team">
           <DataField>team</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="rnSTM">
+          <DataField>rnSTM</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
         <Field Name="fulldate">
           <DataField>fulldate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="rn">
+          <DataField>rn</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="companyCount">
           <DataField>companyCount</DataField>
@@ -277,6 +348,75 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
         <Field Name="UnqWorkVacancyNum">
           <DataField>UnqWorkVacancyNum</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DStUnqVacancyTarget_weekly">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@CompanyFilter">
+            <Value>=Parameters!CompanyFilter.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Target">
+            <Value>=Parameters!Target.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ManagerIDs">
+            <Value>=Parameters!Manager.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ManagerAge">
+            <Value>=Parameters!ManagerAge.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@IsSTM">
+            <Value>=Parameters!IsSTM.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@weeksCount">
+            <Value>=Parameters!weeksCount.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_UniqueVacancyTarget_weekly</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="fulldate">
+          <DataField>fulldate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="rn">
+          <DataField>rn</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="weekname">
+          <DataField>weekname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="companyCount">
+          <DataField>companyCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="VacancyNum">
+          <DataField>VacancyNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="UnqWorkVacancyNum">
+          <DataField>UnqWorkVacancyNum</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="UnqWeight">
+          <DataField>UnqWeight</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="VacancyNumGrowth">
+          <DataField>VacancyNumGrowth</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="VacancyNumGrowthPerc">
+          <DataField>VacancyNumGrowthPerc</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -1073,7 +1213,6 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
               <BreakLocation>End</BreakLocation>
             </PageBreak>
             <Top>33.85806cm</Top>
-            <Left>0cm</Left>
             <Height>1.8cm</Height>
             <Width>26cm</Width>
             <Style>
@@ -1394,7 +1533,6 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
                 </FilterValues>
               </Filter>
             </Filters>
-            <Left>0cm</Left>
             <Height>33.23271cm</Height>
             <Width>26cm</Width>
             <ZIndex>1</ZIndex>
@@ -2106,7 +2244,6 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
             </TablixRowHierarchy>
             <DataSetName>DStUnqVacancyTarget_daily</DataSetName>
             <Top>35.83445cm</Top>
-            <Left>0cm</Left>
             <Height>3.48479cm</Height>
             <Width>17.46063cm</Width>
             <ZIndex>2</ZIndex>
@@ -2558,7 +2695,6 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
               </Filter>
             </Filters>
             <Top>39.49563cm</Top>
-            <Left>0cm</Left>
             <Height>10cm</Height>
             <Width>26cm</Width>
             <ZIndex>3</ZIndex>
@@ -3013,7 +3149,6 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
             </ChartNoDataMessage>
             <DataSetName>DStUnqVacancyTarget_daily</DataSetName>
             <Top>49.67202cm</Top>
-            <Left>0cm</Left>
             <Height>10cm</Height>
             <Width>26cm</Width>
             <ZIndex>4</ZIndex>
@@ -3477,7 +3612,6 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
               </Filter>
             </Filters>
             <Top>59.84841cm</Top>
-            <Left>0cm</Left>
             <Height>10cm</Height>
             <Width>26cm</Width>
             <ZIndex>5</ZIndex>
@@ -3941,7 +4075,6 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
               </Filter>
             </Filters>
             <Top>70.0248cm</Top>
-            <Left>0cm</Left>
             <Height>10cm</Height>
             <Width>26cm</Width>
             <ZIndex>6</ZIndex>
@@ -4412,7 +4545,6 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
               </Filter>
             </Filters>
             <Top>80.20119cm</Top>
-            <Left>0cm</Left>
             <Height>10cm</Height>
             <Width>26cm</Width>
             <ZIndex>7</ZIndex>
@@ -4883,7 +5015,6 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
               </Filter>
             </Filters>
             <Top>90.37757cm</Top>
-            <Left>0cm</Left>
             <Height>10cm</Height>
             <Width>26cm</Width>
             <ZIndex>8</ZIndex>
@@ -5354,7 +5485,6 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
               </Filter>
             </Filters>
             <Top>100.55396cm</Top>
-            <Left>0cm</Left>
             <Height>10cm</Height>
             <Width>26cm</Width>
             <ZIndex>9</ZIndex>
@@ -6380,6 +6510,39 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
                       </Textbox>
                     </CellContents>
                   </TablixCornerCell>
+                  <TablixCornerCell>
+                    <CellContents>
+                      <Textbox Name="Textbox4">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>Manager</Value>
+                                <Style />
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox4</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Color>LightGrey</Color>
+                            <Style>Solid</Style>
+                          </Border>
+                          <VerticalAlign>Middle</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixCornerCell>
                 </TablixCornerRow>
               </TablixCornerRows>
             </TablixCorner>
@@ -6885,7 +7048,7 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!smname.Value</Value>
+                      <Value>=Fields!rnSM.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
@@ -6928,7 +7091,7 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
                       </Group>
                       <SortExpressions>
                         <SortExpression>
-                          <Value>=Fields!stmname.Value</Value>
+                          <Value>=Fields!rnSTM.Value</Value>
                         </SortExpression>
                       </SortExpressions>
                       <TablixHeader>
@@ -6962,6 +7125,55 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
                           </Textbox>
                         </CellContents>
                       </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <Group Name="ManagerName1">
+                            <GroupExpressions>
+                              <GroupExpression>=Fields!ManagerName.Value</GroupExpression>
+                            </GroupExpressions>
+                          </Group>
+                          <SortExpressions>
+                            <SortExpression>
+                              <Value>=Fields!ManagerName.Value</Value>
+                            </SortExpression>
+                          </SortExpressions>
+                          <TablixHeader>
+                            <Size>2.5cm</Size>
+                            <CellContents>
+                              <Textbox Name="ManagerName11">
+                                <CanGrow>true</CanGrow>
+                                <KeepTogether>true</KeepTogether>
+                                <Paragraphs>
+                                  <Paragraph>
+                                    <TextRuns>
+                                      <TextRun>
+                                        <Value>=Fields!ManagerName.Value</Value>
+                                        <Style />
+                                      </TextRun>
+                                    </TextRuns>
+                                    <Style />
+                                  </Paragraph>
+                                </Paragraphs>
+                                <rd:DefaultName>ManagerName11</rd:DefaultName>
+                                <Style>
+                                  <Border>
+                                    <Color>LightGrey</Color>
+                                    <Style>Solid</Style>
+                                  </Border>
+                                  <PaddingLeft>2pt</PaddingLeft>
+                                  <PaddingRight>2pt</PaddingRight>
+                                  <PaddingTop>2pt</PaddingTop>
+                                  <PaddingBottom>2pt</PaddingBottom>
+                                </Style>
+                              </Textbox>
+                            </CellContents>
+                          </TablixHeader>
+                          <Visibility>
+                            <Hidden>true</Hidden>
+                            <ToggleItem>stmname1</ToggleItem>
+                          </Visibility>
+                        </TablixMember>
+                      </TablixMembers>
                       <Visibility>
                         <Hidden>true</Hidden>
                         <ToggleItem>smname1</ToggleItem>
@@ -6972,6 +7184,9 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DStUnqVacancyTarget_daily</DataSetName>
+            <PageBreak>
+              <BreakLocation>End</BreakLocation>
+            </PageBreak>
             <Filters>
               <Filter>
                 <FilterExpression>=Fields!team.Value</FilterExpression>
@@ -6983,7 +7198,7 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
             </Filters>
             <Top>131.08313cm</Top>
             <Height>10.6cm</Height>
-            <Width>32.15186cm</Width>
+            <Width>34.65186cm</Width>
             <ZIndex>12</ZIndex>
             <Style>
               <Border>
@@ -6991,11 +7206,634 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
               </Border>
             </Style>
           </Tablix>
+          <Tablix Name="Tablix4">
+            <TablixCorner>
+              <TablixCornerRows>
+                <TablixCornerRow>
+                  <TablixCornerCell>
+                    <CellContents>
+                      <Textbox Name="Textbox33">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value />
+                                <Style />
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox33</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Color>LightGrey</Color>
+                            <Style>Solid</Style>
+                          </Border>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixCornerCell>
+                </TablixCornerRow>
+                <TablixCornerRow>
+                  <TablixCornerCell>
+                    <CellContents>
+                      <Textbox Name="Textbox34">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value />
+                                <Style />
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox34</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Color>LightGrey</Color>
+                            <Style>Solid</Style>
+                          </Border>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixCornerCell>
+                </TablixCornerRow>
+              </TablixCornerRows>
+            </TablixCorner>
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.6cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="companyCount1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!companyCount.Value)</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>companyCount1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="VacancyNum2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!VacancyNum.Value)</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>VacancyNum2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="UnqWorkVacancyNum2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!UnqWorkVacancyNum.Value)</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>UnqWorkVacancyNum2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="UnqWeight1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!UnqWeight.Value)</Value>
+                                  <Style>
+                                    <Format>0.0%</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>UnqWeight1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="VacancyNumGrowth">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!VacancyNumGrowth.Value)</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>VacancyNumGrowth</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="VacancyNumGrowthPerc">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!VacancyNumGrowthPerc.Value)</Value>
+                                  <Style>
+                                    <Format>0.0%</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>VacancyNumGrowthPerc</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <Group Name="weekname">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!weekname.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!rn.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixHeader>
+                    <Size>0.6cm</Size>
+                    <CellContents>
+                      <Textbox Name="weekname">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>=Fields!weekname.Value</Value>
+                                <Style>
+                                  <FontWeight>Bold</FontWeight>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>weekname</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Color>LightGrey</Color>
+                            <Style>Solid</Style>
+                          </Border>
+                          <VerticalAlign>Middle</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>1.94938cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox35">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>Кол-во компаний</Value>
+                                    <Style>
+                                      <FontWeight>Bold</FontWeight>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox35</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>1.94938cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox37">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>Вакансии на rabota.ua</Value>
+                                    <Style>
+                                      <FontWeight>Bold</FontWeight>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox37</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>1.94938cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox40">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>Вакансии на work.ua, которых нет на rabota.ua</Value>
+                                    <Style>
+                                      <FontWeight>Bold</FontWeight>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox40</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>1.94938cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox43">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>Удельный вес уникальных на rabota.ua</Value>
+                                    <Style>
+                                      <FontWeight>Bold</FontWeight>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox43</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>1.94938cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox47">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>Прирост вакансий на rabota.ua	</Value>
+                                    <Style>
+                                      <FontWeight>Bold</FontWeight>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox47</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                    </TablixMember>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>1.94938cm</Size>
+                        <CellContents>
+                          <Textbox Name="Textbox51">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>Доля прироста от Unic,%</Value>
+                                    <Style>
+                                      <FontWeight>Bold</FontWeight>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>Textbox51</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Color>LightGrey</Color>
+                                <Style>Solid</Style>
+                              </Border>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                    </TablixMember>
+                  </TablixMembers>
+                </TablixMember>
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <Group Name="ManagerName2">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!ManagerName.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!ManagerName.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixHeader>
+                    <Size>5cm</Size>
+                    <CellContents>
+                      <Textbox Name="ManagerName2">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>=Fields!ManagerName.Value</Value>
+                                <Style />
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>ManagerName2</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Color>LightGrey</Color>
+                            <Style>Solid</Style>
+                          </Border>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>DStUnqVacancyTarget_weekly</DataSetName>
+            <Top>141.85952cm</Top>
+            <Height>3.14937cm</Height>
+            <Width>20cm</Width>
+            <ZIndex>13</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
         </ReportItems>
-        <Height>55.78076in</Height>
+        <Height>57.09012in</Height>
         <Style />
       </Body>
-      <Width>13.11122in</Width>
+      <Width>13.64246in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
@@ -7126,11 +7964,29 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
       </DefaultValue>
       <Prompt>Стаж менеджера, мес. &gt;= </Prompt>
     </ReportParameter>
+    <ReportParameter Name="weeksCount">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>3</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Weeks count:</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="daysCount">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>3</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Days count:</Prompt>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>3</NumberOfColumns>
-      <NumberOfRows>3</NumberOfRows>
+      <NumberOfRows>4</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -7140,32 +7996,42 @@ from #managers m left join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id</Com
         <CellDefinition>
           <ColumnIndex>2</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>Manager</ParameterName>
+          <ParameterName>STM</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>1</RowIndex>
-          <ParameterName>CompanyFilter</ParameterName>
+          <ParameterName>Manager</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>1</RowIndex>
-          <ParameterName>Target</ParameterName>
+          <ParameterName>CompanyFilter</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>Target</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>2</RowIndex>
           <ParameterName>IsSTM</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
-          <RowIndex>2</RowIndex>
+          <RowIndex>0</RowIndex>
           <ParameterName>ManagerAge</ParameterName>
         </CellDefinition>
         <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>3</RowIndex>
+          <ParameterName>weeksCount</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>STM</ParameterName>
+          <RowIndex>3</RowIndex>
+          <ParameterName>daysCount</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

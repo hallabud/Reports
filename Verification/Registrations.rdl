@@ -104,8 +104,6 @@ INTO #NotebookCompanyMerged
 FROM SRV16.RabotaUA2.dbo.NotebookCompanyMerged
 WHERE AddDate &gt;= @MinAddDate;
 
-WITH C AS
- (
 SELECT NCAD.*
  , CASE 
 	WHEN NWV.NotebookId IS NOT NULL THEN 'С добавленной вакансией'
@@ -116,14 +114,50 @@ SELECT NCAD.*
     WHEN NCM.SourceNotebookId IS NOT NULL THEN 'Слиты в другой блокнот'
 	ELSE 'Не слиты в другой блокнот'
    END AS IsMerged
+into #c
 FROM #NotebookCompany_All_Detailed NCAD
  LEFT JOIN #NotebooksWithVacancy NWV ON NCAD.NotebookId = NWV.NotebookId
  LEFT JOIN #NotebooksWithView NWVW ON NCAD.NotebookId = NWVW.EmployerNotebookId
  LEFT JOIN #NotebookCompanyMerged NCM ON NCAD.NotebookId = NCM.SourceNotebookId
 WHERE CityGroup IN (@CityGroup)
- )
+
+if object_id('tempdb..#orderAcc','U') is not null drop table #orderAcc
+select
+	*
+into #orderAcc
+from (
+select
+	row_number() over(partition by o.notebookid order by oa.addDate) rn,
+	oa.id,
+	oa.year,
+	oa.addDate,
+	oa.orderid,
+	o.notebookid
+from srv16.rabotaua2.dbo.Order_acc oa with(nolock) join srv16.rabotaua2.dbo.Orders o with(nolock) on oa.orderid = o.id
+												   --join #c_log c on o.notebookid = c.notebookid and c.ActionType = 'Email Confirmation'
+where oa.addDate between @StartDate and @EndDate) x
+where rn = 1
+
+if object_id('tempdb..#check','U') is not null drop table #check
+select 
+	c.notebookid,
+	case when isnull(ps.AddDate, N'01.01.3000') &lt; isnull(oa.AddDate, '01.01.3000') then 'Подтвердили телефон через смс' else 'Выставлен счет' end checkstatus
+into #check
+from #NotebookCompany_All c left join srv16.rabotaua2.dbo.NotebookCompanyExtra nce with(nolock) on c.NotebookID = nce.notebookid
+							left join srv16.rabotaua2.dbo.PhoneSource ps with(nolock) on nce.phoneid = ps.id 
+							left join srv16.rabotaua2.dbo.NotebookCompany nc with(nolock) on c.notebookid = nc.notebookid
+							left join #orderAcc oa with(nolock) on c.notebookid = oa.notebookid
+where c.HeadquarterCityId not in (12, 29, 32, 34, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569)
+and c.addDate &gt;= '01.02.2018'
+and not (ps.id is null and oa.id is null)
+
+ update c
+ set NotebookState = NotebookState + ' - ' + ch.checkstatus
+from #c c join #check ch on c.notebookid = ch.notebookid
+where IsConfirmed = 'Подтвердили email' and IsMerged = 'Не слиты в другой блокнот' and NotebookState = 'ожидание активации'
+
 SELECT YearNum, WeekNum, WeekName, IsConfirmed, IsCorporativeEmail, NotebookState, NotebookStateGroup, HasVacancyOrView, IsMerged, COUNT(*) AS NotebookCount
-FROM C
+FROM #C
 GROUP BY YearNum, WeekNum, WeekName, IsConfirmed, IsCorporativeEmail, NotebookState, NotebookStateGroup, HasVacancyOrView, IsMerged
 ORDER BY YearNum, WeekNum, WeekName, IsConfirmed, IsCorporativeEmail, NotebookState, NotebookStateGroup, HasVacancyOrView, IsMerged;</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>

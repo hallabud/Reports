@@ -404,22 +404,23 @@ ORDER BY YearNum, WeekNum;</CommandText>
             <Value>=Parameters!Period.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>WITH C AS
- (
-SELECT DD.YearNum, DD.WeekName, DD.WeekNum, DD.Date_key, COUNT(*) AS CompanyNum, SUM(FSCI.VacancyCount) AS VacancyNum
-FROM dbo.DimSpiderCompany DSC
- JOIN dbo.FactSpiderCompanyIndexes FSCI ON DSC.SpiderCompanyID = FSCI.SpiderCompanyID
- JOIN dbo.DimDate DD ON FSCI.Date_key = DD.Date_key
-WHERE DSC.SpiderSource_key = 1
- AND FSCI.IsBusiness IS NOT NULL
- AND FSCI.IsBusiness = 1
- AND DD.WeekDayNum = 6
-GROUP BY DD.YearNum, DD.WeekName, DD.WeekNum, DD.Date_key
- )
- , C2 AS
- (
-SELECT * 
- , (SELECT COUNT(*)
+        <CommandText>if object_id('tempdb..#dimDate','U') is not null drop table #dimDate;
+
+select distinct 
+	YearNum, 
+	WeekNum, 
+	WeekName,
+	Date_key,
+	dense_rank() over(order by YearNum desc, WeekNum desc) RowNum
+into #dimDate
+from DimDate
+where FullDate &lt;= getdate() and WeekDayNum = 6
+
+delete from #dimDate where RowNum &gt; @Period
+
+select
+	*,
+	(SELECT COUNT(*)
 	FROM dbo.FactCompanyStatuses FCS
 	WHERE FCS.Date_key = C.Date_key
 	 AND (FCS.HasPaidPublishedVacs = 1 OR FCS.HasPaidPublicationsLeft = 1 OR FCS.HasHotPublishedVacs = 1 OR FCS.HasHotPublicationsLeft = 1)) AS PaidRabotaCompanyNum
@@ -427,21 +428,7 @@ SELECT *
 	FROM dbo.FactCompanyStatuses FCS
 	WHERE FCS.Date_key = C.Date_key
 	 AND HasPaidServices = 1) AS PaidRabotaCompanyNumTotal
-FROM C
- )
- , C_Result AS
- (
-SELECT YearNum, WeekNum, WeekName
- , 1. * (PaidRabotaCompanyNum - CompanyNum) / dbo.fnGetMinimumOf2Values(PaidRabotaCompanyNum, CompanyNum) AS GapCompany
- , PaidRabotaCompanyNum
- , PaidRabotaCompanyNumTotal
- , CompanyNum
- , ROW_NUMBER() OVER(ORDER BY YearNum DESC, WeekNum DESC) AS RowNum
-FROM C2
- )
-SELECT *
-FROM C_Result
-WHERE RowNum BETWEEN 1 AND @Period;</CommandText>
+from #dimDate c</CommandText>
       </Query>
       <Fields>
         <Field Name="YearNum">
@@ -456,9 +443,9 @@ WHERE RowNum BETWEEN 1 AND @Period;</CommandText>
           <DataField>WeekName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="GapCompany">
-          <DataField>GapCompany</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+        <Field Name="Date_key">
+          <DataField>Date_key</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="PaidRabotaCompanyNum">
           <DataField>PaidRabotaCompanyNum</DataField>
@@ -466,10 +453,6 @@ WHERE RowNum BETWEEN 1 AND @Period;</CommandText>
         </Field>
         <Field Name="PaidRabotaCompanyNumTotal">
           <DataField>PaidRabotaCompanyNumTotal</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="CompanyNum">
-          <DataField>CompanyNum</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="RowNum">
