@@ -24,6 +24,15 @@
 
 WITH C AS
  (
+--SELECT *
+-- , CASE
+--    WHEN DATEPART(HOUR, WFA.AddDate) &gt;= 23 THEN CONVERT(DATE, WFA.AddDate)
+--	WHEN DATEPART(HOUR, WFA.AddDate) &lt;= 1 THEN CONVERT(DATE, DATEADD(DAY, -1, WFA.AddDate))
+--when id = 959 then convert(date, WFA.AddDate)
+--   END AS FullDate
+--FROM SRV16.RabotaUA2.dbo.SpiderLoad_WorkFormApply WFA
+--WHERE (WFA.AddDate BETWEEN @StartDate AND @EndDate + 1
+-- AND DATEPART(HOUR, WFA.AddDate) IN (0,23)) or id = 959
 SELECT *
  , CASE
     WHEN DATEPART(HOUR, WFA.AddDate) &gt;= 23 THEN CONVERT(DATE, WFA.AddDate)
@@ -31,8 +40,17 @@ SELECT *
 when id = 959 then convert(date, WFA.AddDate)
    END AS FullDate
 FROM SRV16.RabotaUA2.dbo.SpiderLoad_WorkFormApply WFA
-WHERE (WFA.AddDate BETWEEN @StartDate AND @EndDate + 1
- AND DATEPART(HOUR, WFA.AddDate) IN (0,23)) or id = 959
+WHERE 
+(
+	WFA.AddDate BETWEEN @StartDate AND @EndDate + 1 and WFA.AddDate &lt;= DATEFROMPARTS(2018, 3, 15) AND DATEPART(HOUR, WFA.AddDate) IN (0,23)
+) or id = 959
+
+union all
+
+SELECT *
+	 , CONVERT(DATE, WFA.AddDate) FullDate
+	FROM SRV16.RabotaUA2.dbo.SpiderLoad_WorkFormApply WFA
+	WHERE DATEPART(HOUR, WFA.AddDate) IN (8) and wfa.addDate &gt; DATEFROMPARTS(2018, 3, 15) and WFA.AddDate BETWEEN @StartDate AND @EndDate + 1
  )
  , SelectedResume AS
  (
