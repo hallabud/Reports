@@ -38,13 +38,33 @@ DECLARE @6MnthAgo DATETIME; SET @6MnthAgo = DATEADD(MONTH, -6, GETDATE());
 DECLARE @12WeekAgo DATETIME; SET @12WeekAgo = DATEADD(WEEK, -12, GETDATE());
 DECLARE @8DaysAgo DATETIME; SET @8DaysAgo = DATEADD(DAY, -8, GETDATE());
 
+if object_id('tempdb..#tmp','U') is not null drop table #tmp;
+create table #tmp 
+(
+	FullDate datetime,
+	Date_key int,
+	Region_key int,
+	Company_key int,
+	WorkConnectionGroup nvarchar(255),
+	VacancyDiff int,
+	VacancyDiffGroup nvarchar(255),
+	VacancyDiffGroup2 nvarchar(255),
+	Stars int,
+    IndexAttraction decimal(10,2),
+	UnqVacancyNum int,
+	UnqWorkVacancyNum int,
+	UnqVacancyTotal int,
+	ManagerStartDate datetime
+)
+
 IF @Mode = 1
 BEGIN
+	insert into #tmp
 	SELECT 
 	   FullDate
 	 , Date_key
 	 , Region_key
-	 , Company_key
+	 ,notebookid Company_key
 	 , WorkConnectionGroup
 	 , ISNULL(VacancyNum,0) - ISNULL(WorkVacancyNum,0) AS VacancyDiff
 	 , VacancyDiffGroup AS VacancyDiffGroup
@@ -61,21 +81,22 @@ BEGIN
 	FROM dbo.vwFactCompanyStatusesAfter20150901
 	WHERE FullDate &gt;= @6MnthAgo
 	 AND (DayNum = 1 OR FullDate = @TodayDate)
-	 AND IndexAttraction &gt; 0 
+	 --AND IndexAttraction &gt; 0 
 	 AND VacancyDiffGroup &lt;&gt; 'R = W = 0'
 	 AND ManagerName IN (@Manager)
 	 AND AgeGroup IN (@AgeGroup)
 	 AND Region_key IN (@RegionKey)
-	 AND (ManagerStartDate &lt; CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @MayDay END OR ManagerStartDate &lt; CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @ThreeMonthAgo END) -- Компания взята в работу менеджером или до 1/04/2016, или не позже чем 3 мес. назад
+	 AND (ManagerStartDate &lt;= CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @MayDay END OR ManagerStartDate &lt;= CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @ThreeMonthAgo END) -- Компания взята в работу менеджером или до 1/04/2016, или не позже чем 3 мес. назад
 END
 
 IF @Mode = 2
 BEGIN
+	insert into #tmp
 	SELECT 
 	   FullDate
 	 , Date_key
 	 , Region_key
-	 , Company_key
+	 ,notebookid Company_key
 	 , WorkConnectionGroup
 	 , ISNULL(VacancyNum,0) - ISNULL(WorkVacancyNum,0) AS VacancyDiff
 	 , VacancyDiffGroup AS VacancyDiffGroup
@@ -92,22 +113,23 @@ BEGIN
 	FROM dbo.vwFactCompanyStatusesAfter20150901
 	WHERE FullDate &gt;= @12WeekAgo
 	 AND (WeekDayNum = 6 OR FullDate = @TodayDate)
-	 AND IndexAttraction &gt; 0
+	 --AND IndexAttraction &gt; 0
 	 AND VacancyDiffGroup &lt;&gt; 'R = W = 0'
 	 AND ManagerName IN (@Manager)
 	 AND AgeGroup IN (@AgeGroup)
 	 AND Region_key IN (@RegionKey)
-	 AND (ManagerStartDate &lt; CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @MayDay END OR ManagerStartDate &lt; CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @ThreeMonthAgo END) -- Компания взята в работу менеджером или до 1/04/2016, или не позже чем 3 мес. назад
+	 AND (ManagerStartDate &lt;= CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @MayDay END OR ManagerStartDate &lt;= CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @ThreeMonthAgo END) -- Компания взята в работу менеджером или до 1/04/2016, или не позже чем 3 мес. назад
 
 END
 
 IF @Mode = 3
 BEGIN
+	insert into #tmp
 	SELECT 
 	   FullDate
 	 , Date_key
 	 , Region_key
-	 , Company_key
+	 ,notebookid Company_key
 	 , WorkConnectionGroup
 	 , ISNULL(VacancyNum,0) - ISNULL(WorkVacancyNum,0) AS VacancyDiff
 	 , VacancyDiffGroup AS VacancyDiffGroup
@@ -123,23 +145,196 @@ BEGIN
 	 , ManagerStartDate
 	FROM dbo.vwFactCompanyStatusesAfter20150901
 	WHERE FullDate &gt;= @8DaysAgo
-	 AND IndexAttraction &gt; 0
+	 --AND IndexAttraction &gt; 0
 	 AND VacancyDiffGroup &lt;&gt; 'R = W = 0'
 	 AND ManagerName IN (@Manager)
 	 AND AgeGroup IN (@AgeGroup)
 	 AND Region_key IN (@RegionKey)
-	 AND (ManagerStartDate &lt; CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @MayDay END OR ManagerStartDate &lt; CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @ThreeMonthAgo END) -- Компания взята в работу менеджером или до 1/04/2016, или не позже чем 3 мес. назад
-END</CommandText>
+	 AND (ManagerStartDate &lt;= CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @MayDay END OR ManagerStartDate &lt;= CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @ThreeMonthAgo END) -- Компания взята в работу менеджером или до 1/04/2016, или не позже чем 3 мес. назад
+END
+
+if object_id('tempdb..#spidercompanynotebook','U') is not null drop table #spidercompanynotebook;
+select 
+	sc.companyid, 
+	sc.notebookid, 
+	sc.name, 
+	sc.vacancycount, 
+	adddate,
+	row_number() over(partition by notebookid order by vacancycount desc) rownum
+into #spidercompanynotebook
+from srv16.rabotaua2.dbo.spidercompany sc with(nolock)
+where sc.source = 1 and notebookid is not null
+
+if object_id('tempdb..#notebook','U') is not null drop table #notebook;
+select
+	nc.notebookid,
+	nc.name companyname,
+	nc.managerid,
+	(select count(*) from srv16.rabotaua2.dbo.VacancyPublished vp with(nolock) join srv16.rabotaua2.dbo.VacancyExtra ve with(nolock) on vp.ID = ve.VacancyID 
+	where nc.NotebookId = VP.NotebookID and VE.IsModerated = 1 and VE.IsModeratedRubric = 1) VacancyNum,
+	scn.companyid workcompanyid,
+	scn.vacancycount WorkVacancyNum,
+	cast(null as nvarchar(100)) VacancyDiffGroup
+into #notebook
+from srv16.rabotaua2.dbo.notebookcompany nc with(nolock) left join srv16.rabotaua2.dbo.notebookcompanymerged ncm with (nolock) on ncm.sourcenotebookid = nc.notebookid
+														 left join #spidercompanynotebook scn on nc.notebookid = scn.notebookid and scn.rownum = 1
+														 join srv16.rabotaua2.dbo.Notebook n with(nolock) on nc.notebookid = n.id and n.notebookStateid in (5,7)
+where ncm.sourcenotebookid is null 
+option (hash join)
+
+update n
+set VacancyDiffGroup = case 
+						when isnull(WorkVacancyNum,0) = 0 and VacancyNum &gt; isnull(WorkVacancyNum,0) then 'R &gt; W = 0'
+						when isnull(WorkVacancyNum,0) &gt; 0 and VacancyNum &gt; isnull(WorkVacancyNum,0) then 'R &gt; W &gt; 0'
+						when VacancyNum &gt; 0 and isnull(WorkVacancyNum,0) = VacancyNum then 'R = W'
+						when VacancyNum &gt; 0 and VacancyNum &lt; isnull(WorkVacancyNum,0) then '0 &lt; R &lt; W'
+						when VacancyNum = 0 and VacancyNum &lt; isnull(WorkVacancyNum,0) then '0 = R &lt; W'
+						else 'R = W = 0'
+					   end
+from #notebook n
+
+if object_id('tempdb..#t','U') is not null drop table #t;
+create table #t 
+(	
+	WorkConnectionGroup varchar(255),
+	Id int,
+	State tinyint,
+	RabotaVacancyName varchar(255),
+	NotebookID int,
+	SpiderVacancyID int,
+	IsPublish bit,
+	WorkVacancyName varchar(255),
+	SpiderCompanyID int,
+	VacancyConnectionType varchar(255),
+	CityID int
+)
+
+insert into #t
+select 
+	case 
+		when exists (select * from #notebook where workcompanyid = sv.spidercompanyid) or exists (select * from #notebook where notebookid = v.notebookid and workcompanyid is not null) 
+	then 'Привязанные компании'
+	else 'Компании на rabota.ua без привязки к work.ua'
+	end WorkConnectionGroup,
+	v.id, 
+	v.state, 
+	v.name rabotavacancyname, 
+	v.notebookid,
+	sv.spidervacancyid, 
+	sv.ispublish, 
+	sv.name workvacancyname, 
+	sv.spidercompanyid,
+	case 
+		when v.state = 4 and sv.spidervacancyid is not null and sv.ispublish = 1 then 'привязанные вакансии'
+		when v.state &lt;&gt; 4 and sv.spidervacancyid is not null and sv.ispublish = 1 then 'уникальная на work.ua - есть неактивная на rabota.ua'
+		when v.id is null and sv.spidervacancyid is not null and sv.ispublish = 1 then 'уникальная на work.ua'
+		when v.state = 4 and sv.spidervacancyid is not null and sv.ispublish = 0 then 'уникальная на rabota.ua - есть неактивная на work.ua'
+		when v.state = 4 and sv.spidervacancyid is null then 'уникальная на rabota.ua'
+   end vacancyconnectiontype,
+	sv.cityid
+from srv16.rabotaua2.dbo.vacancy v with (nolock) full join srv16.rabotaua2.dbo.spidervacancy sv with (nolock) on v.id = sv.vacancyid and sv.source = 1
+where (v.state = 4 or sv.ispublish = 1)
+--and (exists (select * from #notebook where workcompanyid = sv.spidercompanyid) or exists (select * from #notebook where notebookid = v.notebookid and workcompanyid is not null))
+--AND (EXISTS (SELECT * FROM Reporting.dbo.DimCompanyCopy WHERE WorkCompanyID = SV.SpiderCompanyID) OR EXISTS (SELECT * FROM Reporting.dbo.DimCompanyCopy WHERE NotebookId = V.NotebookId AND WorkCompanyID IS NOT NULL));
+
+--delete t1
+--from #t t1 
+--where t1.id is null and exists (select * 
+--								from #t 
+--								where SpiderCompanyID = T1.SpiderCompanyID 
+--								 and SpiderVacancyID &lt;&gt; T1.SpiderVacancyID 
+--								 and CityID = T1.CityID 
+--								 and replace(replace(replace(replace(replace(replace(replace(replace(
+--										WorkVacancyName, ' ' , ''), '-', ''), ',', ''), '.', ''), '(', ''), ')', ''), '/', ''), '\', '') 
+--									= replace(replace(replace(replace(replace(replace(replace(replace(
+--										T1.WorkVacancyName, ' ' , ''), '-', ''), ',', ''), '.', ''), '(', ''), ')', ''), '/', ''), '\', ''))
+
+if object_id('tempdb..#result','U') is not null drop table #result;
+select
+	coalesce(nr.managerid, nw.managerid) managerid,
+	coalesce(nr.VacancyDiffGroup, nw.VacancyDiffGroup) VacancyDiffGroup,
+	coalesce(nr.notebookid, nw.notebookid) notebook,
+	t.*
+into #result
+from #t t left join #notebook nr on t.notebookid = nr.notebookid
+		  left join #notebook nw on t.SpiderCompanyID = nw.workcompanyid
+
+if object_id('tempdb..#managerStart','U') is not null drop table #managerStart;
+select
+	notebookid,
+	newValue managerid,
+	cast(DateOfUpd as date) managerStartdate
+into #managerStart
+from (
+select
+	notebookid,
+	newValue,
+	DateOfUpd,
+	row_number() over(partition by notebookid order by DateOfUpd desc) rn
+from srv16.rabotaua2.dbo.NotebookCompany_History with(nolock)
+where field = 'Managerid') x
+where rn = 1
+
+delete from #tmp
+where fulldate = cast(getdate() as date)
+
+insert into #tmp
+select
+	cast(getdate() as date) fulldate,
+	(select date_key from dimDate where fulldate = cast(getdate() as date)) date_key,
+	region_key,
+	notebookid company_key,
+	--'Привязанные компании' WorkConnectionGroup,
+	WorkConnectionGroup,
+	sum(case when VacancyConnectionType in ('уникальная на rabota.ua', 'уникальная на rabota.ua - есть неактивная на work.ua') then VacancyCount else 0 end)-
+	sum(case when VacancyConnectionType in ('уникальная на work.ua', 'уникальная на work.ua - есть неактивная на rabota.ua') then VacancyCount else 0 end) VacancyDiff,
+	VacancyDiffGroup,
+	VacancyDiffGroup2,
+	starRating Stars,
+	IndexAttraction,
+	sum(case when VacancyConnectionType in ('привязанные вакансии', 'уникальная на rabota.ua', 'уникальная на rabota.ua - есть неактивная на work.ua') then VacancyCount else 0 end) UnqVacancyNum,
+	sum(case when VacancyConnectionType in ('уникальная на work.ua', 'уникальная на work.ua - есть неактивная на rabota.ua') then VacancyCount else 0 end) UnqWorkVacancyNum,
+	sum(case when VacancyConnectionType in ('привязанные вакансии','уникальная на rabota.ua', 'уникальная на rabota.ua - есть неактивная на work.ua') then VacancyCount else 0 end)+
+	sum(case when VacancyConnectionType in ('уникальная на work.ua', 'уникальная на work.ua - есть неактивная на rabota.ua') then VacancyCount else 0 end)UnqVacancyTotal,
+	ManagerStartDate
+from (
+select
+	r.notebook notebookid,
+	r.VacancyDiffGroup,
+	CASE WHEN r.VacancyDiffGroup IN ('R &gt; W = 0', 'R &gt; W &gt; 0','R = W') THEN 'Green' ELSE 'Red' END VacancyDiffGroup2,
+	d.name DepartmentName,
+	m.id managerid,
+	m.name ManagerName,
+	dc.starRating,
+	dc.IndexAttraction,
+	dc.region_key,
+	r.WorkConnectionGroup,
+	isnull(ms.managerStartdate, nc.addDate) managerStartdate,
+	r.VacancyConnectionType,
+	count(*) VacancyCount
+from #result r left join srv16.rabotaua2.dbo.Manager m with(nolock) on r.managerid= m.id
+			   left join srv16.rabotaua2.dbo.Departments d with(nolock) on m.departmentid = d.id
+			   left join #managerStart ms on r.notebook = ms.notebookid
+			   left join srv16.rabotaua2.dbo.NotebookCompany nc with(nolock) on r.notebook= nc.notebookid
+			   left join DimCompany dc on nc.notebookid = dc.notebookid
+
+where m.name IN (@Manager)
+	 AND dc.AgeGroup IN (@AgeGroup)
+	 AND dc.Region_key IN (@RegionKey)
+	 AND (isnull(ms.managerStartdate, nc.addDate) &lt;= CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @MayDay END OR isnull(ms.managerStartdate, nc.addDate) &lt;= CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @ThreeMonthAgo END) -- Компания взята в работу менеджером или до 1/04/2016, или не позже чем 3 мес. назад
+
+group by r.VacancyDiffGroup, d.name, m.id, m.name, r.VacancyConnectionType,  dc.WorkConnectionGroup, dc.starRating, r.notebook, CASE WHEN r.VacancyDiffGroup IN ('R &gt; W = 0', 'R &gt; W &gt; 0','R = W') THEN 'Green' ELSE 'Red' END, dc.region_key, dc.IndexAttraction, isnull(ms.managerStartdate, nc.addDate), r.WorkConnectionGroup
+) x
+group by region_key, notebookid, VacancyDiffGroup, VacancyDiffGroup2, starRating, IndexAttraction, ManagerStartDate, WorkConnectionGroup
+select
+	*
+from #tmp</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
         <Field Name="FullDate">
           <DataField>FullDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="Company_key">
-          <DataField>Company_key</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="Date_key">
           <DataField>Date_key</DataField>
@@ -149,25 +344,29 @@ END</CommandText>
           <DataField>Region_key</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="Company_key">
+          <DataField>Company_key</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="WorkConnectionGroup">
           <DataField>WorkConnectionGroup</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="VacancyDiff">
+          <DataField>VacancyDiff</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="VacancyDiffGroup">
           <DataField>VacancyDiffGroup</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="VacancyDiff">
-          <DataField>VacancyDiff</DataField>
-          <rd:TypeName>System.Int16</rd:TypeName>
+        <Field Name="VacancyDiffGroup2">
+          <DataField>VacancyDiffGroup2</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Stars">
           <DataField>Stars</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="VacancyDiffGroup2">
-          <DataField>VacancyDiffGroup2</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="IndexAttraction">
           <DataField>IndexAttraction</DataField>
@@ -175,15 +374,15 @@ END</CommandText>
         </Field>
         <Field Name="UnqVacancyNum">
           <DataField>UnqVacancyNum</DataField>
-          <rd:TypeName>System.Int16</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="UnqWorkVacancyNum">
           <DataField>UnqWorkVacancyNum</DataField>
-          <rd:TypeName>System.Int16</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="UnqVacancyTotal">
           <DataField>UnqVacancyTotal</DataField>
-          <rd:TypeName>System.Int16</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="ManagerStartDate">
           <DataField>ManagerStartDate</DataField>
