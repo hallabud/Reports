@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SharedDataSet xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/shareddatasetdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <Description />
+  <DataSet Name="DStMngrs">
+    <Query>
+      <DataSourceReference>DSrcReporting</DataSourceReference>
+      <CommandText>	SELECT 
+	   Id AS ManagerID
+	 , Name AS ManagerName 
+	 , COALESCE(TeamLead_ManagerID, Id) AS TeamLead_ManagerID
+	 , IsLoyaltyGroup
+	 , MMB.LoweredEmail AS Email
+	 , M.DepartmentID
+	 , COALESCE(M.STM_ManagerID, M.Id) AS STM_ManagerID
+	 , CASE 
+	    WHEN COALESCE(M.STM_ManagerID, M.Id) = COALESCE(TeamLead_ManagerID, Id) 
+		 /*AND M.StatusInTransactionGroup IS NULL*/ THEN M.Id
+		ELSE COALESCE(M.STM_ManagerID, M.Id)
+	   END AS Real_STM_ManagerID
+	FROM SRV16.RabotaUA2.dbo.Manager M
+	 JOIN SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON M.aspnet_UserUIN = MMB.UserId
+	WHERE DepartmentID IN (2,3,4,10/*,12*/)
+	 AND IsForTesting = 0
+	 AND IsReportExcluding = 0
+	 AND (TeamLead_ManagerID IS NOT NULL OR EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.Manager WHERE TeamLead_ManagerID = M.Id))</CommandText>
+    </Query>
+    <Fields>
+      <Field Name="ManagerID">
+        <DataField>ManagerID</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="ManagerName">
+        <DataField>ManagerName</DataField>
+        <rd:TypeName>System.String</rd:TypeName>
+      </Field>
+      <Field Name="TeamLead_ManagerID">
+        <DataField>TeamLead_ManagerID</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="IsLoyaltyGroup">
+        <DataField>IsLoyaltyGroup</DataField>
+        <rd:TypeName>System.Boolean</rd:TypeName>
+      </Field>
+      <Field Name="Email">
+        <DataField>Email</DataField>
+        <rd:TypeName>System.String</rd:TypeName>
+      </Field>
+      <Field Name="DepartmentID">
+        <DataField>DepartmentID</DataField>
+        <rd:TypeName>System.Byte</rd:TypeName>
+      </Field>
+      <Field Name="STM_ManagerID">
+        <DataField>STM_ManagerID</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="Real_STM_ManagerID">
+        <DataField>Real_STM_ManagerID</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+    </Fields>
+    <Filters>
+      <Filter>
+        <FilterExpression>=Fields!Real_STM_ManagerID.Value</FilterExpression>
+        <Operator>In</Operator>
+        <FilterValues>
+          <FilterValue>=Parameters!STM.Value</FilterValue>
+        </FilterValues>
+      </Filter>
+    </Filters>
+  </DataSet>
+</SharedDataSet>
