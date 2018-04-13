@@ -530,10 +530,75 @@ ORDER BY Region_key</CommandText>
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="DStManagers">
+    <DataSet Name="DstSTMs">
       <SharedDataSet>
-        <SharedDataSetReference>DStManagersDistinct</SharedDataSetReference>
+        <SharedDataSetReference>DStSTMs</SharedDataSetReference>
       </SharedDataSet>
+      <Fields>
+        <Field Name="ManagerID">
+          <DataField>ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TeamLead_ManagerID">
+          <DataField>TeamLead_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!TeamLead_ManagerID.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!SalesTeam.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
+    </DataSet>
+    <DataSet Name="DStMngrs">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>	SELECT 
+	   Id AS ManagerID
+	 , Name AS ManagerName 
+	 , COALESCE(TeamLead_ManagerID, Id) AS TeamLead_ManagerID
+	 , IsLoyaltyGroup
+	 , MMB.LoweredEmail AS Email
+	 , M.DepartmentID
+	 , COALESCE(M.STM_ManagerID, M.Id) AS STM_ManagerID
+	 , CASE 
+	    WHEN COALESCE(M.STM_ManagerID, M.Id) = COALESCE(TeamLead_ManagerID, Id) 
+		 /*AND M.StatusInTransactionGroup IS NULL*/ THEN M.Id
+		ELSE COALESCE(M.STM_ManagerID, M.Id)
+	   END AS Real_STM_ManagerID
+	FROM SRV16.RabotaUA2.dbo.Manager M
+	 JOIN SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON M.aspnet_UserUIN = MMB.UserId
+	WHERE DepartmentID IN (2,3,4,10/*,12*/)
+	 AND IsForTesting = 0
+	 AND IsReportExcluding = 0
+	 AND (TeamLead_ManagerID IS NOT NULL OR EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.Manager WHERE TeamLead_ManagerID = M.Id))
+	
+	UNION ALL
+
+	SELECT 
+	   Id AS ManagerID
+	 , Name AS ManagerName 
+	 , COALESCE(TeamLead_ManagerID, 162, Id) AS TeamLead_ManagerID
+	 , IsLoyaltyGroup
+	 , MMB.LoweredEmail AS Email
+	 , M.DepartmentID
+	 , COALESCE(M.STM_ManagerID, 162, M.Id) AS STM_ManagerID
+	 , COALESCE(M.STM_ManagerID, 162, M.Id) AS Real_STM_ManagerID
+	FROM SRV16.RabotaUA2.dbo.Manager M
+	 JOIN SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON M.aspnet_UserUIN = MMB.UserId
+	WHERE DepartmentID = 1
+	
+	ORDER BY ManagerName
+	</CommandText>
+      </Query>
       <Fields>
         <Field Name="ManagerID">
           <DataField>ManagerID</DataField>
@@ -551,20 +616,29 @@ ORDER BY Region_key</CommandText>
           <DataField>IsLoyaltyGroup</DataField>
           <rd:TypeName>System.Boolean</rd:TypeName>
         </Field>
+        <Field Name="Email">
+          <DataField>Email</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DepartmentID">
+          <DataField>DepartmentID</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="STM_ManagerID">
+          <DataField>STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Real_STM_ManagerID">
+          <DataField>Real_STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
-          <FilterExpression>=Fields!TeamLead_ManagerID.Value</FilterExpression>
+          <FilterExpression>=Fields!Real_STM_ManagerID.Value</FilterExpression>
           <Operator>In</Operator>
           <FilterValues>
-            <FilterValue>=Parameters!SalesTeam.Value</FilterValue>
-          </FilterValues>
-        </Filter>
-        <Filter>
-          <FilterExpression>=Fields!IsLoyaltyGroup.Value</FilterExpression>
-          <Operator>Equal</Operator>
-          <FilterValues>
-            <FilterValue DataType="Boolean">false</FilterValue>
+            <FilterValue>=Parameters!STM.Value</FilterValue>
           </FilterValues>
         </Filter>
       </Filters>
@@ -857,7 +931,7 @@ ORDER BY Region_key</CommandText>
                   </Style>
                 </ChartNoDataMessage>
                 <DataSetName>DStCompaniesHistory</DataSetName>
-                <Top>56.17691cm</Top>
+                <Top>56.19436cm</Top>
                 <Left>0.00005cm</Left>
                 <Height>11.27062cm</Height>
                 <Width>36cm</Width>
@@ -1201,7 +1275,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>25.22255cm</Top>
+                <Top>25.24cm</Top>
                 <Left>0.00002cm</Left>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
@@ -1538,7 +1612,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>25.22255cm</Top>
+                <Top>25.24cm</Top>
                 <Left>18cm</Left>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
@@ -1890,7 +1964,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>35.54067cm</Top>
+                <Top>35.55812cm</Top>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
                 <ZIndex>3</ZIndex>
@@ -2241,7 +2315,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>45.85879cm</Top>
+                <Top>45.87624cm</Top>
                 <Left>0.00005cm</Left>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
@@ -2555,7 +2629,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Left>0.00004cm</Left>
+                <Left>0.00011cm</Left>
                 <Height>7.62cm</Height>
                 <Width>36cm</Width>
                 <ZIndex>5</ZIndex>
@@ -2836,7 +2910,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>7.60255cm</Top>
+                <Top>7.62cm</Top>
                 <Left>0.00005cm</Left>
                 <Height>7.62cm</Height>
                 <Width>36cm</Width>
@@ -3184,7 +3258,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>15.22255cm</Top>
+                <Top>15.24cm</Top>
                 <Height>10cm</Height>
                 <Width>36cm</Width>
                 <ZIndex>7</ZIndex>
@@ -3508,7 +3582,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>35.54067cm</Top>
+                <Top>35.55812cm</Top>
                 <Left>18cm</Left>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
@@ -3834,7 +3908,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>45.85879cm</Top>
+                <Top>45.87624cm</Top>
                 <Left>18cm</Left>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
@@ -3850,7 +3924,7 @@ ORDER BY Region_key</CommandText>
               </Chart>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Height>67.44753cm</Height>
+            <Height>67.46498cm</Height>
             <Width>36.00011cm</Width>
             <Style>
               <Border>
@@ -3860,7 +3934,7 @@ ORDER BY Region_key</CommandText>
             </Style>
           </Rectangle>
         </ReportItems>
-        <Height>26.55415in</Height>
+        <Height>26.56102in</Height>
         <Style>
           <BackgroundColor>White</BackgroundColor>
         </Style>
@@ -3901,18 +3975,36 @@ ORDER BY Region_key</CommandText>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="STM">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DstSTMs</DataSetName>
+          <ValueField>ManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>STM</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DstSTMs</DataSetName>
+          <ValueField>ManagerID</ValueField>
+          <LabelField>ManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
     <ReportParameter Name="Manager">
       <DataType>String</DataType>
       <DefaultValue>
         <DataSetReference>
-          <DataSetName>DStManagers</DataSetName>
+          <DataSetName>DStMngrs</DataSetName>
           <ValueField>ManagerName</ValueField>
         </DataSetReference>
       </DefaultValue>
       <Prompt>Менеджер</Prompt>
       <ValidValues>
         <DataSetReference>
-          <DataSetName>DStManagers</DataSetName>
+          <DataSetName>DStMngrs</DataSetName>
           <ValueField>ManagerName</ValueField>
           <LabelField>ManagerName</LabelField>
         </DataSetReference>
@@ -4000,6 +4092,16 @@ ORDER BY Region_key</CommandText>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="Department">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>Sales Force</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Department</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
     <ReportParameter Name="CompanyFilter">
       <DataType>Integer</DataType>
       <DefaultValue>
@@ -4021,16 +4123,6 @@ ORDER BY Region_key</CommandText>
         </ParameterValues>
       </ValidValues>
     </ReportParameter>
-    <ReportParameter Name="Department">
-      <DataType>String</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>Sales Force</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>Department</Prompt>
-      <Hidden>true</Hidden>
-    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -4043,34 +4135,39 @@ ORDER BY Region_key</CommandText>
           <ParameterName>SalesTeam</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
           <ParameterName>Manager</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>AgeGroup</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>1</RowIndex>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
           <ParameterName>Mode</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>2</RowIndex>
           <ParameterName>RegionKey</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
-          <RowIndex>2</RowIndex>
+          <RowIndex>3</RowIndex>
           <ParameterName>CompanyFilter</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>3</RowIndex>
           <ParameterName>Department</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>STM</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
