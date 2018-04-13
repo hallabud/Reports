@@ -20,57 +20,48 @@
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+        <CommandText>set dateformat dmy;
+set transaction isolation level read uncommitted;
 
-WITH C AS
- (
---SELECT *
--- , CASE
---    WHEN DATEPART(HOUR, WFA.AddDate) &gt;= 23 THEN CONVERT(DATE, WFA.AddDate)
---	WHEN DATEPART(HOUR, WFA.AddDate) &lt;= 1 THEN CONVERT(DATE, DATEADD(DAY, -1, WFA.AddDate))
---when id = 959 then convert(date, WFA.AddDate)
---   END AS FullDate
---FROM SRV16.RabotaUA2.dbo.SpiderLoad_WorkFormApply WFA
---WHERE (WFA.AddDate BETWEEN @StartDate AND @EndDate + 1
--- AND DATEPART(HOUR, WFA.AddDate) IN (0,23)) or id = 959
-SELECT *
- , CASE
-    WHEN DATEPART(HOUR, WFA.AddDate) &gt;= 23 THEN CONVERT(DATE, WFA.AddDate)
-	WHEN DATEPART(HOUR, WFA.AddDate) &lt;= 1 THEN CONVERT(DATE, DATEADD(DAY, -1, WFA.AddDate))
-when id = 959 then convert(date, WFA.AddDate)
-   END AS FullDate
-FROM SRV16.RabotaUA2.dbo.SpiderLoad_WorkFormApply WFA
-WHERE 
-(
-	WFA.AddDate BETWEEN @StartDate AND @EndDate + 1 and WFA.AddDate &lt;= DATEFROMPARTS(2018, 3, 15) AND DATEPART(HOUR, WFA.AddDate) IN (0,23)
-) or id = 959
+if object_id('tempdb..#c','U') is not null drop table #c;
+select 
+	*,
+	case
+		when datepart(hour, wfa.AddDate) &gt;= 23 then convert(date, wfa.AddDate)
+		when datepart(hour, wfa.AddDate) &lt;= 1 then convert(date, dateadd(day, -1, wfa.AddDate))
+		when id = 959 then convert(date, wfa.AddDate)
+	end FullDate,
+	row_number() over(partition by 
+	case
+		when datepart(hour, wfa.AddDate) &gt;= 23 then convert(date, wfa.AddDate)
+		when datepart(hour, wfa.AddDate) &lt;= 1 then convert(date, dateadd(day, -1, wfa.AddDate))
+		when id = 959 then convert(date, wfa.AddDate)
+	end
+	order by wfa.addDate) rn
+into #c
+from srv16.rabotaua2.dbo.SpiderLoad_WorkFormApply WFA
+where (wfa.AddDate between @StartDate and @EndDate + 1 and datepart(hour, WFA.AddDate) IN (0,23)) or id = 959
 
-union all
+delete from #c where rn != 1
 
-SELECT *
---	 , CONVERT(DATE, WFA.AddDate) FullDate
-, CONVERT(DATE, dateadd(day, -1, WFA.AddDate)) FullDate
-	FROM SRV16.RabotaUA2.dbo.SpiderLoad_WorkFormApply WFA
-	WHERE DATEPART(HOUR, WFA.AddDate) IN (8) and wfa.addDate &gt; DATEFROMPARTS(2018, 3, 15) and WFA.AddDate BETWEEN @StartDate AND @EndDate + 1
- )
- , SelectedResume AS
- (
-SELECT CONVERT(DATE, AddDate) AS FullDate, COUNT(*) AS SelectedCount
-FROM SRV16.RabotaUA2.dbo.NotebookSelectedResume WITH (NOLOCK)
-WHERE AddDate BETWEEN @StartDate AND @EndDate + 1
-GROUP BY CONVERT(DATE, AddDate) 
- )
+if object_id('tempdb..#SelectedResume','U') is not null drop table #SelectedResume;
+select 
+	convert(date, AddDate) FullDate, 
+	count(*) SelectedCount
+into #SelectedResume
+from srv16.rabotaua2.dbo.NotebookSelectedResume with(nolock)
+where AddDate between @StartDate and @EndDate + 1
+group by convert(date, AddDate) 
 
-SELECT 
-   C0.FullDate
- , C0.[Count] - C1.[Count] AS Work_ApplyCount
- , MMD.Responses AS Rabota_ApplyCount
- , SR.SelectedCount AS Rabota_SelectedResumeCount
-FROM C C0
- LEFT JOIN C C1 ON C0.FullDate = DATEADD(DAY, 1, C1.FullDate)
- JOIN Reporting.dbo.AggrManagementMetricsDaily MMD ON C0.FullDate = MMD.FullDate
- JOIN SelectedResume SR ON C0.FullDate = SR.FullDate
-WHERE C0.[Count] IS NOT NULL AND C1.[Count] IS NOT NULL;</CommandText>
+select 
+	C0.FullDate,
+	C0.[Count] - C1.[Count] Work_ApplyCount,
+	MMD.Responses Rabota_ApplyCount,
+	SR.SelectedCount Rabota_SelectedResumeCount
+from #c c0 left join #c C1 on C0.FullDate = dateadd(day, 1, C1.FullDate)
+		   join AggrManagementMetricsDaily MMD on C0.FullDate = MMD.FullDate
+		   join #SelectedResume SR on C0.FullDate = SR.FullDate
+where c0.[Count] is not null and c1.[Count] is not null</CommandText>
       </Query>
       <Fields>
         <Field Name="FullDate">
