@@ -561,7 +561,15 @@ ORDER BY Region_key</CommandText>
     <DataSet Name="DStMngrs">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>	SELECT 
+        <QueryParameters>
+          <QueryParameter Name="@SmNotShowMode">
+            <Value>=Parameters!SmNotShowMode.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT *
+FROM
+(
+	SELECT 
 	   Id AS ManagerID
 	 , Name AS ManagerName 
 	 , COALESCE(TeamLead_ManagerID, Id) AS TeamLead_ManagerID
@@ -595,9 +603,16 @@ ORDER BY Region_key</CommandText>
 	FROM SRV16.RabotaUA2.dbo.Manager M
 	 JOIN SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON M.aspnet_UserUIN = MMB.UserId
 	WHERE DepartmentID = 1
-	
-	ORDER BY ManagerName
-	</CommandText>
+) m	
+	WHERE @SmNotShowMode = 1 AND ManagerID NOT IN (SELECT ID AS ManagerID
+													FROM SRV16.RabotaUA2.dbo.Manager M
+													WHERE DepartmentID IN (2,3,4,10)
+													 AND IsForTesting = 0
+													 AND IsReportExcluding = 0
+													 AND TeamLead_ManagerID IS NULL
+													 AND EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.Manager WHERE TeamLead_ManagerID = M.Id))
+		OR @SmNotShowMode = 0
+	ORDER BY ManagerName</CommandText>
       </Query>
       <Fields>
         <Field Name="ManagerID">
@@ -931,7 +946,7 @@ ORDER BY Region_key</CommandText>
                   </Style>
                 </ChartNoDataMessage>
                 <DataSetName>DStCompaniesHistory</DataSetName>
-                <Top>56.19436cm</Top>
+                <Top>56.22964cm</Top>
                 <Left>0.00005cm</Left>
                 <Height>11.27062cm</Height>
                 <Width>36cm</Width>
@@ -1275,7 +1290,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>25.24cm</Top>
+                <Top>25.27528cm</Top>
                 <Left>0.00002cm</Left>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
@@ -1612,7 +1627,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>25.24cm</Top>
+                <Top>25.27528cm</Top>
                 <Left>18cm</Left>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
@@ -1964,7 +1979,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>35.55812cm</Top>
+                <Top>35.5934cm</Top>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
                 <ZIndex>3</ZIndex>
@@ -2315,7 +2330,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>45.87624cm</Top>
+                <Top>45.91152cm</Top>
                 <Left>0.00005cm</Left>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
@@ -2910,7 +2925,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>7.62cm</Top>
+                <Top>7.65528cm</Top>
                 <Left>0.00005cm</Left>
                 <Height>7.62cm</Height>
                 <Width>36cm</Width>
@@ -3258,7 +3273,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>15.24cm</Top>
+                <Top>15.27528cm</Top>
                 <Height>10cm</Height>
                 <Width>36cm</Width>
                 <ZIndex>7</ZIndex>
@@ -3582,7 +3597,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>35.55812cm</Top>
+                <Top>35.5934cm</Top>
                 <Left>18cm</Left>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
@@ -3908,7 +3923,7 @@ ORDER BY Region_key</CommandText>
                     </FilterValues>
                   </Filter>
                 </Filters>
-                <Top>45.87624cm</Top>
+                <Top>45.91152cm</Top>
                 <Left>18cm</Left>
                 <Height>10.31812cm</Height>
                 <Width>18cm</Width>
@@ -3924,7 +3939,7 @@ ORDER BY Region_key</CommandText>
               </Chart>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Height>67.46498cm</Height>
+            <Height>67.50026cm</Height>
             <Width>36.00011cm</Width>
             <Style>
               <Border>
@@ -3934,7 +3949,7 @@ ORDER BY Region_key</CommandText>
             </Style>
           </Rectangle>
         </ReportItems>
-        <Height>26.56102in</Height>
+        <Height>26.57491in</Height>
         <Style>
           <BackgroundColor>White</BackgroundColor>
         </Style>
@@ -3957,6 +3972,27 @@ ORDER BY Region_key</CommandText>
     </ReportSection>
   </ReportSections>
   <ReportParameters>
+    <ReportParameter Name="SmNotShowMode">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>0</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>С учетом SM</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>0</Value>
+            <Label>Да</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>1</Value>
+            <Label>Нет</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
     <ReportParameter Name="SalesTeam">
       <DataType>Integer</DataType>
       <DefaultValue>
@@ -4049,6 +4085,45 @@ ORDER BY Region_key</CommandText>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="CompanyFilter">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>2</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Срок работы с компанией</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>1</Value>
+            <Label>Все компании</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>2</Value>
+            <Label>Без учета компаний 3 мес. на установление лояльности</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="RegionKey">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStRegions</DataSetName>
+          <ValueField>Region_key</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Регион</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStRegions</DataSetName>
+          <ValueField>Region_key</ValueField>
+          <LabelField>NameRus</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
     <ReportParameter Name="Mode">
       <DataType>Integer</DataType>
       <DefaultValue>
@@ -4074,24 +4149,6 @@ ORDER BY Region_key</CommandText>
         </ParameterValues>
       </ValidValues>
     </ReportParameter>
-    <ReportParameter Name="RegionKey">
-      <DataType>Integer</DataType>
-      <DefaultValue>
-        <DataSetReference>
-          <DataSetName>DStRegions</DataSetName>
-          <ValueField>Region_key</ValueField>
-        </DataSetReference>
-      </DefaultValue>
-      <Prompt>Регион</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>DStRegions</DataSetName>
-          <ValueField>Region_key</ValueField>
-          <LabelField>NameRus</LabelField>
-        </DataSetReference>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
     <ReportParameter Name="Department">
       <DataType>String</DataType>
       <DefaultValue>
@@ -4102,72 +4159,56 @@ ORDER BY Region_key</CommandText>
       <Prompt>Department</Prompt>
       <Hidden>true</Hidden>
     </ReportParameter>
-    <ReportParameter Name="CompanyFilter">
-      <DataType>Integer</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>2</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>Срок работы с компанией</Prompt>
-      <ValidValues>
-        <ParameterValues>
-          <ParameterValue>
-            <Value>1</Value>
-            <Label>Все компании</Label>
-          </ParameterValue>
-          <ParameterValue>
-            <Value>2</Value>
-            <Label>Без учета компаний 3 мес. на установление лояльности</Label>
-          </ParameterValue>
-        </ParameterValues>
-      </ValidValues>
-    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>4</NumberOfRows>
+      <NumberOfRows>5</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>SalesTeam</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>Manager</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>1</RowIndex>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
           <ParameterName>AgeGroup</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>2</RowIndex>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>3</RowIndex>
           <ParameterName>Mode</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>2</RowIndex>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>3</RowIndex>
           <ParameterName>RegionKey</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
-          <RowIndex>3</RowIndex>
+          <RowIndex>2</RowIndex>
           <ParameterName>CompanyFilter</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
-          <RowIndex>3</RowIndex>
+          <RowIndex>4</RowIndex>
           <ParameterName>Department</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
           <ParameterName>STM</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>SmNotShowMode</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
