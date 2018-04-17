@@ -149,12 +149,15 @@ select
 	PublishedVacancy_Bonus,
 	PublishedVacancy_Test,
 	PublishedVacancy_Freemium,
-PublishedVacancy_Trial-isnull(PublishedVacancy_oldTrial, 0) PublishedVacancy_Trial,
-PublishedVacancy_oldTrial,
-PublishedVacancy_newTrial,
+	PublishedVacancy_Trial-isnull(PublishedVacancy_oldTrial, 0) PublishedVacancy_Trial,
+	PublishedVacancy_oldTrial,
+	PublishedVacancy_newTrial,
 	PublishedVacancyCompanies_Paid,
 	PublishedVacancyCompanies_Test,
 	PublishedVacancyCompanies_Freemium,
+	PublishedVacancyCompanies_Trial,
+	PublishedVacancyCompanies_oldTrial,
+	PublishedVacancyCompanies_newTrial,
 	row_number() over(order by dd.YearNum desc, dd.WeekNum desc) RowNum
 from dailyVacancyStat dvs join DimDate dd on dvs.fulldate = dd.FullDate and WeekDayNum = 4)
 
@@ -213,9 +216,21 @@ select * from c where RowNum between 1 and @weeksCount</CommandText>
           <DataField>PublishedVacancyCompanies_Freemium</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="PublishedVacancyCompanies_Trial">
+          <DataField>PublishedVacancyCompanies_Trial</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="RowNum">
           <DataField>RowNum</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="PublishedVacancyCompanies_oldTrial">
+          <DataField>PublishedVacancyCompanies_oldTrial</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PublishedVacancyCompanies_newTrial">
+          <DataField>PublishedVacancyCompanies_newTrial</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -344,10 +359,14 @@ PublishedVacancy_newTrial,
 	PublishedVacancyCompanies_Paid,
 	PublishedVacancyCompanies_Test,
 	PublishedVacancyCompanies_Freemium,
+	PublishedVacancyCompanies_Trial,
+	PublishedVacancyCompanies_oldTrial,
+	PublishedVacancyCompanies_newTrial,
 	row_number() over(order by Fulldate desc) RowNum
 from dailyVacancyStat dvs)
 
-select * from c where RowNum between 1 and @daysCount</CommandText>
+select * from c where RowNum between 1 and @daysCount
+</CommandText>
       </Query>
       <Fields>
         <Field Name="Fulldate">
@@ -394,9 +413,21 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
           <DataField>PublishedVacancyCompanies_Freemium</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="PublishedVacancyCompanies_Trial">
+          <DataField>PublishedVacancyCompanies_Trial</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="RowNum">
           <DataField>RowNum</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="PublishedVacancyCompanies_oldTrial">
+          <DataField>PublishedVacancyCompanies_oldTrial</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PublishedVacancyCompanies_newTrial">
+          <DataField>PublishedVacancyCompanies_newTrial</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -2823,7 +2854,13 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                   <Label>Published Vacancy Companies Test</Label>
                 </ChartMember>
                 <ChartMember>
+                  <Label>Published Vacancy Companies new Trial</Label>
+                </ChartMember>
+                <ChartMember>
                   <Label>Published Vacancy Companies Freemium</Label>
+                </ChartMember>
+                <ChartMember>
+                  <Label>Published Vacancy Companies old Trial</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
@@ -2911,6 +2948,45 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                     <MinMovingDistance>0pt</MinMovingDistance>
                   </ChartSmartLabel>
                 </ChartSeries>
+                <ChartSeries Name="PublishedVacancyCompanies_newTrial">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PublishedVacancyCompanies_newTrial.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Subtype>Stacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Trial</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
                 <ChartSeries Name="PublishedVacancy_Freemium">
                   <ChartDataPoints>
                     <ChartDataPoint>
@@ -2944,6 +3020,47 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                   </ChartEmptyPoints>
                   <ChartItemInLegend>
                     <LegendText>Freemium</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="PublishedVacancyCompanies_oldTrial">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PublishedVacancyCompanies_oldTrial.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style>
+                        <Color>LightBlue</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Subtype>Stacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Old Trial</LegendText>
                   </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
@@ -4871,7 +4988,13 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                   <Label>Published Vacancy Companies Test</Label>
                 </ChartMember>
                 <ChartMember>
+                  <Label>Published Vacancy Companies new Trial</Label>
+                </ChartMember>
+                <ChartMember>
                   <Label>Published Vacancy Companies Freemium</Label>
+                </ChartMember>
+                <ChartMember>
+                  <Label>Published Vacancy Companies old Trial</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
@@ -4959,6 +5082,45 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                     <MinMovingDistance>0pt</MinMovingDistance>
                   </ChartSmartLabel>
                 </ChartSeries>
+                <ChartSeries Name="PublishedVacancyCompanies_newTrial">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PublishedVacancyCompanies_newTrial.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Subtype>Stacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Trial</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
                 <ChartSeries Name="PublishedVacancy_Freemium">
                   <ChartDataPoints>
                     <ChartDataPoint>
@@ -4992,6 +5154,47 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                   </ChartEmptyPoints>
                   <ChartItemInLegend>
                     <LegendText>Freemium</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="PublishedVacancyCompanies_oldTrial">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PublishedVacancyCompanies_oldTrial.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <Style>
+                        <Color>LightBlue</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Subtype>Stacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Old Trial</LegendText>
                   </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
