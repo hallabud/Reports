@@ -871,7 +871,8 @@ DECLARE @StartDate DATETIME;
 	WHERE NCS.AddDate BETWEEN @StartDate AND @EndDate
 	 AND (TP.TicketPaymentTypeID is not null or RTP.TicketPaymentTypeID is not null) 
 	-- AND NCS.SpendType &amp;lt;&amp;gt; 5 -- исключаем горячку
-	 And ISNULL(TP.SummStandart,0) + ISNULL(TP.SummDesigned,0) + ISNULL(TP.SummHot,0) + ISNULL(RTP.TicketSumm,0) &gt; 0
+	AND NCS.SpendType &lt;&gt; 5
+	 --And ISNULL(TP.SummStandart,0) + ISNULL(TP.SummDesigned,0) + ISNULL(TP.SummHot,0) + ISNULL(RTP.TicketSumm,0) &gt; 0
 	 --and COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID) = 1
 	 and TPT.IsPaid = 1
 	GROUP BY 
@@ -896,7 +897,7 @@ DECLARE @StartDate DATETIME;
      LEFT JOIN SRV16.RabotaUA2.dbo.TicketPaymentType TPT with(nolock) on TPT.ID = COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID)
 	WHERE NCS.AddDate BETWEEN @StartDate AND @EndDate
 	 AND (TP.TicketPaymentTypeID is not null or RTP.TicketPaymentTypeID is not null) 
-	-- AND NCS.SpendType &amp;lt;&amp;gt; 5 -- исключаем горячку
+	 AND NCS.SpendType &lt;&gt; 5 -- исключаем горячку
 
 	GROUP BY 
 	   YEAR(NCS.AddDate)
