@@ -20,6 +20,9 @@
           <QueryParameter Name="@de">
             <Value>=Parameters!de.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@departments">
+            <Value>=Parameters!departments.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_ConversationFromLendings_2</CommandText>
@@ -37,8 +40,16 @@
           <DataField>companyCnt</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="BillsCnt">
+          <DataField>BillsCnt</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="companyWithBills">
           <DataField>companyWithBills</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PaidBillsCnt">
+          <DataField>PaidBillsCnt</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="companyWithPaidBills">
@@ -64,6 +75,9 @@
           </QueryParameter>
           <QueryParameter Name="@de">
             <Value>=Parameters!de.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@departments">
+            <Value>=Parameters!departments.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
@@ -110,6 +124,9 @@
           <QueryParameter Name="@de">
             <Value>=Parameters!de.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@departments">
+            <Value>=Parameters!departments.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_ConversationFromLendings_2Split_OrderDetail</CommandText>
@@ -138,6 +155,9 @@
           </QueryParameter>
           <QueryParameter Name="@de">
             <Value>=Parameters!de.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@departments">
+            <Value>=Parameters!departments.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
@@ -174,6 +194,30 @@
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="DSt_departments">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>select * from srv16.rabotaua2.dbo.Departments with(nolock)</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ID">
+          <DataField>ID</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="Name">
+          <DataField>Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="NameRu">
+          <DataField>NameRu</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="IsShowPhoneBook">
+          <DataField>IsShowPhoneBook</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -200,7 +244,6 @@
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
-            <Left>0cm</Left>
             <Height>1cm</Height>
             <Width>30cm</Width>
             <Style>
@@ -583,7 +626,6 @@
               </Filter>
             </Filters>
             <Top>1.17639cm</Top>
-            <Left>0cm</Left>
             <Height>10cm</Height>
             <Width>30cm</Width>
             <ZIndex>1</ZIndex>
@@ -974,7 +1016,6 @@
               </Filter>
             </Filters>
             <Top>94.67008cm</Top>
-            <Left>0cm</Left>
             <Height>10cm</Height>
             <Width>30cm</Width>
             <ZIndex>2</ZIndex>
@@ -1368,7 +1409,6 @@
               </Filter>
             </Filters>
             <Top>104.84647cm</Top>
-            <Left>0cm</Left>
             <Height>10cm</Height>
             <Width>30cm</Width>
             <ZIndex>3</ZIndex>
@@ -4064,7 +4104,7 @@
             </Style>
           </Chart>
         </ReportItems>
-        <Height>45.21514in</Height>
+        <Height>45.21515in</Height>
         <Style />
       </Body>
       <Width>11.81102in</Width>
@@ -4101,6 +4141,24 @@
       </DefaultValue>
       <Prompt>End date:</Prompt>
     </ReportParameter>
+    <ReportParameter Name="departments">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DSt_departments</DataSetName>
+          <ValueField>ID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Deparment:</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DSt_departments</DataSetName>
+          <ValueField>ID</ValueField>
+          <LabelField>Name</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -4116,6 +4174,11 @@
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>de</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>departments</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
