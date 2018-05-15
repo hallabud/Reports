@@ -155,6 +155,15 @@
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!stmName.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!STM.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
     </DataSet>
     <DataSet Name="DSt_last90days">
       <Query>
@@ -194,6 +203,57 @@
         <Field Name="cntCompanies">
           <DataField>cntCompanies</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DSt_STMs">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>	select
+		ManagerID,
+		ManagerName,
+		STMid,
+		stm.name stmName,
+		IsSTM,
+		case when managerid = stmid and IsSTM!=1 then 1 else 0 end isKeyManager,
+		SMid,
+		case when sm.name = 'Наталия Веремчук ' then 'Анна Космыкова' else sm.name end smName,
+		m.Email,
+		case when sm.name in ('rabota.ua', 'Елена Сторожева') then 'TS' else 'FS' end team,
+		case smid
+			when 212 then 1000
+			when 47 then 1001 
+			else dense_rank() over(order by sm.name)
+		end rnSM,
+		dense_rank() over(partition by smid order by case when managerid = stmid and IsSTM!=1 then 1 else 0 end, managerid) rnSTM
+	into #managers
+	from (
+	select 
+		Id ManagerID,
+		name ManagerName,
+		case when m.id = 212 then 212 else 
+			case when EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.Manager WHERE STM_ManagerID = M.Id AND DepartmentID IN (2,12)) OR (STM_ManagerID = TeamLead_ManagerID AND StatusInTransactionGroup IS NULL) then m.id else 
+				coalesce(M.STM_ManagerID, M.Id) 
+			end
+		end STMid,
+		case when m.id = 212 then 1 else 
+		case when coalesce(M.STM_ManagerID, M.Id) = coalesce(TeamLead_ManagerID, Id) and M.StatusInTransactionGroup is null and coalesce(TeamLead_ManagerID, Id) &lt;&gt; M.Id 
+			and exists (select * from SRV16.RabotaUA2.dbo.Manager with(nolock) where STM_ManagerID = M.Id) then 1 else 0 end 
+		end IsSTM,
+		case when m.id = 212 then 212 else coalesce(TeamLead_ManagerID, Id) end SMid,
+		MMB.LoweredEmail Email
+	from SRV16.RabotaUA2.dbo.Manager M join SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON M.aspnet_UserUIN = MMB.UserId
+	where ((DepartmentID in (12) and IsForTesting = 0 and IsReportExcluding = 0 and (TeamLead_ManagerID is not null or exists (select * from SRV16.RabotaUA2.dbo.Manager where TeamLead_ManagerID = M.Id))) --or m.id in (1, 212)) --and dbo.udf_FullMonthsSeparation(M.AddDate, @EndDate) &gt;= @ManagerAge
+	)) m left join srv16.rabotaua2.dbo.Manager stm on m.STMid = stm.id
+		left join srv16.rabotaua2.dbo.Manager sm on m.SMid = sm.id
+	where smid != 199
+
+	select DISTINCT stmName from #managers</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="stmName">
+          <DataField>stmName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -1344,7 +1404,6 @@
                             <BackgroundGradientType>None</BackgroundGradientType>
                           </Style>
                         </Chart>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                   </TablixCells>
@@ -1652,6 +1711,7 @@
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -3111,7 +3171,7 @@
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>13.44029in</Height>
+        <Height>13.4403in</Height>
         <Style />
       </Body>
       <Width>14.10332in</Width>
@@ -3146,11 +3206,29 @@
       </DefaultValue>
       <Prompt>Quarter:</Prompt>
     </ReportParameter>
+    <ReportParameter Name="STM">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DSt_STMs</DataSetName>
+          <ValueField>stmName</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>STM (2nd page):</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DSt_STMs</DataSetName>
+          <ValueField>stmName</ValueField>
+          <LabelField>stmName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>1</NumberOfRows>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -3161,6 +3239,11 @@
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>quarternum</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>STM</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
