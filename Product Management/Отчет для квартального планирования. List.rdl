@@ -14,51 +14,24 @@
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
         <QueryParameters>
+          <QueryParameter Name="@ReportDate">
+            <Value>=Parameters!ReportDate.Value</Value>
+          </QueryParameter>
           <QueryParameter Name="@Y">
             <Value>=Parameters!Y.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@q">
+            <Value>=Parameters!q.Value</Value>
           </QueryParameter>
           <QueryParameter Name="@MngID">
             <Value>=Parameters!MngID.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@level">
+            <Value>=Parameters!level.Value</Value>
+          </QueryParameter>
         </QueryParameters>
-        <CommandText>	IF object_id('tempdb..#orders','U') is not null drop table #orders;
-       select o.notebookid, dc.company_key, o.id orderID, oap.id [billID], oap.AddDate paydate, (oap.paysum) PaySum, dch.managerid
-	   into #orders
-	          from srv16.rabotaua2.dbo.Orders o with(nolock) 
-              join srv16.rabotaua2.dbo.Order_Acc oa with(nolock)  ON o.id=oa.orderid
-              join srv16.rabotaua2.dbo.Order_AccPayment oap with(nolock) ON oap.accid=oa.id AND oap.AccYear = oa.Year-- AND oap.adddate between '2018-01-01' and GETDATE()
-              join Reporting.dbo.DimCompany dc ON o.notebookid=dc.NotebookId
-			  join [dbo].[DimCompanyHistory] dch ON dc.Company_key=dch.Company_key and /*-!-*/ getdate() between dch.StartDate and dch.EndDate
-		where oap.adddate&gt;='01.01.2013'
-		order by managerid
-
-/**********************************************************************************/
-	
-	if object_id('tempdb..#result','U') is not null drop table #result;
-	select 
-		year(paydate) Yearnum,
-		datepart(quarter, paydate) [QNum],
-		notebookid,
-		managerid,
-                                     paydate,
-		orderid orderid,
-		billID,
-		PaySum
-	into #result
-	from #orders o
-	order by 1,2,3
-
-select R.*, M.name ManagerName, STM.name STMName, SM.name SMName
-from #result R
-left join SRV16.RabotaUA2.dbo.Manager M with(nolock) ON R.managerid = M.id
-left join srv16.rabotaua2.dbo.Manager STM with(nolock) on STM.id = M.STM_ManagerID 
-left join srv16.rabotaua2.dbo.Manager SM with(nolock) on SM.id = M.TeamLead_ManagerID
-where qnum=1 and yearnum=@Y and M.TeamLead_ManagerID=Isnull(@MngID, 1) OR
-	  qnum=2 and yearnum=@Y and M.TeamLead_ManagerID=Isnull(@MngID, 1) OR
-	  qnum=3 and yearnum=@Y and M.TeamLead_ManagerID=Isnull(@MngID, 1) OR
-	  qnum=4 and yearnum=@Y and M.TeamLead_ManagerID=Isnull(@MngID, 1) OR
-	  yearnum=@Y and M.TeamLead_ManagerID=Isnull(@MngID, 1)
-order by paydate</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_PlanQuarterly_List</CommandText>
       </Query>
       <Fields>
         <Field Name="Yearnum">
@@ -1221,6 +1194,14 @@ order by paydate</CommandText>
       <Nullable>true</Nullable>
       <Prompt>Mng ID</Prompt>
     </ReportParameter>
+    <ReportParameter Name="ReportDate">
+      <DataType>DateTime</DataType>
+      <Prompt>Report Date</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="level">
+      <DataType>Integer</DataType>
+      <Prompt>level</Prompt>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -1241,6 +1222,16 @@ order by paydate</CommandText>
           <ColumnIndex>2</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>MngID</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>3</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>ReportDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>level</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

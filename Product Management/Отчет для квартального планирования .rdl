@@ -46,16 +46,24 @@
           <DataField>STMid</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="stmid">
+          <DataField>stmid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="QuarterNum">
           <DataField>QuarterNum</DataField>
           <rd:UserDefined>true</rd:UserDefined>
+        </Field>
+        <Field Name="smid">
+          <DataField>SMid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="ManagerName">
           <DataField>ManagerName</DataField>
           <rd:UserDefined>true</rd:UserDefined>
         </Field>
-        <Field Name="SMid">
-          <DataField>SMid</DataField>
+        <Field Name="managerid">
+          <DataField>managerid</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="orderCnt">
@@ -369,7 +377,13 @@
                                       <Value>=Fields!YearNum.Value</Value>
                                     </Parameter>
                                     <Parameter Name="MngID">
-                                      <Value>=Fields!SMid.Value</Value>
+                                      <Value>=IIF(InScope("ManagerName2"), Fields!managerid.Value, Fields!STMid.Value)</Value>
+                                    </Parameter>
+                                    <Parameter Name="ReportDate">
+                                      <Value>=Parameters!ReportDate.Value</Value>
+                                    </Parameter>
+                                    <Parameter Name="level">
+                                      <Value>=IIF(InScope("ManagerName2"), 1, 2)</Value>
                                     </Parameter>
                                   </Parameters>
                                 </Drillthrough>
@@ -502,7 +516,13 @@
                                       <Value>=Fields!YearNum.Value</Value>
                                     </Parameter>
                                     <Parameter Name="MngID">
-                                      <Value>=Fields!SMid.Value</Value>
+                                      <Value>=Fields!smid.Value</Value>
+                                    </Parameter>
+                                    <Parameter Name="ReportDate">
+                                      <Value>=Parameters!ReportDate.Value</Value>
+                                    </Parameter>
+                                    <Parameter Name="level">
+                                      <Value>3</Value>
                                     </Parameter>
                                   </Parameters>
                                 </Drillthrough>
@@ -3304,8 +3324,8 @@
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>4</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
+      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
