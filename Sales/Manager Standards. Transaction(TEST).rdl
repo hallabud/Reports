@@ -1011,9 +1011,10 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value />
+                                  <Value>=IIF(IsNothing(Fields!paidDealsCount.Value) or Fields!paidDealsCount.Value =0 or Fields!ManagerName.Value = "Group average", Nothing, Sum(Fields!PaidSum.Value)/Sum(Fields!paidDealsCount.Value))</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
+                                    <Format>0.00;(0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1277,6 +1278,7 @@
                                   <Value>=Fields!countSuccessCallsCompanies.Value / Fields!countWorkDays.Value</Value>
                                   <Style>
                                     <FontWeight>=IIf(Fields!ManagerName.Value = "Group average", "Bold", "Normal")</FontWeight>
+                                    <Format>0.00;(0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1405,7 +1407,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=IIF(IsNothing(Fields!paidDealsCount.Value) or Fields!paidDealsCount.Value =0, Nothing, Fields!PaidSum.Value/Fields!paidDealsCount.Value)</Value>
+                                  <Value>=IIF(Fields!paidDealsCount.Value = 0.0, 0, IIF(IsNothing(Fields!paidDealsCount.Value) or Fields!paidDealsCount.Value = 0.0, Nothing, Fields!PaidSum.Value/Fields!paidDealsCount.Value))</Value>
                                   <Style>
                                     <FontWeight>=IIf(Fields!ManagerName.Value = "Group average", "Bold", "Normal")</FontWeight>
                                     <Format>0.00;(0.00)</Format>
@@ -1845,6 +1847,9 @@
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>8pt</FontSize>
                 </Style>
+                <Position>BottomCenter</Position>
+                <DockToChartArea>Default</DockToChartArea>
+                <DockOutsideChartArea>true</DockOutsideChartArea>
                 <ChartLegendTitle>
                   <Caption />
                   <Style>
@@ -1891,7 +1896,7 @@
             <DataSetName>DStTransactionPayments</DataSetName>
             <Top>38.65278cm</Top>
             <Left>0.00706cm</Left>
-            <Height>12cm</Height>
+            <Height>15cm</Height>
             <Width>21cm</Width>
             <ZIndex>1</ZIndex>
             <Style>
@@ -2208,6 +2213,9 @@
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>8pt</FontSize>
                 </Style>
+                <Position>BottomCenter</Position>
+                <DockToChartArea>Default</DockToChartArea>
+                <DockOutsideChartArea>true</DockOutsideChartArea>
                 <ChartLegendTitle>
                   <Caption />
                   <Style>
@@ -2255,9 +2263,9 @@
             <PageBreak>
               <BreakLocation>End</BreakLocation>
             </PageBreak>
-            <Top>50.72334cm</Top>
-            <Left>0.00705cm</Left>
-            <Height>12cm</Height>
+            <Top>53.82917cm</Top>
+            <Left>0.00706cm</Left>
+            <Height>15cm</Height>
             <Width>21cm</Width>
             <ZIndex>2</ZIndex>
             <Style>
@@ -2575,6 +2583,8 @@
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>8pt</FontSize>
                 </Style>
+                <Position>BottomCenter</Position>
+                <DockOutsideChartArea>true</DockOutsideChartArea>
                 <ChartLegendTitle>
                   <Caption />
                   <Style>
@@ -2630,7 +2640,7 @@
             </Filters>
             <Top>38.65278cm</Top>
             <Left>21.07762cm</Left>
-            <Height>12cm</Height>
+            <Height>15cm</Height>
             <Width>21cm</Width>
             <ZIndex>3</ZIndex>
             <Style>
@@ -2948,6 +2958,9 @@
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>8pt</FontSize>
                 </Style>
+                <Position>BottomCenter</Position>
+                <DockToChartArea>Default</DockToChartArea>
+                <DockOutsideChartArea>true</DockOutsideChartArea>
                 <ChartLegendTitle>
                   <Caption />
                   <Style>
@@ -3004,9 +3017,9 @@
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>50.73039cm</Top>
-            <Left>21.08466cm</Left>
-            <Height>12cm</Height>
+            <Top>53.82917cm</Top>
+            <Left>21.00706cm</Left>
+            <Height>15cm</Height>
             <Width>21cm</Width>
             <ZIndex>4</ZIndex>
             <Style>
@@ -3041,6 +3054,10 @@
                                   </GroupExpressions>
                                 </Group>
                                 <SortExpressions>
+                                  <SortExpression>
+                                    <Value>=IIF(Fields!ManagerName.Value = "Group average", 2, 1)</Value>
+                                    <Direction>Descending</Direction>
+                                  </SortExpression>
                                   <SortExpression>
                                     <Value>=IIF(IsNothing(Sum(Fields!CompaniesCount.Value)) or Sum(Fields!CompaniesCount.Value)=0, Nothing, Sum(Fields!countSuccessCallsCompanies.Value)/
 IIF(IsNothing(Sum(Fields!CompaniesCount.Value)) or Sum(Fields!CompaniesCount.Value)=0, Nothing, Sum(Fields!CompaniesCount.Value)))</Value>
@@ -3503,15 +3520,6 @@ IIF(IsNothing(Sum(Fields!CompaniesCount.Value)) or Sum(Fields!CompaniesCount.Val
                             </Style>
                           </ChartNoDataMessage>
                           <DataSetName>DStTransactionSalesKPIs</DataSetName>
-                          <Filters>
-                            <Filter>
-                              <FilterExpression>=Fields!ManagerName.Value</FilterExpression>
-                              <Operator>NotEqual</Operator>
-                              <FilterValues>
-                                <FilterValue>Group average</FilterValue>
-                              </FilterValues>
-                            </Filter>
-                          </Filters>
                           <ZIndex>1</ZIndex>
                           <Style>
                             <Border>
@@ -3541,6 +3549,10 @@ IIF(IsNothing(Sum(Fields!CompaniesCount.Value)) or Sum(Fields!CompaniesCount.Val
                                   </GroupExpressions>
                                 </Group>
                                 <SortExpressions>
+                                  <SortExpression>
+                                    <Value>=IIF(Fields!ManagerName.Value = "Group average", 2, 1)</Value>
+                                    <Direction>Descending</Direction>
+                                  </SortExpression>
                                   <SortExpression>
                                     <Value>=Fields!dealsCount.Value</Value>
                                   </SortExpression>
@@ -3885,15 +3897,6 @@ IIF(IsNothing(Sum(Fields!CompaniesCount.Value)) or Sum(Fields!CompaniesCount.Val
                             </Style>
                           </ChartNoDataMessage>
                           <DataSetName>DStTransactionSalesKPIs</DataSetName>
-                          <Filters>
-                            <Filter>
-                              <FilterExpression>=Fields!ManagerName.Value</FilterExpression>
-                              <Operator>NotEqual</Operator>
-                              <FilterValues>
-                                <FilterValue>Group average</FilterValue>
-                              </FilterValues>
-                            </Filter>
-                          </Filters>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -3922,6 +3925,10 @@ IIF(IsNothing(Sum(Fields!CompaniesCount.Value)) or Sum(Fields!CompaniesCount.Val
                                   </GroupExpressions>
                                 </Group>
                                 <SortExpressions>
+                                  <SortExpression>
+                                    <Value>=IIF(Fields!ManagerName.Value = "Group average", 2, 1)</Value>
+                                    <Direction>Descending</Direction>
+                                  </SortExpression>
                                   <SortExpression>
                                     <Value>=Fields!paidDealsCount.Value</Value>
                                   </SortExpression>
@@ -3990,7 +3997,9 @@ IIF(IsNothing(Sum(Fields!CompaniesCount.Value)) or Sum(Fields!CompaniesCount.Val
                                       <Y>=Sum(Fields!PaidSum.Value)</Y>
                                     </ChartDataPointValues>
                                     <ChartDataLabel>
-                                      <Style />
+                                      <Style>
+                                        <Format>0.00;(0.00)</Format>
+                                      </Style>
                                       <UseValueAsLabel>true</UseValueAsLabel>
                                       <Visible>true</Visible>
                                     </ChartDataLabel>
@@ -4311,15 +4320,6 @@ IIF(IsNothing(Sum(Fields!CompaniesCount.Value)) or Sum(Fields!CompaniesCount.Val
                             </Style>
                           </ChartNoDataMessage>
                           <DataSetName>DStTransactionSalesKPIs</DataSetName>
-                          <Filters>
-                            <Filter>
-                              <FilterExpression>=Fields!ManagerName.Value</FilterExpression>
-                              <Operator>NotEqual</Operator>
-                              <FilterValues>
-                                <FilterValue>Group average</FilterValue>
-                              </FilterValues>
-                            </Filter>
-                          </Filters>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -4348,6 +4348,10 @@ IIF(IsNothing(Sum(Fields!CompaniesCount.Value)) or Sum(Fields!CompaniesCount.Val
                                   </GroupExpressions>
                                 </Group>
                                 <SortExpressions>
+                                  <SortExpression>
+                                    <Value>=IIF(Fields!ManagerName.Value = "Group average", 2, 1)</Value>
+                                    <Direction>Descending</Direction>
+                                  </SortExpression>
                                   <SortExpression>
                                     <Value>=IIF(IsNothing(Sum(Fields!paidDealsCount.Value)) or Sum(Fields!paidDealsCount.Value)=0, Nothing, Sum(Fields!PaidSum.Value))/
 IIF(IsNothing(Sum(Fields!paidDealsCount.Value)) or Sum(Fields!paidDealsCount.Value)=0, Nothing, Sum(Fields!paidDealsCount.Value))</Value>
@@ -4674,15 +4678,6 @@ IIF(IsNothing(Sum(Fields!paidDealsCount.Value)) or Sum(Fields!paidDealsCount.Val
                             </Style>
                           </ChartNoDataMessage>
                           <DataSetName>DStTransactionSalesKPIs</DataSetName>
-                          <Filters>
-                            <Filter>
-                              <FilterExpression>=Fields!ManagerName.Value</FilterExpression>
-                              <Operator>NotEqual</Operator>
-                              <FilterValues>
-                                <FilterValue>Group average</FilterValue>
-                              </FilterValues>
-                            </Filter>
-                          </Filters>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -4711,6 +4706,10 @@ IIF(IsNothing(Sum(Fields!paidDealsCount.Value)) or Sum(Fields!paidDealsCount.Val
                                   </GroupExpressions>
                                 </Group>
                                 <SortExpressions>
+                                  <SortExpression>
+                                    <Value>=IIF(Fields!ManagerName.Value = "Group average", 2, 1)</Value>
+                                    <Direction>Descending</Direction>
+                                  </SortExpression>
                                   <SortExpression>
                                     <Value>=Fields!countSpecialServicesPaid.Value</Value>
                                   </SortExpression>
@@ -5077,7 +5076,7 @@ IIF(IsNothing(Sum(Fields!paidDealsCount.Value)) or Sum(Fields!paidDealsCount.Val
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>24.697in</Height>
+        <Height>27.2295in</Height>
         <Style />
       </Body>
       <Width>19.78134in</Width>
