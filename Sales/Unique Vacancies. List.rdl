@@ -27,75 +27,8 @@
             <Value>=Parameters!CompanyFilter.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>IF OBJECT_ID('tempdb..#T','U') IS NOT NULL DROP TABLE #T;
-
-DECLARE @MayDay DATE = '2016-03-31';
-DECLARE @Today DATETIME = CONVERT(DATE, GETDATE());
-DECLARE @ThreeMonthAgo DATE = DATEADD(MONTH, -3, @Today);
-
-CREATE TABLE #T (
-	Id INT,
-	State TINYINT,
-	RabotaVacancyName VARCHAR(255),
-	NotebookID INT,
-	SpiderVacancyID INT,
-	IsPublish BIT,
-	WorkVacancyName VARCHAR(255),
-	SpiderCompanyID INT,
-	VacancyConnectionType VARCHAR(255),
-	City VARCHAR(255),
-	CityID INT);
-
-INSERT INTO #T
-SELECT 
-   V.Id, V.State, V.Name AS RabotaVacancyName, V.NotebookID
- , SV.SpiderVacancyID, SV.IsPublish, SV.Name AS WorkVacancyName, SV.SpiderCompanyID
- , CASE 
-    WHEN V.State = 4 AND SV.SpiderVacancyID IS NOT NULL AND SV.IsPublish = 1 THEN 'Привязанные вакансии'
-	WHEN V.State &lt;&gt; 4 AND SV.SpiderVacancyID IS NOT NULL AND SV.IsPublish = 1 THEN 'Уникальная на work.ua - Есть неактивная на rabota.ua'
-	WHEN V.ID IS NULL AND SV.SpiderVacancyID IS NOT NULL AND SV.IsPublish = 1 THEN 'Уникальная на work.ua'
-	WHEN V.State = 4 AND SV.SpiderVacancyID IS NOT NULL AND SV.IsPublish = 0 THEN 'Уникальная на rabota.ua - Есть неактивная на work.ua'
-	WHEN V.State = 4 AND SV.SpiderVacancyID IS NULL THEN 'Уникальная на rabota.ua'
-   END AS VacancyConnectionType
- , SV.City
- , SV.CityID
-FROM SRV16.RabotaUA2.dbo.Vacancy V WITH (NOLOCK)
- FULL JOIN SRV16.RabotaUA2.dbo.SpiderVacancy SV WITH (NOLOCK) ON V.ID = SV.VacancyID AND SV.Source = 1
-WHERE (V.State = 4 OR SV.IsPublish = 1)
- AND (EXISTS (SELECT * FROM Reporting.dbo.DimCompany WHERE WorkCompanyID = SV.SpiderCompanyID) OR EXISTS (SELECT * FROM Reporting.dbo.DimCompany WHERE NotebookId = V.NotebookId AND WorkCompanyID IS NOT NULL));
-
-DELETE T1
-FROM #T T1 
-WHERE T1.Id IS NULL AND EXISTS (SELECT * 
-								FROM #T 
-								WHERE SpiderCompanyID = T1.SpiderCompanyID 
-								 AND SpiderVacancyID &lt;&gt; T1.SpiderVacancyID 
-								 AND CityID = T1.CityID 
-								 AND REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
-										WorkVacancyName, ' ' , ''), '-', ''), ',', ''), '.', ''), '(', ''), ')', ''), '/', ''), '\', '') 
-									= REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
-										T1.WorkVacancyName, ' ' , ''), '-', ''), ',', ''), '.', ''), '(', ''), ')', ''), '/', ''), '\', ''));
-
- SELECT 
-   COALESCE(DC1.NotebookID, DC2.NotebookID) AS NotebookId
- , COALESCE(DC1.CompanyName, DC2.CompanyName) AS CompanyName
- , T.WorkVacancyName AS Name
- , T.City
- , T.SpiderVacancyID
- , COALESCE(DC1.ManagerName, DC2.ManagerName) AS ManagerName 
- , COALESCE(DC1.VacancyDiffGroup, DC2.VacancyDiffGroup) AS VacancyDiffGroup
- , T.VacancyConnectionType
- , COUNT(*) OVER(PARTITION BY COALESCE(DC1.NotebookID, DC2.NotebookID)) AS VacancyCnt
-FROM #T T
- LEFT JOIN Reporting.dbo.DimCompany DC1 ON T.NotebookId = DC1.NotebookId
- LEFT JOIN Reporting.dbo.DimCompany DC2 ON T.SpiderCompanyId = DC2.WorkCompanyId
-WHERE T.VacancyConnectionType IN (@VacancyConnectionType)
- AND COALESCE(DC1.VacancyDiffGroup, DC2.VacancyDiffGroup) IN (@VacancyDiffGroup) 
- AND COALESCE(DC1.ManagerName, DC2.ManagerName) IN (@ManagerName)
- AND (COALESCE(DC1.ManagerStartDate, DC2.ManagerStartDate) &lt;= CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @MayDay END OR COALESCE(DC1.ManagerStartDate, DC2.ManagerStartDate) &lt;= CASE WHEN @CompanyFilter = 1 THEN @Today ELSE @ThreeMonthAgo END) -- Компания взята в работу менеджером или до 1/04/2016, или не позже чем 3 мес. назад
-ORDER BY VacancyCnt DESC, NotebookId
-
-DROP TABLE #T;</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_UniqueVacancy_list</CommandText>
       </Query>
       <Fields>
         <Field Name="NotebookId">
@@ -600,7 +533,6 @@ ORDER BY Name</CommandText>
       <DefaultValue>
         <Values>
           <Value>Уникальная на work.ua</Value>
-          <Value>Уникальная на work.ua - Есть неактивная на rabota.ua</Value>
         </Values>
       </DefaultValue>
       <Prompt>Vacancy Connection Type</Prompt>
