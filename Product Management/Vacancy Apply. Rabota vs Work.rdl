@@ -20,48 +20,8 @@
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>set dateformat dmy;
-set transaction isolation level read uncommitted;
-
-if object_id('tempdb..#c','U') is not null drop table #c;
-select 
-	*,
-	case
-		when datepart(hour, wfa.AddDate) &gt;= 23 then convert(date, wfa.AddDate)
-		when datepart(hour, wfa.AddDate) &lt;= 1 then convert(date, dateadd(day, -1, wfa.AddDate))
-		when id = 959 then convert(date, wfa.AddDate)
-	end FullDate,
-	row_number() over(partition by 
-	case
-		when datepart(hour, wfa.AddDate) &gt;= 23 then convert(date, wfa.AddDate)
-		when datepart(hour, wfa.AddDate) &lt;= 1 then convert(date, dateadd(day, -1, wfa.AddDate))
-		when id = 959 then convert(date, wfa.AddDate)
-	end
-	order by wfa.addDate) rn
-into #c
-from srv16.rabotaua2.dbo.SpiderLoad_WorkFormApply WFA
-where (wfa.AddDate between @StartDate and @EndDate + 1 and datepart(hour, WFA.AddDate) IN (0,23)) or id = 959
-
-delete from #c where rn != 1
-
-if object_id('tempdb..#SelectedResume','U') is not null drop table #SelectedResume;
-select 
-	convert(date, AddDate) FullDate, 
-	count(*) SelectedCount
-into #SelectedResume
-from srv16.rabotaua2.dbo.NotebookSelectedResume with(nolock)
-where AddDate between @StartDate and @EndDate + 1
-group by convert(date, AddDate) 
-
-select 
-	C0.FullDate,
-	C0.[Count] - C1.[Count] Work_ApplyCount,
-	MMD.Responses Rabota_ApplyCount,
-	SR.SelectedCount Rabota_SelectedResumeCount
-from #c c0 left join #c C1 on C0.FullDate = dateadd(day, 1, C1.FullDate)
-		   join AggrManagementMetricsDaily MMD on C0.FullDate = MMD.FullDate
-		   join #SelectedResume SR on C0.FullDate = SR.FullDate
-where c0.[Count] is not null and c1.[Count] is not null</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_VacancyApply_rabotaVsWork</CommandText>
       </Query>
       <Fields>
         <Field Name="FullDate">
@@ -78,6 +38,10 @@ where c0.[Count] is not null and c1.[Count] is not null</CommandText>
         </Field>
         <Field Name="Rabota_SelectedResumeCount">
           <DataField>Rabota_SelectedResumeCount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="externalLinksCount">
+          <DataField>externalLinksCount</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
@@ -116,6 +80,9 @@ where c0.[Count] is not null and c1.[Count] is not null</CommandText>
                 <ChartMember>
                   <Label>Rabota Selected Resume Count</Label>
                 </ChartMember>
+                <ChartMember>
+                  <Label>external Links Count</Label>
+                </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
             <ChartData>
@@ -134,6 +101,7 @@ where c0.[Count] is not null and c1.[Count] is not null</CommandText>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>=IIf(DateDiff(DateInterval.Day, Parameters!StartDate.Value, Parameters!EndDate.Value) &lt;= 31, True, False)</Visible>
                       </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!Work_ApplyCount.Value)</ToolTip>
                       <Style />
                       <ChartMarker>
                         <Type>Auto</Type>
@@ -177,6 +145,7 @@ where c0.[Count] is not null and c1.[Count] is not null</CommandText>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>=IIf(DateDiff(DateInterval.Day, Parameters!StartDate.Value, Parameters!EndDate.Value) &lt;= 31, True, False)</Visible>
                       </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!Rabota_ApplyCount.Value)</ToolTip>
                       <Style />
                       <ChartMarker>
                         <Type>Auto</Type>
@@ -220,6 +189,7 @@ where c0.[Count] is not null and c1.[Count] is not null</CommandText>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>=IIf(DateDiff(DateInterval.Day, Parameters!StartDate.Value, Parameters!EndDate.Value) &lt;= 31, True, False)</Visible>
                       </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!Rabota_SelectedResumeCount.Value)</ToolTip>
                       <Style />
                       <ChartMarker>
                         <Type>Auto</Type>
@@ -241,6 +211,49 @@ where c0.[Count] is not null and c1.[Count] is not null</CommandText>
                   </ChartEmptyPoints>
                   <ChartItemInLegend>
                     <LegendText>rabota.ua - selected CVs</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="externalLinksCount">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!externalLinksCount.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <FontSize>8pt</FontSize>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!externalLinksCount.Value)</ToolTip>
+                      <Style />
+                      <ChartMarker>
+                        <Type>Auto</Type>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>rabota.ua - external links</LegendText>
                   </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
@@ -456,8 +469,8 @@ where c0.[Count] is not null and c1.[Count] is not null</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStVacancyApply</DataSetName>
-            <Height>14.94833cm</Height>
-            <Width>29.03708cm</Width>
+            <Height>20cm</Height>
+            <Width>30cm</Width>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -744,9 +757,9 @@ where c0.[Count] is not null and c1.[Count] is not null</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStVacancyApply</DataSetName>
-            <Top>14.94833cm</Top>
+            <Top>20.17639cm</Top>
             <Height>14.94833cm</Height>
-            <Width>29.03708cm</Width>
+            <Width>30cm</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -758,10 +771,10 @@ where c0.[Count] is not null and c1.[Count] is not null</CommandText>
             </Style>
           </Chart>
         </ReportItems>
-        <Height>11.77034in</Height>
+        <Height>13.82863in</Height>
         <Style />
       </Body>
-      <Width>11.43192in</Width>
+      <Width>11.81102in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
