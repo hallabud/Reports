@@ -301,8 +301,11 @@ order by rnSM</CommandText>
           <QueryParameter Name="@IsSTM">
             <Value>=Parameters!IsSTM.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@daysCount">
-            <Value>=Parameters!daysCount.Value</Value>
+          <QueryParameter Name="@db">
+            <Value>=Parameters!db.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@de">
+            <Value>=Parameters!de.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
@@ -8135,6 +8138,15 @@ order by rnSM</CommandText>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="ManagerAge">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>0</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Стаж менеджера, мес. &gt;= </Prompt>
+    </ReportParameter>
     <ReportParameter Name="STM">
       <DataType>Integer</DataType>
       <DefaultValue>
@@ -8223,15 +8235,6 @@ order by rnSM</CommandText>
         </ParameterValues>
       </ValidValues>
     </ReportParameter>
-    <ReportParameter Name="ManagerAge">
-      <DataType>Integer</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>0</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>Стаж менеджера, мес. &gt;= </Prompt>
-    </ReportParameter>
     <ReportParameter Name="weeksCount">
       <DataType>Integer</DataType>
       <DefaultValue>
@@ -8241,14 +8244,23 @@ order by rnSM</CommandText>
       </DefaultValue>
       <Prompt>Weeks count:</Prompt>
     </ReportParameter>
-    <ReportParameter Name="daysCount">
-      <DataType>Integer</DataType>
+    <ReportParameter Name="db">
+      <DataType>DateTime</DataType>
       <DefaultValue>
         <Values>
-          <Value>3</Value>
+          <Value>=Dateadd(dateInterval.Day, -2, Today)</Value>
         </Values>
       </DefaultValue>
-      <Prompt>Days count:</Prompt>
+      <Prompt>Begin date:</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="de">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Dateadd(dateInterval.Day, 0, Today)</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>End date:</Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
@@ -8299,7 +8311,12 @@ order by rnSM</CommandText>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>3</RowIndex>
-          <ParameterName>daysCount</ParameterName>
+          <ParameterName>db</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>3</RowIndex>
+          <ParameterName>de</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
