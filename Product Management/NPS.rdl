@@ -197,6 +197,10 @@
           <DataField>rn</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
+        <Field Name="PercentNPS">
+          <DataField>PercentNPS</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="DStNPS_FSTS">
@@ -274,31 +278,33 @@ CASE WHEN M.DepartmentID IN (1,12) THEN 'TS'
             <Value>=Parameters!WeeksCount.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>
---DECLARE @StartDate DATETIME = '20180101' 
---DECLARE @EndDate DATETIME = GETDATE()
-SELECT * FROM (
-SELECT dd.WeekNum, dd.WeekName, 
-COUNT(NCF.ID) [Total],
---SUM(CASE WHEN Answer1 IN (0,1,2,3,4,5,6) THEN 1 ELSE 0 END)/COUNT(NCF.ID) [RatioCritics],
---SUM(CASE WHEN Answer1 IN (7,8) THEN 1 ELSE 0 END)/COUNT(NCF.ID) [RatioPassive],
---SUM(CASE WHEN Answer1 IN (9,10) THEN 1 ELSE 0 END)/COUNT(NCF.ID) [RatioPromo],
-SUM(CASE WHEN Answer1 IN (9,10) THEN 1 ELSE 0 END) [Promo],
-SUM(CASE WHEN Answer1 IN (7,8) THEN 1 ELSE 0 END) [Passive],
-SUM(CASE WHEN Answer1 IN (0,1,2,3,4,5,6) THEN 1 ELSE 0 END) [Critics],
-SUM(CASE WHEN Answer1 IN (9,10) THEN 1 ELSE 0 END)-SUM(CASE WHEN Answer1 IN (0,1,2,3,4,5,6) THEN 1 ELSE 0 END) [NPS],
-CASE WHEN M.DepartmentID IN (1,12) THEN 'TS'
-	 WHEN M.DepartmentID IN (2) THEN 'FS' END [Department],
-dense_rank() over(order by dd.WeekNum desc) rn
-FROM srv16.rabotaua2.dbo.NotebookCompany_FeedBack NCF
-JOIN srv16.rabotaua2.dbo.NotebookCompany NC ON NC.NotebookID=NCF.NotebookID
-JOIN srv16.rabotaua2.dbo.Manager M ON NC.ManagerID=M.ID
-left join DimDate dd on cast(NCF.AddDate as date) = dd.FullDate
---WHERE NCF.AddDate between @StartDate and @EndDate+1
-GROUP BY dd.WeekName, dd.WeekNum,
-CASE WHEN M.DepartmentID IN (1,12) THEN 'TS'
-	 WHEN M.DepartmentID IN (2) THEN 'FS' END
-) M
+        <CommandText>with cte_answers_weekly as
+ (
+  SELECT dd.WeekNum, 
+   dd.WeekName,
+   CASE 
+    WHEN M.DepartmentID IN (1,12) THEN 'TS'
+	WHEN M.DepartmentID IN (2) THEN 'FS' 
+   END AS Department, 
+   COUNT(NCF.ID) [Total],
+   SUM(CASE WHEN Answer1 IN (9,10) THEN 1 ELSE 0 END) [Promo],
+   SUM(CASE WHEN Answer1 IN (7,8) THEN 1 ELSE 0 END) [Passive],
+   SUM(CASE WHEN Answer1 IN (0,1,2,3,4,5,6) THEN 1 ELSE 0 END) [Critics],
+   SUM(CASE WHEN Answer1 IN (9,10) THEN 1 ELSE 0 END) - SUM(CASE WHEN Answer1 IN (0,1,2,3,4,5,6) THEN 1 ELSE 0 END) [NPS],
+   dense_rank() over(order by dd.WeekNum desc) rn
+  FROM srv16.rabotaua2.dbo.NotebookCompany_FeedBack NCF
+   JOIN srv16.rabotaua2.dbo.NotebookCompany NC ON NC.NotebookID=NCF.NotebookID
+   JOIN srv16.rabotaua2.dbo.Manager M ON NC.ManagerID = M.ID
+   left join DimDate dd on cast(NCF.AddDate as date) = dd.FullDate
+  GROUP BY dd.WeekName, dd.WeekNum,
+   CASE 
+    WHEN M.DepartmentID IN (1,12) THEN 'TS'
+	WHEN M.DepartmentID IN (2) THEN 'FS' 
+   END
+ )
+SELECT *,
+ 1. * Promo / Total - 1. * Critics / Total AS PercentNPS
+FROM cte_answers_weekly
 WHERE rn &lt;= @WeeksCount</CommandText>
       </Query>
       <Fields>
@@ -338,6 +344,10 @@ WHERE rn &lt;= @WeeksCount</CommandText>
           <DataField>rn</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
+        <Field Name="PercentNPS">
+          <DataField>PercentNPS</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
   </DataSets>
@@ -365,8 +375,8 @@ WHERE rn &lt;= @WeeksCount</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox20</rd:DefaultName>
-            <Top>83.39212cm</Top>
-            <Left>0.0011cm</Left>
+            <Top>72.0023cm</Top>
+            <Left>0.00237cm</Left>
             <Height>1cm</Height>
             <Width>34.92836cm</Width>
             <Style>
@@ -883,8 +893,8 @@ WHERE rn &lt;= @WeeksCount</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStNPS</DataSetName>
-            <Top>96.12198cm</Top>
-            <Left>0.00093cm</Left>
+            <Top>84.73216cm</Top>
+            <Left>0.0022cm</Left>
             <Height>11.2487cm</Height>
             <Width>34.92837cm</Width>
             <ZIndex>1</ZIndex>
@@ -1348,8 +1358,8 @@ WHERE rn &lt;= @WeeksCount</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStNPS</DataSetName>
-            <Top>107.37067cm</Top>
-            <Left>0.0011cm</Left>
+            <Top>95.98085cm</Top>
+            <Left>0.00237cm</Left>
             <Height>11.2487cm</Height>
             <Width>34.92837cm</Width>
             <ZIndex>2</ZIndex>
@@ -1712,26 +1722,6 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                 </Style>
               </ChartArea>
             </ChartAreas>
-            <ChartLegends>
-              <ChartLegend Name="Default">
-                <Style>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                  <FontSize>8pt</FontSize>
-                </Style>
-                <Position>BottomCenter</Position>
-                <DockOutsideChartArea>true</DockOutsideChartArea>
-                <ChartLegendTitle>
-                  <Caption />
-                  <Style>
-                    <FontSize>8pt</FontSize>
-                    <FontWeight>Bold</FontWeight>
-                    <TextAlign>Center</TextAlign>
-                  </Style>
-                </ChartLegendTitle>
-                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
-                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
-              </ChartLegend>
-            </ChartLegends>
             <ChartTitles>
               <ChartTitle Name="Title1">
                 <Caption>Общее количество ответов</Caption>
@@ -2143,8 +2133,8 @@ WHERE rn &lt;= @WeeksCount</CommandText>
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DStNPS</DataSetName>
-            <Top>84.5685cm</Top>
-            <Left>0.00055cm</Left>
+            <Top>73.17868cm</Top>
+            <Left>0.00182cm</Left>
             <Height>11.2487cm</Height>
             <Width>34.92837cm</Width>
             <ZIndex>5</ZIndex>
@@ -2187,7 +2177,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                   <Label>Total</Label>
                 </ChartMember>
                 <ChartMember>
-                  <Label>NPS</Label>
+                  <Label>Percent NPS</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
@@ -2326,7 +2316,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=Sum(Fields!NPS.Value)</Y>
+                        <Y>=Sum(Fields!PercentNPS.Value)</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style>
@@ -2335,12 +2325,17 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                             <Style>Solid</Style>
                           </Border>
                           <BackgroundColor>White</BackgroundColor>
+                          <Format>0 %</Format>
                         </Style>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
                       </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!PercentNPS.Value)</ToolTip>
                       <Style>
-                        <Color>White</Color>
+                        <Border>
+                          <Width>1.5pt</Width>
+                        </Border>
+                        <Color>WhiteSmoke</Color>
                       </Style>
                       <ChartMarker>
                         <Style />
@@ -2359,6 +2354,9 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                       <Style />
                     </ChartDataLabel>
                   </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>NPS, %</LegendText>
+                  </ChartItemInLegend>
                   <ValueAxisName>Secondary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
                   <ChartSmartLabel>
@@ -2549,6 +2547,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                         <Style>None</Style>
                       </Border>
                       <FontSize>8pt</FontSize>
+                      <Format>0 %</Format>
                       <Color>#5c5c5c</Color>
                     </Style>
                     <ChartAxisTitle>
@@ -2591,8 +2590,8 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                     </ChartMinorTickMarks>
                     <CrossAt>NaN</CrossAt>
                     <Location>Opposite</Location>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>500</Maximum>
+                    <Minimum>-1</Minimum>
+                    <Maximum>1</Maximum>
                     <ChartAxisScaleBreak>
                       <Style />
                     </ChartAxisScaleBreak>
@@ -2626,7 +2625,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
             </ChartLegends>
             <ChartTitles>
               <ChartTitle Name="Title1">
-                <Caption>Общий NPS, %, TS</Caption>
+                <Caption>NPS, %, TS</Caption>
                 <Style>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>9pt</FontSize>
@@ -2664,479 +2663,11 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>46.59453cm</Top>
+            <Top>35.20471cm</Top>
+            <Left>0.00127cm</Left>
             <Height>11.2487cm</Height>
             <Width>34.92837cm</Width>
             <ZIndex>6</ZIndex>
-            <Style>
-              <Border>
-                <Color>LightGrey</Color>
-                <Style>None</Style>
-              </Border>
-              <BackgroundColor>White</BackgroundColor>
-              <BackgroundGradientType>None</BackgroundGradientType>
-            </Style>
-          </Chart>
-          <Chart Name="Chart8">
-            <ChartCategoryHierarchy>
-              <ChartMembers>
-                <ChartMember>
-                  <Group Name="Chart3_CategoryGroup3">
-                    <GroupExpressions>
-                      <GroupExpression>=Fields!WeekName.Value</GroupExpression>
-                    </GroupExpressions>
-                  </Group>
-                  <SortExpressions>
-                    <SortExpression>
-                      <Value>=Fields!WeekNum.Value</Value>
-                    </SortExpression>
-                  </SortExpressions>
-                  <Label>=Fields!WeekName.Value</Label>
-                </ChartMember>
-              </ChartMembers>
-            </ChartCategoryHierarchy>
-            <ChartSeriesHierarchy>
-              <ChartMembers>
-                <ChartMember>
-                  <Label>Critics</Label>
-                </ChartMember>
-                <ChartMember>
-                  <Label>Passive</Label>
-                </ChartMember>
-                <ChartMember>
-                  <Label>Promo</Label>
-                </ChartMember>
-              </ChartMembers>
-            </ChartSeriesHierarchy>
-            <ChartData>
-              <ChartSeriesCollection>
-                <ChartSeries Name="Critics">
-                  <ChartDataPoints>
-                    <ChartDataPoint>
-                      <ChartDataPointValues>
-                        <Y>=Sum(Fields!Critics.Value)</Y>
-                      </ChartDataPointValues>
-                      <ChartDataLabel>
-                        <Style />
-                        <Label>=Sum(Fields!Critics.Value)</Label>
-                        <Visible>true</Visible>
-                      </ChartDataLabel>
-                      <Style>
-                        <Color>#ea5645</Color>
-                      </Style>
-                      <ChartMarker>
-                        <Style />
-                      </ChartMarker>
-                      <DataElementOutput>Output</DataElementOutput>
-                    </ChartDataPoint>
-                  </ChartDataPoints>
-                  <Subtype>PercentStacked</Subtype>
-                  <Style />
-                  <ChartEmptyPoints>
-                    <Style />
-                    <ChartMarker>
-                      <Style />
-                    </ChartMarker>
-                    <ChartDataLabel>
-                      <Style />
-                    </ChartDataLabel>
-                  </ChartEmptyPoints>
-                  <ChartItemInLegend>
-                    <LegendText>Критики</LegendText>
-                  </ChartItemInLegend>
-                  <ValueAxisName>Primary</ValueAxisName>
-                  <CategoryAxisName>Primary</CategoryAxisName>
-                  <ChartSmartLabel>
-                    <CalloutLineColor>Black</CalloutLineColor>
-                    <MinMovingDistance>0pt</MinMovingDistance>
-                  </ChartSmartLabel>
-                </ChartSeries>
-                <ChartSeries Name="Passive">
-                  <ChartDataPoints>
-                    <ChartDataPoint>
-                      <ChartDataPointValues>
-                        <Y>=Sum(Fields!Passive.Value)</Y>
-                      </ChartDataPointValues>
-                      <ChartDataLabel>
-                        <Style />
-                        <Label>=Sum(Fields!Passive.Value)</Label>
-                        <Visible>true</Visible>
-                      </ChartDataLabel>
-                      <Style>
-                        <Color>#ffc100</Color>
-                      </Style>
-                      <ChartMarker>
-                        <Style />
-                      </ChartMarker>
-                      <DataElementOutput>Output</DataElementOutput>
-                    </ChartDataPoint>
-                  </ChartDataPoints>
-                  <Subtype>PercentStacked</Subtype>
-                  <Style />
-                  <ChartEmptyPoints>
-                    <Style />
-                    <ChartMarker>
-                      <Style />
-                    </ChartMarker>
-                    <ChartDataLabel>
-                      <Style />
-                    </ChartDataLabel>
-                  </ChartEmptyPoints>
-                  <ChartItemInLegend>
-                    <LegendText>Пассивы</LegendText>
-                  </ChartItemInLegend>
-                  <ValueAxisName>Primary</ValueAxisName>
-                  <CategoryAxisName>Primary</CategoryAxisName>
-                  <ChartSmartLabel>
-                    <CalloutLineColor>Black</CalloutLineColor>
-                    <MinMovingDistance>0pt</MinMovingDistance>
-                  </ChartSmartLabel>
-                </ChartSeries>
-                <ChartSeries Name="Promo">
-                  <ChartDataPoints>
-                    <ChartDataPoint>
-                      <ChartDataPointValues>
-                        <Y>=Sum(Fields!Promo.Value)</Y>
-                      </ChartDataPointValues>
-                      <ChartDataLabel>
-                        <Style />
-                        <Label>=Sum(Fields!Promo.Value)</Label>
-                        <Visible>true</Visible>
-                      </ChartDataLabel>
-                      <Style>
-                        <Color>#71aef2</Color>
-                      </Style>
-                      <ChartMarker>
-                        <Style />
-                      </ChartMarker>
-                      <DataElementOutput>Output</DataElementOutput>
-                    </ChartDataPoint>
-                  </ChartDataPoints>
-                  <Subtype>PercentStacked</Subtype>
-                  <Style />
-                  <ChartEmptyPoints>
-                    <Style />
-                    <ChartMarker>
-                      <Style />
-                    </ChartMarker>
-                    <ChartDataLabel>
-                      <Style />
-                    </ChartDataLabel>
-                  </ChartEmptyPoints>
-                  <ChartItemInLegend>
-                    <LegendText>Промоутеры</LegendText>
-                  </ChartItemInLegend>
-                  <ValueAxisName>Primary</ValueAxisName>
-                  <CategoryAxisName>Primary</CategoryAxisName>
-                  <ChartSmartLabel>
-                    <CalloutLineColor>Black</CalloutLineColor>
-                    <MinMovingDistance>0pt</MinMovingDistance>
-                  </ChartSmartLabel>
-                </ChartSeries>
-              </ChartSeriesCollection>
-            </ChartData>
-            <ChartAreas>
-              <ChartArea Name="Default">
-                <ChartCategoryAxes>
-                  <ChartAxis Name="Primary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Format>dd.MM.yyyy</Format>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <Interval>1</Interval>
-                    <ChartMajorGridLines>
-                      <Enabled>False</Enabled>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>NaN</Maximum>
-                    <Angle>90</Angle>
-                    <LabelsAutoFitDisabled>true</LabelsAutoFitDisabled>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                  <ChartAxis Name="Secondary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <ChartMajorGridLines>
-                      <Enabled>False</Enabled>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Location>Opposite</Location>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>NaN</Maximum>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                </ChartCategoryAxes>
-                <ChartValueAxes>
-                  <ChartAxis Name="Primary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <ChartMajorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>NaN</Maximum>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                  <ChartAxis Name="Secondary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <ChartMajorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Location>Opposite</Location>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>NaN</Maximum>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                </ChartValueAxes>
-                <Style>
-                  <BackgroundColor>#00ffffff</BackgroundColor>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                </Style>
-              </ChartArea>
-            </ChartAreas>
-            <ChartLegends>
-              <ChartLegend Name="Default">
-                <Style>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                  <FontSize>8pt</FontSize>
-                </Style>
-                <Position>BottomCenter</Position>
-                <DockOutsideChartArea>true</DockOutsideChartArea>
-                <ChartLegendTitle>
-                  <Caption />
-                  <Style>
-                    <FontSize>8pt</FontSize>
-                    <FontWeight>Bold</FontWeight>
-                    <TextAlign>Center</TextAlign>
-                  </Style>
-                </ChartLegendTitle>
-                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
-                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
-              </ChartLegend>
-            </ChartLegends>
-            <ChartTitles>
-              <ChartTitle Name="Title1">
-                <Caption>Динамика, TS</Caption>
-                <Style>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                  <FontSize>9pt</FontSize>
-                  <TextAlign>General</TextAlign>
-                  <VerticalAlign>Top</VerticalAlign>
-                  <Color>DimGray</Color>
-                </Style>
-                <Position>TopLeft</Position>
-                <DockOutsideChartArea>true</DockOutsideChartArea>
-              </ChartTitle>
-            </ChartTitles>
-            <Palette>Light</Palette>
-            <ChartBorderSkin>
-              <Style>
-                <BackgroundColor>Gray</BackgroundColor>
-                <BackgroundGradientType>None</BackgroundGradientType>
-                <Color>White</Color>
-              </Style>
-            </ChartBorderSkin>
-            <ChartNoDataMessage Name="NoDataMessage">
-              <Caption>No Data Available</Caption>
-              <Style>
-                <BackgroundGradientType>None</BackgroundGradientType>
-                <FontWeight>Bold</FontWeight>
-                <TextAlign>General</TextAlign>
-                <VerticalAlign>Top</VerticalAlign>
-              </Style>
-            </ChartNoDataMessage>
-            <DataSetName>DStNPS_FSTS_Weekly</DataSetName>
-            <Filters>
-              <Filter>
-                <FilterExpression>=Fields!Department.Value</FilterExpression>
-                <Operator>Equal</Operator>
-                <FilterValues>
-                  <FilterValue>TS</FilterValue>
-                </FilterValues>
-              </Filter>
-            </Filters>
-            <Top>35.31055cm</Top>
-            <Left>0.00055cm</Left>
-            <Height>11.2487cm</Height>
-            <Width>34.92837cm</Width>
-            <ZIndex>7</ZIndex>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -3176,7 +2707,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                   <Label>Total</Label>
                 </ChartMember>
                 <ChartMember>
-                  <Label>NPS</Label>
+                  <Label>Percent NPS</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
@@ -3315,7 +2846,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=Sum(Fields!NPS.Value)</Y>
+                        <Y>=Sum(Fields!PercentNPS.Value)</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style>
@@ -3324,12 +2855,16 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                             <Style>Solid</Style>
                           </Border>
                           <BackgroundColor>White</BackgroundColor>
+                          <Format>0 %</Format>
                         </Style>
                         <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
                       </ChartDataLabel>
                       <Style>
-                        <Color>White</Color>
+                        <Border>
+                          <Width>1.5pt</Width>
+                        </Border>
+                        <Color>WhiteSmoke</Color>
                       </Style>
                       <ChartMarker>
                         <Style />
@@ -3348,6 +2883,9 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                       <Style />
                     </ChartDataLabel>
                   </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>NPS, %</LegendText>
+                  </ChartItemInLegend>
                   <ValueAxisName>Secondary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
                   <ChartSmartLabel>
@@ -3538,6 +3076,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                         <Style>None</Style>
                       </Border>
                       <FontSize>8pt</FontSize>
+                      <Format>0 %</Format>
                       <Color>#5c5c5c</Color>
                     </Style>
                     <ChartAxisTitle>
@@ -3580,8 +3119,8 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                     </ChartMinorTickMarks>
                     <CrossAt>NaN</CrossAt>
                     <Location>Opposite</Location>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>500</Maximum>
+                    <Minimum>-1</Minimum>
+                    <Maximum>1</Maximum>
                     <ChartAxisScaleBreak>
                       <Style />
                     </ChartAxisScaleBreak>
@@ -3615,7 +3154,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
             </ChartLegends>
             <ChartTitles>
               <ChartTitle Name="Title1">
-                <Caption>Общий NPS, %, FS</Caption>
+                <Caption>NPS, %, FS</Caption>
                 <Style>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>9pt</FontSize>
@@ -3656,479 +3195,11 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>69.16249cm</Top>
+            <Top>57.77267cm</Top>
+            <Left>0.00127cm</Left>
             <Height>11.2487cm</Height>
             <Width>34.92837cm</Width>
-            <ZIndex>8</ZIndex>
-            <Style>
-              <Border>
-                <Color>LightGrey</Color>
-                <Style>None</Style>
-              </Border>
-              <BackgroundColor>White</BackgroundColor>
-              <BackgroundGradientType>None</BackgroundGradientType>
-            </Style>
-          </Chart>
-          <Chart Name="Chart10">
-            <ChartCategoryHierarchy>
-              <ChartMembers>
-                <ChartMember>
-                  <Group Name="Chart3_CategoryGroup4">
-                    <GroupExpressions>
-                      <GroupExpression>=Fields!WeekName.Value</GroupExpression>
-                    </GroupExpressions>
-                  </Group>
-                  <SortExpressions>
-                    <SortExpression>
-                      <Value>=Fields!WeekNum.Value</Value>
-                    </SortExpression>
-                  </SortExpressions>
-                  <Label>=Fields!WeekName.Value</Label>
-                </ChartMember>
-              </ChartMembers>
-            </ChartCategoryHierarchy>
-            <ChartSeriesHierarchy>
-              <ChartMembers>
-                <ChartMember>
-                  <Label>Critics</Label>
-                </ChartMember>
-                <ChartMember>
-                  <Label>Passive</Label>
-                </ChartMember>
-                <ChartMember>
-                  <Label>Promo</Label>
-                </ChartMember>
-              </ChartMembers>
-            </ChartSeriesHierarchy>
-            <ChartData>
-              <ChartSeriesCollection>
-                <ChartSeries Name="Critics">
-                  <ChartDataPoints>
-                    <ChartDataPoint>
-                      <ChartDataPointValues>
-                        <Y>=Sum(Fields!Critics.Value)</Y>
-                      </ChartDataPointValues>
-                      <ChartDataLabel>
-                        <Style />
-                        <Label>=Sum(Fields!Critics.Value)</Label>
-                        <Visible>true</Visible>
-                      </ChartDataLabel>
-                      <Style>
-                        <Color>#ea5645</Color>
-                      </Style>
-                      <ChartMarker>
-                        <Style />
-                      </ChartMarker>
-                      <DataElementOutput>Output</DataElementOutput>
-                    </ChartDataPoint>
-                  </ChartDataPoints>
-                  <Subtype>PercentStacked</Subtype>
-                  <Style />
-                  <ChartEmptyPoints>
-                    <Style />
-                    <ChartMarker>
-                      <Style />
-                    </ChartMarker>
-                    <ChartDataLabel>
-                      <Style />
-                    </ChartDataLabel>
-                  </ChartEmptyPoints>
-                  <ChartItemInLegend>
-                    <LegendText>Критики</LegendText>
-                  </ChartItemInLegend>
-                  <ValueAxisName>Primary</ValueAxisName>
-                  <CategoryAxisName>Primary</CategoryAxisName>
-                  <ChartSmartLabel>
-                    <CalloutLineColor>Black</CalloutLineColor>
-                    <MinMovingDistance>0pt</MinMovingDistance>
-                  </ChartSmartLabel>
-                </ChartSeries>
-                <ChartSeries Name="Passive">
-                  <ChartDataPoints>
-                    <ChartDataPoint>
-                      <ChartDataPointValues>
-                        <Y>=Sum(Fields!Passive.Value)</Y>
-                      </ChartDataPointValues>
-                      <ChartDataLabel>
-                        <Style />
-                        <Label>=Sum(Fields!Passive.Value)</Label>
-                        <Visible>true</Visible>
-                      </ChartDataLabel>
-                      <Style>
-                        <Color>#ffc100</Color>
-                      </Style>
-                      <ChartMarker>
-                        <Style />
-                      </ChartMarker>
-                      <DataElementOutput>Output</DataElementOutput>
-                    </ChartDataPoint>
-                  </ChartDataPoints>
-                  <Subtype>PercentStacked</Subtype>
-                  <Style />
-                  <ChartEmptyPoints>
-                    <Style />
-                    <ChartMarker>
-                      <Style />
-                    </ChartMarker>
-                    <ChartDataLabel>
-                      <Style />
-                    </ChartDataLabel>
-                  </ChartEmptyPoints>
-                  <ChartItemInLegend>
-                    <LegendText>Пассивы</LegendText>
-                  </ChartItemInLegend>
-                  <ValueAxisName>Primary</ValueAxisName>
-                  <CategoryAxisName>Primary</CategoryAxisName>
-                  <ChartSmartLabel>
-                    <CalloutLineColor>Black</CalloutLineColor>
-                    <MinMovingDistance>0pt</MinMovingDistance>
-                  </ChartSmartLabel>
-                </ChartSeries>
-                <ChartSeries Name="Promo">
-                  <ChartDataPoints>
-                    <ChartDataPoint>
-                      <ChartDataPointValues>
-                        <Y>=Sum(Fields!Promo.Value)</Y>
-                      </ChartDataPointValues>
-                      <ChartDataLabel>
-                        <Style />
-                        <Label>=Sum(Fields!Promo.Value)</Label>
-                        <Visible>true</Visible>
-                      </ChartDataLabel>
-                      <Style>
-                        <Color>#71aef2</Color>
-                      </Style>
-                      <ChartMarker>
-                        <Style />
-                      </ChartMarker>
-                      <DataElementOutput>Output</DataElementOutput>
-                    </ChartDataPoint>
-                  </ChartDataPoints>
-                  <Subtype>PercentStacked</Subtype>
-                  <Style />
-                  <ChartEmptyPoints>
-                    <Style />
-                    <ChartMarker>
-                      <Style />
-                    </ChartMarker>
-                    <ChartDataLabel>
-                      <Style />
-                    </ChartDataLabel>
-                  </ChartEmptyPoints>
-                  <ChartItemInLegend>
-                    <LegendText>Промоутеры</LegendText>
-                  </ChartItemInLegend>
-                  <ValueAxisName>Primary</ValueAxisName>
-                  <CategoryAxisName>Primary</CategoryAxisName>
-                  <ChartSmartLabel>
-                    <CalloutLineColor>Black</CalloutLineColor>
-                    <MinMovingDistance>0pt</MinMovingDistance>
-                  </ChartSmartLabel>
-                </ChartSeries>
-              </ChartSeriesCollection>
-            </ChartData>
-            <ChartAreas>
-              <ChartArea Name="Default">
-                <ChartCategoryAxes>
-                  <ChartAxis Name="Primary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Format>dd.MM.yyyy</Format>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <Interval>1</Interval>
-                    <ChartMajorGridLines>
-                      <Enabled>False</Enabled>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>NaN</Maximum>
-                    <Angle>90</Angle>
-                    <LabelsAutoFitDisabled>true</LabelsAutoFitDisabled>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                  <ChartAxis Name="Secondary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <ChartMajorGridLines>
-                      <Enabled>False</Enabled>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Location>Opposite</Location>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>NaN</Maximum>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                </ChartCategoryAxes>
-                <ChartValueAxes>
-                  <ChartAxis Name="Primary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <ChartMajorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>100</Maximum>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                  <ChartAxis Name="Secondary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <ChartMajorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Location>Opposite</Location>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>1000</Maximum>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                </ChartValueAxes>
-                <Style>
-                  <BackgroundColor>#00ffffff</BackgroundColor>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                </Style>
-              </ChartArea>
-            </ChartAreas>
-            <ChartLegends>
-              <ChartLegend Name="Default">
-                <Style>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                  <FontSize>8pt</FontSize>
-                </Style>
-                <Position>BottomCenter</Position>
-                <DockOutsideChartArea>true</DockOutsideChartArea>
-                <ChartLegendTitle>
-                  <Caption />
-                  <Style>
-                    <FontSize>8pt</FontSize>
-                    <FontWeight>Bold</FontWeight>
-                    <TextAlign>Center</TextAlign>
-                  </Style>
-                </ChartLegendTitle>
-                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
-                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
-              </ChartLegend>
-            </ChartLegends>
-            <ChartTitles>
-              <ChartTitle Name="Title1">
-                <Caption>Динамика, FS</Caption>
-                <Style>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                  <FontSize>9pt</FontSize>
-                  <TextAlign>General</TextAlign>
-                  <VerticalAlign>Top</VerticalAlign>
-                  <Color>DimGray</Color>
-                </Style>
-                <Position>TopLeft</Position>
-                <DockOutsideChartArea>true</DockOutsideChartArea>
-              </ChartTitle>
-            </ChartTitles>
-            <Palette>Light</Palette>
-            <ChartBorderSkin>
-              <Style>
-                <BackgroundColor>Gray</BackgroundColor>
-                <BackgroundGradientType>None</BackgroundGradientType>
-                <Color>White</Color>
-              </Style>
-            </ChartBorderSkin>
-            <ChartNoDataMessage Name="NoDataMessage">
-              <Caption>No Data Available</Caption>
-              <Style>
-                <BackgroundGradientType>None</BackgroundGradientType>
-                <FontWeight>Bold</FontWeight>
-                <TextAlign>General</TextAlign>
-                <VerticalAlign>Top</VerticalAlign>
-              </Style>
-            </ChartNoDataMessage>
-            <DataSetName>DStNPS_FSTS_Weekly</DataSetName>
-            <Filters>
-              <Filter>
-                <FilterExpression>=Fields!Department.Value</FilterExpression>
-                <Operator>Equal</Operator>
-                <FilterValues>
-                  <FilterValue>FS</FilterValue>
-                </FilterValues>
-              </Filter>
-            </Filters>
-            <Top>57.87851cm</Top>
-            <Left>0.0011cm</Left>
-            <Height>11.2487cm</Height>
-            <Width>34.92837cm</Width>
-            <ZIndex>9</ZIndex>
+            <ZIndex>7</ZIndex>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -4650,11 +3721,11 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>118.61937cm</Top>
-            <Left>0.0011cm</Left>
+            <Top>107.22955cm</Top>
+            <Left>0.00237cm</Left>
             <Height>11.2487cm</Height>
             <Width>34.92837cm</Width>
-            <ZIndex>10</ZIndex>
+            <ZIndex>8</ZIndex>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -5124,11 +4195,11 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>129.86806cm</Top>
-            <Left>0.00127cm</Left>
+            <Top>118.47824cm</Top>
+            <Left>0.00254cm</Left>
             <Height>11.2487cm</Height>
             <Width>34.92837cm</Width>
-            <ZIndex>11</ZIndex>
+            <ZIndex>9</ZIndex>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -5650,11 +4721,11 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>141.29315cm</Top>
-            <Left>0.00127cm</Left>
+            <Top>129.90333cm</Top>
+            <Left>0.00254cm</Left>
             <Height>11.2487cm</Height>
             <Width>34.92837cm</Width>
-            <ZIndex>12</ZIndex>
+            <ZIndex>10</ZIndex>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -6124,10 +5195,11 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>152.54184cm</Top>
+            <Top>141.15202cm</Top>
+            <Left>0.00127cm</Left>
             <Height>11.2487cm</Height>
             <Width>34.92837cm</Width>
-            <ZIndex>13</ZIndex>
+            <ZIndex>11</ZIndex>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -6167,7 +5239,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                   <Label>Promo</Label>
                 </ChartMember>
                 <ChartMember>
-                  <Label>NPS</Label>
+                  <Label>Percent NPS</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
@@ -6306,7 +5378,391 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=Sum(Fields!NPS.Value)</Y>
+                        <Y>=Sum(Fields!PercentNPS.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style>
+                          <Border>
+                            <Color>CornflowerBlue</Color>
+                            <Style>Solid</Style>
+                            <Width>0.5pt</Width>
+                          </Border>
+                          <BackgroundColor>White</BackgroundColor>
+                          <Format>0 %</Format>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!PercentNPS.Value)</ToolTip>
+                      <Style>
+                        <Border>
+                          <Width>1.5pt</Width>
+                        </Border>
+                      </Style>
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>NPS, %</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Secondary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+              </ChartSeriesCollection>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <Border>
+                        <Color>Gainsboro</Color>
+                        <Style>None</Style>
+                      </Border>
+                      <FontSize>8pt</FontSize>
+                      <Format>dd.MM.yyyy</Format>
+                      <Color>#5c5c5c</Color>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <Interval>1</Interval>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>None</Style>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <Angle>90</Angle>
+                    <LabelsAutoFitDisabled>true</LabelsAutoFitDisabled>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <Border>
+                        <Color>Gainsboro</Color>
+                        <Style>None</Style>
+                      </Border>
+                      <FontSize>8pt</FontSize>
+                      <Color>#5c5c5c</Color>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>None</Style>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <Border>
+                        <Color>Gainsboro</Color>
+                        <Style>None</Style>
+                      </Border>
+                      <FontSize>8pt</FontSize>
+                      <Color>#5c5c5c</Color>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>None</Style>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <Border>
+                        <Color>Gainsboro</Color>
+                        <Style>None</Style>
+                      </Border>
+                      <FontSize>8pt</FontSize>
+                      <Format>0 %</Format>
+                      <Color>#5c5c5c</Color>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <Color>#5c5c5c</Color>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>None</Style>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>-1</Minimum>
+                    <Maximum>1</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundColor>#00ffffff</BackgroundColor>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+            </ChartAreas>
+            <ChartLegends>
+              <ChartLegend Name="Default">
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>8pt</FontSize>
+                </Style>
+                <Position>BottomCenter</Position>
+                <DockOutsideChartArea>true</DockOutsideChartArea>
+                <ChartLegendTitle>
+                  <Caption />
+                  <Style>
+                    <FontSize>8pt</FontSize>
+                    <FontWeight>Bold</FontWeight>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </ChartLegendTitle>
+                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
+                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
+              </ChartLegend>
+            </ChartLegends>
+            <ChartTitles>
+              <ChartTitle Name="Title1">
+                <Caption>Общий NPS, %</Caption>
+                <Style>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                  <FontSize>9pt</FontSize>
+                  <TextAlign>General</TextAlign>
+                  <VerticalAlign>Top</VerticalAlign>
+                  <Color>DimGray</Color>
+                </Style>
+                <Position>TopLeft</Position>
+                <DockOutsideChartArea>true</DockOutsideChartArea>
+              </ChartTitle>
+            </ChartTitles>
+            <Palette>Light</Palette>
+            <ChartBorderSkin>
+              <Style>
+                <BackgroundColor>Gray</BackgroundColor>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <Color>White</Color>
+              </Style>
+            </ChartBorderSkin>
+            <ChartNoDataMessage Name="NoDataMessage">
+              <Caption>No Data Available</Caption>
+              <Style>
+                <BackgroundGradientType>None</BackgroundGradientType>
+                <FontWeight>Bold</FontWeight>
+                <TextAlign>General</TextAlign>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </ChartNoDataMessage>
+            <DataSetName>DStNPS_Weekly</DataSetName>
+            <Top>12.49564cm</Top>
+            <Left>0.00254cm</Left>
+            <Height>11.2487cm</Height>
+            <Width>34.92837cm</Width>
+            <ZIndex>12</ZIndex>
+            <Style>
+              <Border>
+                <Color>LightGrey</Color>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>White</BackgroundColor>
+              <BackgroundGradientType>None</BackgroundGradientType>
+            </Style>
+          </Chart>
+          <Chart Name="Chart15">
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="Chart3_CategoryGroup5">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!WeekNum.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <Label>=Fields!WeekName.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Label>Total</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="NPS">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!Total.Value)</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style>
@@ -6325,6 +5781,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                         <Border>
                           <Width>1.5pt</Width>
                         </Border>
+                        <Color>#71aef2</Color>
                       </Style>
                       <ChartMarker>
                         <Style />
@@ -6576,7 +6033,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                     <CrossAt>NaN</CrossAt>
                     <Location>Opposite</Location>
                     <Minimum>NaN</Minimum>
-                    <Maximum>1000</Maximum>
+                    <Maximum>NaN</Maximum>
                     <ChartAxisScaleBreak>
                       <Style />
                     </ChartAxisScaleBreak>
@@ -6588,29 +6045,9 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                 </Style>
               </ChartArea>
             </ChartAreas>
-            <ChartLegends>
-              <ChartLegend Name="Default">
-                <Style>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                  <FontSize>8pt</FontSize>
-                </Style>
-                <Position>BottomCenter</Position>
-                <DockOutsideChartArea>true</DockOutsideChartArea>
-                <ChartLegendTitle>
-                  <Caption />
-                  <Style>
-                    <FontSize>8pt</FontSize>
-                    <FontWeight>Bold</FontWeight>
-                    <TextAlign>Center</TextAlign>
-                  </Style>
-                </ChartLegendTitle>
-                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
-                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
-              </ChartLegend>
-            </ChartLegends>
             <ChartTitles>
               <ChartTitle Name="Title1">
-                <Caption>Общий NPS, %</Caption>
+                <Caption>Количество ответов, TS</Caption>
                 <Style>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>9pt</FontSize>
@@ -6639,12 +6076,21 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                 <VerticalAlign>Top</VerticalAlign>
               </Style>
             </ChartNoDataMessage>
-            <DataSetName>DStNPS_Weekly</DataSetName>
-            <Top>23.88546cm</Top>
-            <Left>0.00127cm</Left>
+            <DataSetName>DStNPS_FSTS_Weekly</DataSetName>
+            <Filters>
+              <Filter>
+                <FilterExpression>=Fields!Department.Value</FilterExpression>
+                <Operator>Equal</Operator>
+                <FilterValues>
+                  <FilterValue>TS</FilterValue>
+                </FilterValues>
+              </Filter>
+            </Filters>
+            <Top>23.8537cm</Top>
+            <Left>0.00254cm</Left>
             <Height>11.2487cm</Height>
             <Width>34.92837cm</Width>
-            <ZIndex>14</ZIndex>
+            <ZIndex>13</ZIndex>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -6654,11 +6100,11 @@ WHERE rn &lt;= @WeeksCount</CommandText>
               <BackgroundGradientType>None</BackgroundGradientType>
             </Style>
           </Chart>
-          <Chart Name="Chart4">
+          <Chart Name="Chart16">
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart3_CategoryGroup5">
+                  <Group Name="Chart3_CategoryGroup6">
                     <GroupExpressions>
                       <GroupExpression>=Fields!WeekName.Value</GroupExpression>
                     </GroupExpressions>
@@ -6675,112 +6121,35 @@ WHERE rn &lt;= @WeeksCount</CommandText>
             <ChartSeriesHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Label>Critics</Label>
-                </ChartMember>
-                <ChartMember>
-                  <Label>Passive</Label>
-                </ChartMember>
-                <ChartMember>
-                  <Label>Promo</Label>
+                  <Label>Total</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
             <ChartData>
               <ChartSeriesCollection>
-                <ChartSeries Name="Critics">
+                <ChartSeries Name="NPS">
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=Sum(Fields!Critics.Value)</Y>
+                        <Y>=Sum(Fields!Total.Value)</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
-                        <Style />
-                        <Label>=Sum(Fields!Critics.Value)</Label>
+                        <Style>
+                          <Border>
+                            <Color>CornflowerBlue</Color>
+                            <Style>Solid</Style>
+                            <Width>0.5pt</Width>
+                          </Border>
+                          <BackgroundColor>White</BackgroundColor>
+                        </Style>
+                        <UseValueAsLabel>true</UseValueAsLabel>
                         <Visible>true</Visible>
                       </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!NPS.Value)</ToolTip>
                       <Style>
-                        <Color>#ea5645</Color>
-                      </Style>
-                      <ChartMarker>
-                        <Style />
-                      </ChartMarker>
-                      <DataElementOutput>Output</DataElementOutput>
-                    </ChartDataPoint>
-                  </ChartDataPoints>
-                  <Subtype>PercentStacked</Subtype>
-                  <Style />
-                  <ChartEmptyPoints>
-                    <Style />
-                    <ChartMarker>
-                      <Style />
-                    </ChartMarker>
-                    <ChartDataLabel>
-                      <Style />
-                    </ChartDataLabel>
-                  </ChartEmptyPoints>
-                  <ChartItemInLegend>
-                    <LegendText>Критики</LegendText>
-                  </ChartItemInLegend>
-                  <ValueAxisName>Primary</ValueAxisName>
-                  <CategoryAxisName>Primary</CategoryAxisName>
-                  <ChartSmartLabel>
-                    <CalloutLineColor>Black</CalloutLineColor>
-                    <MinMovingDistance>0pt</MinMovingDistance>
-                  </ChartSmartLabel>
-                </ChartSeries>
-                <ChartSeries Name="Passive">
-                  <ChartDataPoints>
-                    <ChartDataPoint>
-                      <ChartDataPointValues>
-                        <Y>=Sum(Fields!Passive.Value)</Y>
-                      </ChartDataPointValues>
-                      <ChartDataLabel>
-                        <Style />
-                        <Label>=Sum(Fields!Passive.Value)</Label>
-                        <Visible>true</Visible>
-                      </ChartDataLabel>
-                      <Style>
-                        <Color>#ffc100</Color>
-                      </Style>
-                      <ChartMarker>
-                        <Style />
-                      </ChartMarker>
-                      <DataElementOutput>Output</DataElementOutput>
-                    </ChartDataPoint>
-                  </ChartDataPoints>
-                  <Subtype>PercentStacked</Subtype>
-                  <Style />
-                  <ChartEmptyPoints>
-                    <Style />
-                    <ChartMarker>
-                      <Style />
-                    </ChartMarker>
-                    <ChartDataLabel>
-                      <Style />
-                    </ChartDataLabel>
-                  </ChartEmptyPoints>
-                  <ChartItemInLegend>
-                    <LegendText>Пассивы</LegendText>
-                  </ChartItemInLegend>
-                  <ValueAxisName>Primary</ValueAxisName>
-                  <CategoryAxisName>Primary</CategoryAxisName>
-                  <ChartSmartLabel>
-                    <CalloutLineColor>Black</CalloutLineColor>
-                    <MinMovingDistance>0pt</MinMovingDistance>
-                  </ChartSmartLabel>
-                </ChartSeries>
-                <ChartSeries Name="Promo">
-                  <ChartDataPoints>
-                    <ChartDataPoint>
-                      <ChartDataPointValues>
-                        <Y>=Sum(Fields!Promo.Value)</Y>
-                      </ChartDataPointValues>
-                      <ChartDataLabel>
-                        <Style />
-                        <Label>=Sum(Fields!Promo.Value)</Label>
-                        <Visible>true</Visible>
-                      </ChartDataLabel>
-                      <Style>
+                        <Border>
+                          <Width>1.5pt</Width>
+                        </Border>
                         <Color>#71aef2</Color>
                       </Style>
                       <ChartMarker>
@@ -6789,7 +6158,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                       <DataElementOutput>Output</DataElementOutput>
                     </ChartDataPoint>
                   </ChartDataPoints>
-                  <Subtype>PercentStacked</Subtype>
+                  <Type>Line</Type>
                   <Style />
                   <ChartEmptyPoints>
                     <Style />
@@ -6800,10 +6169,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                       <Style />
                     </ChartDataLabel>
                   </ChartEmptyPoints>
-                  <ChartItemInLegend>
-                    <LegendText>Промоутеры</LegendText>
-                  </ChartItemInLegend>
-                  <ValueAxisName>Primary</ValueAxisName>
+                  <ValueAxisName>Secondary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
                   <ChartSmartLabel>
                     <CalloutLineColor>Black</CalloutLineColor>
@@ -7048,29 +6414,9 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                 </Style>
               </ChartArea>
             </ChartAreas>
-            <ChartLegends>
-              <ChartLegend Name="Default">
-                <Style>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                  <FontSize>8pt</FontSize>
-                </Style>
-                <Position>BottomCenter</Position>
-                <DockOutsideChartArea>true</DockOutsideChartArea>
-                <ChartLegendTitle>
-                  <Caption />
-                  <Style>
-                    <FontSize>8pt</FontSize>
-                    <FontWeight>Bold</FontWeight>
-                    <TextAlign>Center</TextAlign>
-                  </Style>
-                </ChartLegendTitle>
-                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
-                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
-              </ChartLegend>
-            </ChartLegends>
             <ChartTitles>
               <ChartTitle Name="Title1">
-                <Caption>Динамика</Caption>
+                <Caption>Количество ответов, FS</Caption>
                 <Style>
                   <BackgroundGradientType>None</BackgroundGradientType>
                   <FontSize>9pt</FontSize>
@@ -7099,12 +6445,20 @@ WHERE rn &lt;= @WeeksCount</CommandText>
                 <VerticalAlign>Top</VerticalAlign>
               </Style>
             </ChartNoDataMessage>
-            <DataSetName>DStNPS_Weekly</DataSetName>
-            <Top>12.46037cm</Top>
-            <Left>0.00127cm</Left>
+            <DataSetName>DStNPS_FSTS_Weekly</DataSetName>
+            <Filters>
+              <Filter>
+                <FilterExpression>=Fields!Department.Value</FilterExpression>
+                <Operator>Equal</Operator>
+                <FilterValues>
+                  <FilterValue>FS</FilterValue>
+                </FilterValues>
+              </Filter>
+            </Filters>
+            <Top>46.53102cm</Top>
             <Height>11.2487cm</Height>
             <Width>34.92837cm</Width>
-            <ZIndex>15</ZIndex>
+            <ZIndex>14</ZIndex>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -7115,7 +6469,7 @@ WHERE rn &lt;= @WeeksCount</CommandText>
             </Style>
           </Chart>
         </ReportItems>
-        <Height>64.48446in</Height>
+        <Height>60.08863in</Height>
         <Style />
       </Body>
       <Width>13.99931in</Width>
