@@ -29,6 +29,9 @@
           <QueryParameter Name="@duration">
             <Value>=Parameters!duration.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@AlarmType">
+            <Value>=Parameters!AlarmType.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_CallsAssessment</CommandText>
@@ -141,6 +144,24 @@
           </FilterValues>
         </Filter>
       </Filters>
+    </DataSet>
+    <DataSet Name="DSt_AlarmType">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>select distinct at.id as AlarmID, at.name as AlarmType from srv16.rabotaua2.dbo.CRM_alarmtype at with(nolock)
+join srv16.rabotaua2.dbo.CRM_alarm ca with(nolock) on ca.alarmtypeid=at.id
+where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="AlarmID">
+          <DataField>AlarmID</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="AlarmType">
+          <DataField>AlarmType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
     </DataSet>
   </DataSets>
   <ReportSections>
@@ -945,6 +966,23 @@
       </DefaultValue>
       <Prompt>Duration(sec) &gt;: </Prompt>
     </ReportParameter>
+    <ReportParameter Name="AlarmType">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>Счет через сайт</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>AlarmType</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DSt_AlarmType</DataSetName>
+          <ValueField>AlarmType</ValueField>
+          <LabelField>AlarmType</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
     <ReportParameter Name="db">
       <DataType>DateTime</DataType>
       <DefaultValue>
@@ -975,7 +1013,7 @@
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>3</NumberOfColumns>
+      <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
@@ -1007,6 +1045,11 @@
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>stm</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>3</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>AlarmType</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
