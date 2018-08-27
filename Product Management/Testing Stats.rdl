@@ -13,8 +13,14 @@
     <DataSet Name="DStTestingStats">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>select *
-from srv16.RabotaUA2.dbo.Testing_stats</CommandText>
+        <CommandText>with cte as
+ (
+select *, row_number() over(order by AddDate desc) as RowNum
+from srv16.RabotaUA2.dbo.Testing_stats
+ )
+select *
+from cte
+where RowNum &lt;= 7</CommandText>
       </Query>
       <Fields>
         <Field Name="Employer">
@@ -36,6 +42,10 @@ from srv16.RabotaUA2.dbo.Testing_stats</CommandText>
         <Field Name="AddDate">
           <DataField>AddDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="RowNum">
+          <DataField>RowNum</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
