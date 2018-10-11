@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SharedDataSet xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/shareddatasetdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <Description />
+  <DataSet Name="DStVacanciesWeekly">
+    <Query>
+      <DataSourceReference>DSrcReporting</DataSourceReference>
+      <DataSetParameters>
+        <DataSetParameter Name="@weeksCount">
+          <ReadOnly>false</ReadOnly>
+          <Nullable>true</Nullable>
+          <OmitFromQuery>false</OmitFromQuery>
+        </DataSetParameter>
+      </DataSetParameters>
+      <CommandText>;with c as (
+select 
+	dd.YearNum,
+	dd.WeekNum,
+	dd.WeekName,
+	PublishedVacancy_Paid,
+	PublishedVacancy_Bonus,
+	PublishedVacancy_Test,
+	PublishedVacancy_Freemium,
+	PublishedVacancy_Trial-isnull(PublishedVacancy_oldTrial, 0) PublishedVacancy_Trial,
+	PublishedVacancy_oldTrial,
+	PublishedVacancy_newTrial,
+	PublishedVacancyCompanies_Paid,
+	PublishedVacancyCompanies_Test,
+	PublishedVacancyCompanies_Freemium,
+	PublishedVacancyCompanies_Trial,
+	PublishedVacancyCompanies_oldTrial,
+	PublishedVacancyCompanies_newTrial,
+	row_number() over(order by dd.YearNum desc, dd.WeekNum desc) RowNum
+from dailyVacancyStat dvs join DimDate dd on dvs.fulldate = dd.FullDate and WeekDayNum = 4)
+
+select * from c where RowNum between 1 and @weeksCount</CommandText>
+    </Query>
+    <Fields>
+      <Field Name="YearNum">
+        <DataField>YearNum</DataField>
+        <rd:TypeName>System.Int16</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancy_Paid">
+        <DataField>PublishedVacancy_Paid</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="WeekNum">
+        <DataField>WeekNum</DataField>
+        <rd:TypeName>System.Byte</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancy_Bonus">
+        <DataField>PublishedVacancy_Bonus</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="WeekName">
+        <DataField>WeekName</DataField>
+        <rd:TypeName>System.String</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancy_Test">
+        <DataField>PublishedVacancy_Test</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancy_Freemium">
+        <DataField>PublishedVacancy_Freemium</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancy_Trial">
+        <DataField>PublishedVacancy_Trial</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancy_oldTrial">
+        <DataField>PublishedVacancy_oldTrial</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancyCompanies_Paid">
+        <DataField>PublishedVacancyCompanies_Paid</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancy_newTrial">
+        <DataField>PublishedVacancy_newTrial</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancyCompanies_Test">
+        <DataField>PublishedVacancyCompanies_Test</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancyCompanies_Freemium">
+        <DataField>PublishedVacancyCompanies_Freemium</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancyCompanies_Trial">
+        <DataField>PublishedVacancyCompanies_Trial</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="RowNum">
+        <DataField>RowNum</DataField>
+        <rd:TypeName>System.Int64</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancyCompanies_oldTrial">
+        <DataField>PublishedVacancyCompanies_oldTrial</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+      <Field Name="PublishedVacancyCompanies_newTrial">
+        <DataField>PublishedVacancyCompanies_newTrial</DataField>
+        <rd:TypeName>System.Int32</rd:TypeName>
+      </Field>
+    </Fields>
+  </DataSet>
+</SharedDataSet>

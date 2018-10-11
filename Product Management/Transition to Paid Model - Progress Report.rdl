@@ -133,36 +133,14 @@ select * from c where RowNum between 1 and @weeksCount</CommandText>
       </Fields>
     </DataSet>
     <DataSet Name="DStVacanciesWeekly">
-      <Query>
-        <DataSourceName>DSrcReporting</DataSourceName>
+      <SharedDataSet>
+        <SharedDataSetReference>DStVacanciesWeekly</SharedDataSetReference>
         <QueryParameters>
           <QueryParameter Name="@weeksCount">
             <Value>=Parameters!weeksCount.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>;with c as (
-select 
-	dd.YearNum,
-	dd.WeekNum,
-	dd.WeekName,
-	PublishedVacancy_Paid,
-	PublishedVacancy_Bonus,
-	PublishedVacancy_Test,
-	PublishedVacancy_Freemium,
-	PublishedVacancy_Trial-isnull(PublishedVacancy_oldTrial, 0) PublishedVacancy_Trial,
-	PublishedVacancy_oldTrial,
-	PublishedVacancy_newTrial,
-	PublishedVacancyCompanies_Paid,
-	PublishedVacancyCompanies_Test,
-	PublishedVacancyCompanies_Freemium,
-	PublishedVacancyCompanies_Trial,
-	PublishedVacancyCompanies_oldTrial,
-	PublishedVacancyCompanies_newTrial,
-	row_number() over(order by dd.YearNum desc, dd.WeekNum desc) RowNum
-from dailyVacancyStat dvs join DimDate dd on dvs.fulldate = dd.FullDate and WeekDayNum = 4)
-
-select * from c where RowNum between 1 and @weeksCount</CommandText>
-      </Query>
+      </SharedDataSet>
       <Fields>
         <Field Name="YearNum">
           <DataField>YearNum</DataField>
