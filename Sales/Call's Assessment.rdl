@@ -32,6 +32,9 @@
           <QueryParameter Name="@AlarmType">
             <Value>=Parameters!AlarmType.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@TelesalesTestProgramID">
+            <Value>=Parameters!TelesalesTestProgramID.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_CallsAssessment</CommandText>
@@ -67,6 +70,14 @@
         </Field>
         <Field Name="ActionType">
           <DataField>ActionType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TelesalesTestProgramID">
+          <DataField>TelesalesTestProgramID</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="TelesalesTestProgramName">
+          <DataField>TelesalesTestProgramName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -150,16 +161,53 @@
         <DataSourceName>DSrcReporting</DataSourceName>
         <CommandText>select distinct at.id as AlarmID, at.name as AlarmType from srv16.rabotaua2.dbo.CRM_alarmtype at with(nolock)
 join srv16.rabotaua2.dbo.CRM_alarm ca with(nolock) on ca.alarmtypeid=at.id
-where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
+where IsTransaction=1 and IsDeleted=0 and IsHidden=0
+union all
+select 0, 'No connection'</CommandText>
       </Query>
       <Fields>
         <Field Name="AlarmID">
           <DataField>AlarmID</DataField>
-          <rd:TypeName>System.Byte</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="AlarmType">
           <DataField>AlarmType</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="TestProgramms">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>select '001' name,1 TelesalesTestProgramID, 1 rn
+union all
+select '002',2,2
+union all
+select '003',3,3
+union all
+select 'Call 1',4,4
+union all
+select 'Call 2.1',5,5
+union all
+select 'Call 2.2',6,6
+union all
+select 'Call 3',7,7
+union all
+select 'Without any programm',0,8
+</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="name">
+          <DataField>name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TelesalesTestProgramID">
+          <DataField>TelesalesTestProgramID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="rn">
+          <DataField>rn</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -182,6 +230,9 @@ where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>10.70208cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.5cm</Width>
@@ -405,6 +456,42 @@ where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox10</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox8">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Telesales Test Program Name</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox8</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -738,6 +825,36 @@ where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
+                        <Textbox Name="TelesalesTestProgramName">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!TelesalesTestProgramName.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>TelesalesTestProgramName</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
                         <Textbox Name="Textbox6">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -849,6 +966,7 @@ where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
+                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -864,7 +982,7 @@ where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
             <KeepTogether>true</KeepTogether>
             <DataSetName>DSt_CallsAssessment</DataSetName>
             <Height>1.2cm</Height>
-            <Width>34.86895cm</Width>
+            <Width>37.36895cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -907,7 +1025,7 @@ where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
         <Height>0.77811in</Height>
         <Style />
       </Body>
-      <Width>13.72793in</Width>
+      <Width>14.71219in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
@@ -921,6 +1039,24 @@ where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
     </ReportSection>
   </ReportSections>
   <ReportParameters>
+    <ReportParameter Name="db">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Dateadd(DateInterval.Day, -6, Today)</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Begin date:</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="de">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Today</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>End date:</Prompt>
+    </ReportParameter>
     <ReportParameter Name="stm">
       <DataType>Integer</DataType>
       <DefaultValue>
@@ -966,42 +1102,6 @@ where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
       </DefaultValue>
       <Prompt>Duration(sec) &gt;: </Prompt>
     </ReportParameter>
-    <ReportParameter Name="AlarmType">
-      <DataType>String</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>Счет через сайт</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>AlarmType</Prompt>
-      <Hidden>true</Hidden>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>DSt_AlarmType</DataSetName>
-          <ValueField>AlarmType</ValueField>
-          <LabelField>AlarmType</LabelField>
-        </DataSetReference>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="db">
-      <DataType>DateTime</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>=Dateadd(DateInterval.Day, -6, Today)</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>Begin date:</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="de">
-      <DataType>DateTime</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>=Today</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>End date:</Prompt>
-    </ReportParameter>
     <ReportParameter Name="callsCount">
       <DataType>Integer</DataType>
       <DefaultValue>
@@ -1010,6 +1110,42 @@ where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
         </Values>
       </DefaultValue>
       <Prompt>Calls count per Manager :</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="TelesalesTestProgramID">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>TestProgramms</DataSetName>
+          <ValueField>TelesalesTestProgramID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Programm:</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>TestProgramms</DataSetName>
+          <ValueField>TelesalesTestProgramID</ValueField>
+          <LabelField>name</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="AlarmType">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DSt_AlarmType</DataSetName>
+          <ValueField>AlarmType</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>AlarmType</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DSt_AlarmType</DataSetName>
+          <ValueField>AlarmType</ValueField>
+          <LabelField>AlarmType</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
@@ -1030,12 +1166,12 @@ where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>managers</ParameterName>
+          <ParameterName>stm</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>2</ColumnIndex>
           <RowIndex>1</RowIndex>
-          <ParameterName>callsCount</ParameterName>
+          <ParameterName>managers</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>2</ColumnIndex>
@@ -1045,11 +1181,16 @@ where IsTransaction=1 and IsDeleted=0 and IsHidden=0</CommandText>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>stm</ParameterName>
+          <ParameterName>callsCount</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>3</ColumnIndex>
           <RowIndex>0</RowIndex>
+          <ParameterName>TelesalesTestProgramID</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>3</ColumnIndex>
+          <RowIndex>1</RowIndex>
           <ParameterName>AlarmType</ParameterName>
         </CellDefinition>
       </CellDefinitions>
