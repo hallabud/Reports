@@ -20,9 +20,6 @@
           <QueryParameter Name="@de">
             <Value>=Parameters!de.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@managers">
-            <Value>=Parameters!managers.Value</Value>
-          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_VacancyLinking</CommandText>
@@ -32,28 +29,8 @@
           <DataField>fulldate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="managerid">
-          <DataField>managerid</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="managername">
-          <DataField>managername</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="stmid">
-          <DataField>stmid</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="stmname">
-          <DataField>stmname</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="smid">
-          <DataField>smid</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="smname">
-          <DataField>smname</DataField>
+        <Field Name="UserName">
+          <DataField>UserName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="VacancyID">
@@ -94,152 +71,6 @@
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="DSt_SMs">
-      <Query>
-        <DataSourceName>DSrcReporting</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@db">
-            <Value>=Parameters!db.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@de">
-            <Value>=Parameters!de.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandText>set transaction isolation level read uncommitted;
-
-select distinct
-	--mh.*,
-	mh.smid,
-	sm.name smname
-	--stm.name stmname
-from managerHistory mh join srv16.rabotaua2.dbo.Manager sm with(nolock) on mh.smid = sm.id
-					   join srv16.rabotaua2.dbo.Manager stm with(nolock) on mh.stmid = stm.id
-where fulldate between @db and @de
-order by 1</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="smid">
-          <DataField>smid</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="smname">
-          <DataField>smname</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="DSt_STMs">
-      <Query>
-        <DataSourceName>DSrcReporting</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@db">
-            <Value>=Parameters!db.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@de">
-            <Value>=Parameters!de.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandText>set transaction isolation level read uncommitted;
-
-select distinct
-	mh.stmid,
-	stm.name stmname,
-	mh.smid,
-	sm.name smname
-from managerHistory mh join srv16.rabotaua2.dbo.Manager sm with(nolock) on mh.smid = sm.id
-					   join srv16.rabotaua2.dbo.Manager stm with(nolock) on mh.stmid = stm.id
-where fulldate between @db and @de
-order by 1</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="stmid">
-          <DataField>stmid</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="stmname">
-          <DataField>stmname</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="smid">
-          <DataField>smid</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="smname">
-          <DataField>smname</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-      </Fields>
-      <Filters>
-        <Filter>
-          <FilterExpression>=Fields!smid.Value</FilterExpression>
-          <Operator>In</Operator>
-          <FilterValues>
-            <FilterValue>=Parameters!SM.Value</FilterValue>
-          </FilterValues>
-        </Filter>
-      </Filters>
-    </DataSet>
-    <DataSet Name="DSt_Managers">
-      <Query>
-        <DataSourceName>DSrcReporting</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@db">
-            <Value>=Parameters!db.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@de">
-            <Value>=Parameters!de.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandText>set transaction isolation level read uncommitted;
-
-select distinct
-	mh.stmid,
-	stm.name stmname,
-	mh.smid,
-	sm.name smname,
-	mh.managerid,
-	mh.managername
-from managerHistory mh join srv16.rabotaua2.dbo.Manager sm with(nolock) on mh.smid = sm.id
-					   join srv16.rabotaua2.dbo.Manager stm with(nolock) on mh.stmid = stm.id
-where fulldate between @db and @de
-order by 1</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="stmid">
-          <DataField>stmid</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="stmname">
-          <DataField>stmname</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="smid">
-          <DataField>smid</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="smname">
-          <DataField>smname</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="managerid">
-          <DataField>managerid</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="managername">
-          <DataField>managername</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-      </Fields>
-      <Filters>
-        <Filter>
-          <FilterExpression>=Fields!stmid.Value</FilterExpression>
-          <Operator>In</Operator>
-          <FilterValues>
-            <FilterValue>=Parameters!STM.Value</FilterValue>
-          </FilterValues>
-        </Filter>
-      </Filters>
-    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -252,16 +83,10 @@ order by 1</CommandText>
                   <Width>2.5cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.5cm</Width>
+                  <Width>3.63771cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.5cm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>2.5cm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>3.05563cm</Width>
+                  <Width>3.05562cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>3.92875cm</Width>
@@ -328,7 +153,7 @@ order by 1</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>ФИО менеджера</Value>
+                                  <Value>Модератор</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
@@ -338,74 +163,6 @@ order by 1</CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox3</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>WhiteSmoke</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox5">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>STM</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox5</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>WhiteSmoke</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox7">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>SM</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox7</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -704,83 +461,21 @@ order by 1</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="managername">
+                        <Textbox Name="UserName">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!managername.Value</Value>
+                                  <Value>=Fields!UserName.Value</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>managername</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="stmname">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!stmname.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>stmname</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="smname">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!smname.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>smname</rd:DefaultName>
+                          <rd:DefaultName>UserName</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1042,8 +737,6 @@ order by 1</CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
-                <TablixMember />
-                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -1060,7 +753,7 @@ order by 1</CommandText>
             <KeepTogether>true</KeepTogether>
             <DataSetName>DSt_VacancyLinking</DataSetName>
             <Height>2.33771cm</Height>
-            <Width>34.96125cm</Width>
+            <Width>31.09896cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1071,7 +764,7 @@ order by 1</CommandText>
         <Height>0.92036in</Height>
         <Style />
       </Body>
-      <Width>13.76427in</Width>
+      <Width>12.24368in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
@@ -1103,65 +796,11 @@ order by 1</CommandText>
       </DefaultValue>
       <Prompt>End date:</Prompt>
     </ReportParameter>
-    <ReportParameter Name="SM">
-      <DataType>Integer</DataType>
-      <DefaultValue>
-        <DataSetReference>
-          <DataSetName>DSt_SMs</DataSetName>
-          <ValueField>smid</ValueField>
-        </DataSetReference>
-      </DefaultValue>
-      <Prompt>SM:</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>DSt_SMs</DataSetName>
-          <ValueField>smid</ValueField>
-          <LabelField>smname</LabelField>
-        </DataSetReference>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="STM">
-      <DataType>Integer</DataType>
-      <DefaultValue>
-        <DataSetReference>
-          <DataSetName>DSt_STMs</DataSetName>
-          <ValueField>stmid</ValueField>
-        </DataSetReference>
-      </DefaultValue>
-      <Prompt>STM:</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>DSt_STMs</DataSetName>
-          <ValueField>stmid</ValueField>
-          <LabelField>stmname</LabelField>
-        </DataSetReference>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="managers">
-      <DataType>Integer</DataType>
-      <DefaultValue>
-        <DataSetReference>
-          <DataSetName>DSt_Managers</DataSetName>
-          <ValueField>managerid</ValueField>
-        </DataSetReference>
-      </DefaultValue>
-      <Prompt>Manager:</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>DSt_Managers</DataSetName>
-          <ValueField>managerid</ValueField>
-          <LabelField>managername</LabelField>
-        </DataSetReference>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>4</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
+      <NumberOfColumns>2</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -1172,21 +811,6 @@ order by 1</CommandText>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>de</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>3</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>STM</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>SM</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>managers</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
