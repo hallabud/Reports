@@ -69,6 +69,14 @@
           <DataField>planSumEnd</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="paysumacc2016">
+          <DataField>paysumacc2016</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="paysumacc2017">
+          <DataField>paysumacc2017</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
   </DataSets>
@@ -102,6 +110,9 @@
                 <ChartMember>
                   <Label>plan Sum Dayacc</Label>
                 </ChartMember>
+                <ChartMember>
+                  <Label>paysumacc2017</Label>
+                </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
             <ChartData>
@@ -110,7 +121,7 @@
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=Sum(Fields!paysumacc.Value)</Y>
+                        <Y>=IIF(Fields!fulldate.Value &gt; Today, Nothing, Sum(Fields!paysumacc.Value))</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style>
@@ -197,6 +208,45 @@ CStr(FormatPercent(sum(Fields!planSumDayacc.Value)/IIF(sum(Fields!planSumEnd.Val
                   <ChartItemInLegend>
                     <LegendText>Plan</LegendText>
                   </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="Series">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=IIF(Fields!fulldate.Value &lt;= Today, Nothing, (Sum(Fields!paysumacc2016.Value)+Sum(Fields!paysumacc2017.Value))/2)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                      </ChartDataLabel>
+                      <Style>
+                        <Border>
+                          <Width>2pt</Width>
+                        </Border>
+                        <Color>Purple</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
                   <ChartSmartLabel>
@@ -1009,7 +1059,6 @@ CStr(FormatPercent(sum(Fields!planSumDayacc.Value)/IIF(sum(Fields!planSumEnd.Val
                             <BackgroundGradientType>None</BackgroundGradientType>
                           </Style>
                         </Chart>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                   </TablixCells>
