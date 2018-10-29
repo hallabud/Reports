@@ -142,6 +142,12 @@
           <QueryParameter Name="@PersonType">
             <Value>="ActualManager"</Value>
           </QueryParameter>
+          <QueryParameter Name="@StartCurrentDate">
+            <Value>=Parameters!StartCurrentDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@CurrentDateEnd">
+            <Value>=Parameters!CurrentDateEnd.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_OverdueAccounts_DstManager</CommandText>
@@ -181,13 +187,31 @@
           <QueryParameter Name="@PersonType">
             <Value>= "PaidOwner"</Value>
           </QueryParameter>
+          <QueryParameter Name="@StartCurrentDate">
+            <Value>=Parameters!StartCurrentDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@CurrentDateEnd">
+            <Value>=Parameters!CurrentDateEnd.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_OverdueAccounts_DstManager</CommandText>
       </Query>
       <Fields>
+        <Field Name="managerid">
+          <DataField>managerid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="Manager">
           <DataField>Manager</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="stmname">
+          <DataField>stmname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="smname">
+          <DataField>smname</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -199,13 +223,31 @@
           <QueryParameter Name="@PersonType">
             <Value>="OrderOwner"</Value>
           </QueryParameter>
+          <QueryParameter Name="@StartCurrentDate">
+            <Value>=Parameters!StartCurrentDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@CurrentDateEnd">
+            <Value>=Parameters!CurrentDateEnd.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_OverdueAccounts_DstManager</CommandText>
       </Query>
       <Fields>
+        <Field Name="managerid">
+          <DataField>managerid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="Manager">
           <DataField>Manager</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="stmname">
+          <DataField>stmname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="smname">
+          <DataField>smname</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -317,6 +359,12 @@ order by OA.Year</CommandText>
           <QueryParameter Name="@PersonType">
             <Value>="ActualManager"</Value>
           </QueryParameter>
+          <QueryParameter Name="@StartCurrentDate">
+            <Value>=Parameters!StartCurrentDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@CurrentDateEnd">
+            <Value>=Parameters!CurrentDateEnd.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_OverdueAccounts_DstSTM</CommandText>
@@ -347,6 +395,12 @@ order by OA.Year</CommandText>
         <QueryParameters>
           <QueryParameter Name="@PersonType">
             <Value>="ActualManager"</Value>
+          </QueryParameter>
+          <QueryParameter Name="@StartCurrentDate">
+            <Value>=Parameters!StartCurrentDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@CurrentDateEnd">
+            <Value>=Parameters!CurrentDateEnd.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
@@ -3110,6 +3164,42 @@ order by OA.Year</CommandText>
     </ReportSection>
   </ReportSections>
   <ReportParameters>
+    <ReportParameter Name="StartCurrentDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>01/01/2015 00:00:00</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Планируемая дата оплаты         С</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="CurrentDateEnd">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>01/01/2025 00:00:00</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>по</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="AccDateFirstІStartDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>01/01/2015 00:00:00</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Первоначальная дата оплаты   C</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="AccDateFirstEndDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>01/01/2025 00:00:00</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>по</Prompt>
+    </ReportParameter>
     <ReportParameter Name="ActualSM">
       <DataType>String</DataType>
       <DefaultValue>
@@ -3128,18 +3218,36 @@ order by OA.Year</CommandText>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
-    <ReportParameter Name="PaidOwner">
+    <ReportParameter Name="ActualSTM">
       <DataType>String</DataType>
       <DefaultValue>
         <DataSetReference>
-          <DataSetName>DStPaidOwner</DataSetName>
+          <DataSetName>DStActualSTM</DataSetName>
+          <ValueField>stmname</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>STM</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DStActualSTM</DataSetName>
+          <ValueField>stmname</ValueField>
+          <LabelField>stmname</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="ActualManager">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStActualManager</DataSetName>
           <ValueField>Manager</ValueField>
         </DataSetReference>
       </DefaultValue>
-      <Prompt>Ответственный за счет</Prompt>
+      <Prompt>Текущий менеджер</Prompt>
       <ValidValues>
         <DataSetReference>
-          <DataSetName>DStPaidOwner</DataSetName>
+          <DataSetName>DStActualManager</DataSetName>
           <ValueField>Manager</ValueField>
           <LabelField>Manager</LabelField>
         </DataSetReference>
@@ -3164,38 +3272,20 @@ order by OA.Year</CommandText>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
-    <ReportParameter Name="StartCurrentDate">
-      <DataType>DateTime</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>01/01/2013 00:00:00</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>Планируемая дата оплаты         С</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="CurrentDateEnd">
-      <DataType>DateTime</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>01/01/2025 00:00:00</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>по</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="ActualSTM">
+    <ReportParameter Name="OrderType">
       <DataType>String</DataType>
       <DefaultValue>
         <DataSetReference>
-          <DataSetName>DStActualSTM</DataSetName>
-          <ValueField>stmname</ValueField>
+          <DataSetName>DStOrderType</DataSetName>
+          <ValueField>OrderType</ValueField>
         </DataSetReference>
       </DefaultValue>
-      <Prompt>STM</Prompt>
+      <Prompt>Тип заказа</Prompt>
       <ValidValues>
         <DataSetReference>
-          <DataSetName>DStActualSTM</DataSetName>
-          <ValueField>stmname</ValueField>
-          <LabelField>stmname</LabelField>
+          <DataSetName>DStOrderType</DataSetName>
+          <ValueField>OrderType</ValueField>
+          <LabelField>OrderType</LabelField>
         </DataSetReference>
       </ValidValues>
       <MultiValue>true</MultiValue>
@@ -3218,54 +3308,18 @@ order by OA.Year</CommandText>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
-    <ReportParameter Name="OrderType">
+    <ReportParameter Name="PaidOwner">
       <DataType>String</DataType>
       <DefaultValue>
         <DataSetReference>
-          <DataSetName>DStOrderType</DataSetName>
-          <ValueField>OrderType</ValueField>
-        </DataSetReference>
-      </DefaultValue>
-      <Prompt>Тип заказа</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>DStOrderType</DataSetName>
-          <ValueField>OrderType</ValueField>
-          <LabelField>OrderType</LabelField>
-        </DataSetReference>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="AccDateFirstІStartDate">
-      <DataType>DateTime</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>01.01.2013 0:00:00</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>Первоначальная дата оплаты   C</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="AccDateFirstEndDate">
-      <DataType>DateTime</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>01/01/2025 00:00:00</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>по</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="ActualManager">
-      <DataType>String</DataType>
-      <DefaultValue>
-        <DataSetReference>
-          <DataSetName>DStActualManager</DataSetName>
+          <DataSetName>DStPaidOwner</DataSetName>
           <ValueField>Manager</ValueField>
         </DataSetReference>
       </DefaultValue>
-      <Prompt>Текущий менеджер</Prompt>
+      <Prompt>Ответственный за счет</Prompt>
       <ValidValues>
         <DataSetReference>
-          <DataSetName>DStActualManager</DataSetName>
+          <DataSetName>DStPaidOwner</DataSetName>
           <ValueField>Manager</ValueField>
           <LabelField>Manager</LabelField>
         </DataSetReference>
@@ -3321,7 +3375,7 @@ order by OA.Year</CommandText>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>ActualSM</ParameterName>
+          <ParameterName>StartCurrentDate</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>3</ColumnIndex>
@@ -3329,13 +3383,13 @@ order by OA.Year</CommandText>
           <ParameterName>Possibility</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
+          <ColumnIndex>3</ColumnIndex>
           <RowIndex>1</RowIndex>
-          <ParameterName>OrderType</ParameterName>
+          <ParameterName>AccYear</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>2</RowIndex>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>1</RowIndex>
           <ParameterName>ActualManager</ParameterName>
         </CellDefinition>
         <CellDefinition>
@@ -3344,44 +3398,44 @@ order by OA.Year</CommandText>
           <ParameterName>OrderState</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>3</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>AccDateFirstІStartDate</ParameterName>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>OrderOwner</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>ActualSTM</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>OrderOwner</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>4</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>AccDateFirstEndDate</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>3</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>StartCurrentDate</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
+          <RowIndex>2</RowIndex>
           <ParameterName>PaidOwner</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>4</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>OrderType</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>3</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>AccDateFirstEndDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>CurrentDateEnd</ParameterName>
         </CellDefinition>
         <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ActualSM</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
           <ColumnIndex>2</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>AccYear</ParameterName>
+          <ParameterName>AccDateFirstІStartDate</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
