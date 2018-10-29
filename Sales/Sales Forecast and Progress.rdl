@@ -77,6 +77,14 @@
           <DataField>paysumacc2017</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="paysumacc2016Total">
+          <DataField>paysumacc2016Total</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="paysumacc2017Total">
+          <DataField>paysumacc2017Total</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
   </DataSets>
@@ -121,7 +129,7 @@
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=IIF(Fields!fulldate.Value &gt; Today, Nothing, Sum(Fields!paysumacc.Value))</Y>
+                        <Y>=Sum(Fields!paysumacc.Value)</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style>
@@ -219,11 +227,16 @@ CStr(FormatPercent(sum(Fields!planSumDayacc.Value)/IIF(sum(Fields!planSumEnd.Val
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=IIF(Fields!fulldate.Value &lt;= Today, Nothing, (Sum(Fields!paysumacc2016.Value)+Sum(Fields!paysumacc2017.Value))/2)</Y>
+                        <Y>=(Sum(Fields!paysumacc2016.Value)+Sum(Fields!paysumacc2017.Value))/2</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style />
+                        <Label>=IIF(Fields!fulldate.Value = Today,
+FormatPercent((Sum(Fields!paysumacc2016.Value)/Sum(Fields!paysumacc2016Total.Value)+Sum(Fields!paysumacc2017.Value)/Sum(Fields!paysumacc2017Total.Value))/2,2),
+Nothing)</Label>
+                        <Visible>true</Visible>
                       </ChartDataLabel>
+                      <ToolTip>=(Sum(Fields!paysumacc2016.Value)/Sum(Fields!paysumacc2016Total.Value)+Sum(Fields!paysumacc2017.Value)/Sum(Fields!paysumacc2017Total.Value))/2</ToolTip>
                       <Style>
                         <Border>
                           <Width>2pt</Width>
