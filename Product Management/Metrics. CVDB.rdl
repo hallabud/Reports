@@ -20,11 +20,12 @@
           <QueryParameter Name="@EndDate">
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@Departments">
+            <Value>=Parameters!Departments.Value</Value>
+          </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT D.YearNum, D.WeekNum, D.WeekName, CVDB.*
-FROM dbo.AggrCVDBMetrics CVDB
- JOIN Reporting.dbo.DimDate D ON CVDB.FullDate = D.FullDate
-WHERE D.FullDate BETWEEN @StartDate AND @EndDate</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_CVDBMetrics</CommandText>
       </Query>
       <Fields>
         <Field Name="YearNum">
@@ -45,6 +46,10 @@ WHERE D.FullDate BETWEEN @StartDate AND @EndDate</CommandText>
         </Field>
         <Field Name="WeekName">
           <DataField>WeekName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Team">
+          <DataField>Team</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="ResumeViewedByCompanyCount">
@@ -4570,11 +4575,39 @@ WHERE D.FullDate BETWEEN @StartDate AND @EndDate</CommandText>
       </DefaultValue>
       <Prompt>Конечная дата</Prompt>
     </ReportParameter>
+    <ReportParameter Name="Departments">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>TS</Value>
+          <Value>FS</Value>
+          <Value>Other</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Отдел</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>TS</Value>
+            <Label>TS</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>FS</Value>
+            <Label>FS</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Other</Value>
+            <Label>Other</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>1</NumberOfRows>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -4585,6 +4618,11 @@ WHERE D.FullDate BETWEEN @StartDate AND @EndDate</CommandText>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>EndDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>Departments</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
