@@ -165,6 +165,10 @@
         <CommandText>usp_ssrs_Report_NPS_Weekly</CommandText>
       </Query>
       <Fields>
+        <Field Name="yearnum">
+          <DataField>yearnum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
         <Field Name="WeekNum">
           <DataField>WeekNum</DataField>
           <rd:TypeName>System.Byte</rd:TypeName>
@@ -280,7 +284,8 @@ CASE WHEN M.DepartmentID IN (1,12) THEN 'TS'
         </QueryParameters>
         <CommandText>with cte_answers_weekly as
  (
-  SELECT dd.WeekNum, 
+  SELECT dd.yearnum,
+dd.WeekNum, 
    dd.WeekName,
    CASE 
     WHEN M.DepartmentID IN (1,12) THEN 'TS'
@@ -291,12 +296,12 @@ CASE WHEN M.DepartmentID IN (1,12) THEN 'TS'
    SUM(CASE WHEN Answer1 IN (7,8) THEN 1 ELSE 0 END) [Passive],
    SUM(CASE WHEN Answer1 IN (0,1,2,3,4,5,6) THEN 1 ELSE 0 END) [Critics],
    SUM(CASE WHEN Answer1 IN (9,10) THEN 1 ELSE 0 END) - SUM(CASE WHEN Answer1 IN (0,1,2,3,4,5,6) THEN 1 ELSE 0 END) [NPS],
-   dense_rank() over(order by dd.WeekNum desc) rn
+   dense_rank() over(order by dd.yearnum desc, dd.WeekNum desc) rn
   FROM srv16.rabotaua2.dbo.NotebookCompany_FeedBack NCF
    JOIN srv16.rabotaua2.dbo.NotebookCompany NC ON NC.NotebookID=NCF.NotebookID
    JOIN srv16.rabotaua2.dbo.Manager M ON NC.ManagerID = M.ID
    left join DimDate dd on cast(NCF.AddDate as date) = dd.FullDate
-  GROUP BY dd.WeekName, dd.WeekNum,
+  GROUP BY dd.WeekName, dd.WeekNum, dd.yearnum,
    CASE 
     WHEN M.DepartmentID IN (1,12) THEN 'TS'
 	WHEN M.DepartmentID IN (2) THEN 'FS' 
@@ -308,12 +313,20 @@ FROM cte_answers_weekly
 WHERE rn &lt;= @WeeksCount</CommandText>
       </Query>
       <Fields>
+        <Field Name="yearnum">
+          <DataField>yearnum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
         <Field Name="WeekNum">
           <DataField>WeekNum</DataField>
           <rd:TypeName>System.Byte</rd:TypeName>
         </Field>
         <Field Name="WeekName">
           <DataField>WeekName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Department">
+          <DataField>Department</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Total">
@@ -335,10 +348,6 @@ WHERE rn &lt;= @WeeksCount</CommandText>
         <Field Name="NPS">
           <DataField>NPS</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="Department">
-          <DataField>Department</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="rn">
           <DataField>rn</DataField>
@@ -1412,17 +1421,32 @@ WHERE rn &lt;= @WeeksCount</CommandText>
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart3_CategoryGroup2">
+                  <Group Name="Chart5_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                      <GroupExpression>=Fields!yearnum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!WeekNum.Value</Value>
+                      <Value>=Fields!yearnum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!WeekName.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart3_CategoryGroup2">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!yearnum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -2151,17 +2175,32 @@ WHERE rn &lt;= @WeeksCount</CommandText>
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart4_CategoryGroup2">
+                  <Group Name="Chart7_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                      <GroupExpression>=Fields!yearnum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!WeekNum.Value</Value>
+                      <Value>=Fields!yearnum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!WeekName.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart4_CategoryGroup2">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!yearnum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -2681,17 +2720,32 @@ WHERE rn &lt;= @WeeksCount</CommandText>
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart4_CategoryGroup3">
+                  <Group Name="Chart9_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                      <GroupExpression>=Fields!yearnum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!WeekNum.Value</Value>
+                      <Value>=Fields!yearnum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!WeekName.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart4_CategoryGroup3">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!yearnum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -5213,17 +5267,32 @@ WHERE rn &lt;= @WeeksCount</CommandText>
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart3_CategoryGroup">
+                  <Group Name="Chart3_CategoryGroup1">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                      <GroupExpression>=Fields!yearnum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!WeekNum.Value</Value>
+                      <Value>=Fields!yearnum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!WeekName.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart3_CategoryGroup">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!yearnum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -5735,17 +5804,32 @@ WHERE rn &lt;= @WeeksCount</CommandText>
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart3_CategoryGroup5">
+                  <Group Name="Chart15_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                      <GroupExpression>=Fields!yearnum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!WeekNum.Value</Value>
+                      <Value>=Fields!yearnum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!WeekName.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart3_CategoryGroup5">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!yearnum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -6104,17 +6188,32 @@ WHERE rn &lt;= @WeeksCount</CommandText>
             <ChartCategoryHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Group Name="Chart3_CategoryGroup6">
+                  <Group Name="Chart16_CategoryGroup">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                      <GroupExpression>=Fields!yearnum.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!WeekNum.Value</Value>
+                      <Value>=Fields!yearnum.Value</Value>
                     </SortExpression>
                   </SortExpressions>
-                  <Label>=Fields!WeekName.Value</Label>
+                  <ChartMembers>
+                    <ChartMember>
+                      <Group Name="Chart3_CategoryGroup6">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!WeekName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!WeekNum.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <Label>=Fields!WeekName.Value</Label>
+                    </ChartMember>
+                  </ChartMembers>
+                  <Label>=Fields!yearnum.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
