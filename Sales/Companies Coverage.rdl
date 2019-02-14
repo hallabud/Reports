@@ -23,6 +23,15 @@
           <QueryParameter Name="@ManagerIDs">
             <Value>=Parameters!ManagerIDs.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@ActivityExistsGroup">
+            <Value>=Parameters!ActivityExistsGroup.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ActionExistsGroup">
+            <Value>=Parameters!ActionExistsGroup.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EffectiveCallExistsGroup">
+            <Value>=Parameters!EffectiveCallExistsGroup.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_CompanyCoverage</CommandText>
@@ -48,23 +57,11 @@
           <DataField>ActivityExistsGroup</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="EffectiveCallExistsGroup">
+          <DataField>EffectiveCallExistsGroup</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
       </Fields>
-      <Filters>
-        <Filter>
-          <FilterExpression>=Fields!ActivityExistsGroup.Value</FilterExpression>
-          <Operator>In</Operator>
-          <FilterValues>
-            <FilterValue>=Parameters!ActivityExistsGroup.Value</FilterValue>
-          </FilterValues>
-        </Filter>
-        <Filter>
-          <FilterExpression>=Fields!ActionExistsGroup.Value</FilterExpression>
-          <Operator>In</Operator>
-          <FilterValues>
-            <FilterValue>=Parameters!ActionExistsGroup.Value</FilterValue>
-          </FilterValues>
-        </Filter>
-      </Filters>
     </DataSet>
     <DataSet Name="DStSalesTeams">
       <SharedDataSet>
@@ -802,6 +799,9 @@
                 <TablixColumn>
                   <Width>2.5cm</Width>
                 </TablixColumn>
+                <TablixColumn>
+                  <Width>4.37854cm</Width>
+                </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
@@ -977,6 +977,40 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox7">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Эффективный звонок</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox7</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -1139,12 +1173,43 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="EffectiveCallExistsGroup">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!EffectiveCallExistsGroup.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>EffectiveCallExistsGroup</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -1165,7 +1230,7 @@
             <DataSetName>DStMain</DataSetName>
             <Top>3.429cm</Top>
             <Height>1.2cm</Height>
-            <Width>22.03917cm</Width>
+            <Width>26.41771cm</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -1209,7 +1274,7 @@
         <Height>2.12811in</Height>
         <Style />
       </Body>
-      <Width>8.67684in</Width>
+      <Width>10.40067in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
@@ -1317,11 +1382,34 @@
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="EffectiveCallExistsGroup">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>Со звонком</Value>
+          <Value>Без звонка</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Есть эффективный звонок</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>Со звонком</Value>
+            <Label>Со звонком</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Без звонка</Value>
+            <Label>Без звонка</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>3</NumberOfRows>
+      <NumberOfRows>4</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -1352,6 +1440,11 @@
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>2</RowIndex>
           <ParameterName>ActionExistsGroup</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>3</RowIndex>
+          <ParameterName>EffectiveCallExistsGroup</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
