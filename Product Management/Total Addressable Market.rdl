@@ -185,6 +185,10 @@
           <DataField>WeekName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="vacs">
+          <DataField>vacs</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="DSt_notconnected_vacancy_daily">
@@ -8055,6 +8059,9 @@
                 <ChartMember>
                   <Label>Rabota Vacancy Num</Label>
                 </ChartMember>
+                <ChartMember>
+                  <Label>vacs</Label>
+                </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
             <ChartData>
@@ -8063,13 +8070,13 @@
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=Avg(Fields!RabotaVacancyNum.Value)</Y>
+                        <Y>=Sum(Fields!RabotaVacancyNum.Value)</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style />
                         <UseValueAsLabel>true</UseValueAsLabel>
                       </ChartDataLabel>
-                      <ToolTip>=Avg(Fields!RabotaVacancyNum.Value)</ToolTip>
+                      <ToolTip>=Sum(Fields!RabotaVacancyNum.Value)</ToolTip>
                       <Style>
                         <Color>Salmon</Color>
                       </Style>
@@ -8103,13 +8110,13 @@
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=Avg(Fields!WorkVacancyNum.Value)</Y>
+                        <Y>=Sum(Fields!WorkVacancyNum.Value)</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style />
                         <UseValueAsLabel>true</UseValueAsLabel>
                       </ChartDataLabel>
-                      <ToolTip>=Avg(Fields!WorkVacancyNum.Value)</ToolTip>
+                      <ToolTip>=Sum(Fields!WorkVacancyNum.Value)</ToolTip>
                       <Style>
                         <Color>CornflowerBlue</Color>
                       </Style>
@@ -8181,6 +8188,51 @@
                     <LegendText>gap, %</LegendText>
                   </ChartItemInLegend>
                   <ValueAxisName>Secondary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="vacs">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!vacs.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                      </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!vacs.Value)</ToolTip>
+                      <Style>
+                        <Border>
+                          <Width>2pt</Width>
+                        </Border>
+                        <Color>Pink</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Type>Square</Type>
+                        <Size>5pt</Size>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Unique vacancies count</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
                   <ChartSmartLabel>
                     <CalloutLineColor>Black</CalloutLineColor>
@@ -8356,7 +8408,7 @@
                     </ChartMinorTickMarks>
                     <CrossAt>NaN</CrossAt>
                     <Minimum>NaN</Minimum>
-                    <Maximum>70000</Maximum>
+                    <Maximum>90000</Maximum>
                     <ChartAxisScaleBreak>
                       <Style />
                     </ChartAxisScaleBreak>
@@ -8475,6 +8527,15 @@
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DSt_connected_vacancy_daily</DataSetName>
+            <Filters>
+              <Filter>
+                <FilterExpression>=Fields!WeekDayNum.Value</FilterExpression>
+                <Operator>Equal</Operator>
+                <FilterValues>
+                  <FilterValue DataType="Integer">5</FilterValue>
+                </FilterValues>
+              </Filter>
+            </Filters>
             <Top>176.98056cm</Top>
             <Height>10cm</Height>
             <Width>30cm</Width>
