@@ -197,55 +197,17 @@
             <Value>=Parameters!YearNum.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>IF @Mode = 1
-	BEGIN 
-		WITH C AS
-		 (
-		SELECT D.YearNum, D.MonthNum, D.MonthNameEng
-		 , COUNT(*) AS ContactsOpened
-		 , LAG(COUNT(*),1,NULL) OVER(PARTITION BY D.MonthNum ORDER BY D.YearNum) AS ContactsOpened_Prv
-		 , 1. * COUNT(*) / LAG(COUNT(*),1,NULL) OVER(PARTITION BY D.MonthNum ORDER BY D.YearNum) - 1. AS YTY
-		FROM SRV16.RabotaUA2.dbo.DailyViewedResume DVR WITH (NOLOCK)
-		 JOIN Reporting.dbo.DimDate D ON DVR.ViewDate = D.FullDate
-		WHERE D.YearNum BETWEEN @YearNum - 1 AND @YearNum
-		GROUP BY D.YearNum, D.MonthNum, D.MonthNameEng
-		 )
-		SELECT * 
-		FROM C
-		WHERE YTY IS NOT NULL
-		ORDER BY YearNum, MonthNum;
-
-	END
-
-IF @Mode = 2
-	BEGIN
-		WITH C AS
-		 (
-		SELECT D.YearNum, D.MonthNum, D.MonthNameEng
-		 , COUNT(*) AS ContactsOpened
-		 , LAG(COUNT(*),1,NULL) OVER(PARTITION BY D.MonthNum ORDER BY D.YearNum) AS ContactsOpened_Prv
-		 , 1. * COUNT(*) / LAG(COUNT(*),1,NULL) OVER(PARTITION BY D.MonthNum ORDER BY D.YearNum) - 1. AS YTY
-		 , ROW_NUMBER() OVER(ORDER BY D.YearNum DESC, D.MonthNum DESC) AS RowNum
-		FROM SRV16.RabotaUA2.dbo.DailyViewedResume DVR WITH (NOLOCK)
-		 JOIN Reporting.dbo.DimDate D ON DVR.ViewDate = D.FullDate
-		WHERE D.YearNum BETWEEN @YearNum - 2 AND @YearNum
-		GROUP BY D.YearNum, D.MonthNum, D.MonthNameEng
-		 )
-		SELECT YearNum, MonthNum, MonthNameEng, ContactsOpened, ContactsOpened_Prv, YTY
-		FROM C
-		WHERE RowNum BETWEEN 1 AND 14
-		ORDER BY YearNum, MonthNum;
-		 
-	END</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_BoardMeetingDashboard_ContactsOpened</CommandText>
       </Query>
       <Fields>
         <Field Name="YearNum">
           <DataField>YearNum</DataField>
-          <rd:TypeName>System.Int16</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="MonthNum">
           <DataField>MonthNum</DataField>
-          <rd:TypeName>System.Byte</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="MonthNameEng">
           <DataField>MonthNameEng</DataField>
