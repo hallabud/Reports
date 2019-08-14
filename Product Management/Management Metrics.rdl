@@ -1003,6 +1003,55 @@ select top 100 * from dbo.FactSpiderCompanyIndexes</CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="DST_RR">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@Period">
+            <Value>=Parameters!Period.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>select
+	*
+from (
+select
+	dd.YearNum,
+	dd.WeekNum,
+	dd.WeekName,
+	sum(frrop.RecognizedRevenue) Rabota_SumRecognizedRevenue,
+	dense_rank () over(order by dd.YearNum desc, dd.WeekNum desc) rn
+from FactRecognizedRevenueOrderProduct frrop join DimDate dd on frrop.Date_key = dd.Date_key
+											 join DimProduct dp on frrop.Product_key = dp.Product_key
+											 join DimService ds on dp.Service_key = ds.Service_key
+											 left join NotebookCompany_forTest ft on frrop.notebookid = ft.notebookid
+where ft.notebookid is null
+group by dd.YearNum, dd.WeekNum, dd.WeekName) x
+where rn between 2 and @Period
+order by 1 desc ,2 desc</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="YearNum">
+          <DataField>YearNum</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="WeekNum">
+          <DataField>WeekNum</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="WeekName">
+          <DataField>WeekName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Rabota_SumRecognizedRevenue">
+          <DataField>Rabota_SumRecognizedRevenue</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="rn">
+          <DataField>rn</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -2053,7 +2102,7 @@ select top 100 * from dbo.FactSpiderCompanyIndexes</CommandText>
                 <VerticalAlign>Top</VerticalAlign>
               </Style>
             </ChartNoDataMessage>
-            <DataSetName>DStMetricsWeekly</DataSetName>
+            <DataSetName>DST_RR</DataSetName>
             <Top>184.5594cm</Top>
             <Left>0.61958cm</Left>
             <Height>12cm</Height>
@@ -13332,7 +13381,6 @@ select top 100 * from dbo.FactSpiderCompanyIndexes</CommandText>
               </Filter>
             </Filters>
             <Top>307.42466cm</Top>
-            <Left>0cm</Left>
             <Height>10cm</Height>
             <Width>35.54169cm</Width>
             <ZIndex>32</ZIndex>
