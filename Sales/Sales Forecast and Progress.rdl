@@ -213,7 +213,16 @@
                           <Format>0.00%</Format>
                           <Color>Green</Color>
                         </Style>
-                        <Label>=IIF(Fields!fulldate.Value=Today, sum(Fields!paysumacc.Value)/IIF(sum(Fields!planSumEnd.Value)=0, 1, sum(Fields!planSumEnd.Value)), "")</Label>
+                        <Label>=IIF(
+	Fields!fulldate.Value=Today 
+		or 
+	Fields!fulldate.Value = CDate(
+								DateAdd(DateInterval.Day, 
+										-1, 
+										DateAdd(DateInterval.Quarter, DATEPART(DateInterval.Quarter, Today), 
+								DateSerial(Parameters!yearnum.Value, 3*(Parameters!quarternum.Value-1)+1, 1)))), 
+sum(Fields!paysumacc.Value)/IIF(sum(Fields!planSumEnd.Value)=0, 1, sum(Fields!planSumEnd.Value))
+, "")</Label>
                         <Visible>true</Visible>
                       </ChartDataLabel>
                       <ToolTip>=Format(Sum(Fields!paysumacc.Value), "'₴'0,,.00 млн")+ " (" +
@@ -263,7 +272,16 @@ CStr(FormatPercent(sum(Fields!planSumDayacc.Value)/IIF(sum(Fields!planSumEnd.Val
                           <Format>0.00%</Format>
                           <Color>Orange</Color>
                         </Style>
-                        <Label>=IIF(Fields!fulldate.Value=Today, sum(Fields!planSumDayacc.Value)/IIF(sum(Fields!planSumEnd.Value)=0, 1, sum(Fields!planSumEnd.Value)), "")</Label>
+                        <Label>=IIF(
+	Fields!fulldate.Value=Today 
+		or 
+	Fields!fulldate.Value = CDate(
+								DateAdd(DateInterval.Day, 
+										-1, 
+										DateAdd(DateInterval.Quarter, DATEPART(DateInterval.Quarter, Today), 
+								DateSerial(Parameters!yearnum.Value, 3*(Parameters!quarternum.Value-1)+1, 1)))), 
+sum(Fields!planSumDayacc.Value)/IIF(sum(Fields!planSumEnd.Value)=0, 1, sum(Fields!planSumEnd.Value)), 
+"")</Label>
                         <Visible>true</Visible>
                       </ChartDataLabel>
                       <ToolTip>=Format(Sum(Fields!planSumDayacc.Value), "'₴'0,,.00 млн") + " (" +
@@ -312,7 +330,14 @@ CStr(FormatPercent(sum(Fields!planSumDayacc.Value)/IIF(sum(Fields!planSumEnd.Val
                         <Style>
                           <Color>Purple</Color>
                         </Style>
-                        <Label>=IIF(Fields!fulldate.Value = Today,
+                        <Label>=IIF(
+	Fields!fulldate.Value=Today 
+		or 
+	Fields!fulldate.Value = CDate(
+								DateAdd(DateInterval.Day, 
+										-1, 
+										DateAdd(DateInterval.Quarter, DATEPART(DateInterval.Quarter, Today), 
+								DateSerial(Parameters!yearnum.Value, 3*(Parameters!quarternum.Value-1)+1, 1)))), 
 FormatPercent((Sum(Fields!paysumacc2016.Value)/Sum(Fields!paysumacc2016Total.Value)+Sum(Fields!paysumacc2017.Value)/Sum(Fields!paysumacc2017Total.Value))/2,2),
 Nothing)</Label>
                         <Visible>true</Visible>
@@ -778,7 +803,16 @@ CStr(FormatPercent((Sum(Fields!paysumacc2016.Value)/Sum(Fields!paysumacc2016Tota
                                       <Style>
                                         <Format>0.00%</Format>
                                       </Style>
-                                      <Label>=IIF(Fields!fulldate.Value=Today, sum(Fields!paysumacc.Value)/IIF(sum(Fields!planSumEnd.Value)=0, 1, sum(Fields!planSumEnd.Value)), "")</Label>
+                                      <Label>=IIF(
+	Fields!fulldate.Value=Today 
+		or 
+	Fields!fulldate.Value = CDate(
+								DateAdd(DateInterval.Day, 
+										-1, 
+										DateAdd(DateInterval.Quarter, DATEPART(DateInterval.Quarter, Today), 
+								DateSerial(Parameters!yearnum.Value, 3*(Parameters!quarternum.Value-1)+1, 1)))), 
+sum(Fields!paysumacc.Value)/IIF(sum(Fields!planSumEnd.Value)=0, 1, sum(Fields!planSumEnd.Value)), 
+"")</Label>
                                       <Visible>true</Visible>
                                     </ChartDataLabel>
                                     <ToolTip>=Format(Sum(Fields!paysumacc.Value), "'₴'0,,.00 млн")</ToolTip>
@@ -825,7 +859,16 @@ CStr(FormatPercent((Sum(Fields!paysumacc2016.Value)/Sum(Fields!paysumacc2016Tota
                                       <Style>
                                         <Format>0.00%</Format>
                                       </Style>
-                                      <Label>=IIF(Fields!fulldate.Value=Today, sum(Fields!planSumDayacc.Value)/IIF(sum(Fields!planSumEnd.Value)=0, 1, sum(Fields!planSumEnd.Value)), "")</Label>
+                                      <Label>=IIF(
+	Fields!fulldate.Value=Today 
+		or 
+	Fields!fulldate.Value = CDate(
+								DateAdd(DateInterval.Day, 
+										-1, 
+										DateAdd(DateInterval.Quarter, DATEPART(DateInterval.Quarter, Today), 
+								DateSerial(Parameters!yearnum.Value, 3*(Parameters!quarternum.Value-1)+1, 1)))), 
+sum(Fields!planSumDayacc.Value)/IIF(sum(Fields!planSumEnd.Value)=0, 1, sum(Fields!planSumEnd.Value)), 
+"")</Label>
                                       <Visible>true</Visible>
                                     </ChartDataLabel>
                                     <ToolTip>=Format(Sum(Fields!planSumDayacc.Value), "'₴'0,,.00 млн")</ToolTip>
@@ -870,7 +913,14 @@ CStr(FormatPercent((Sum(Fields!paysumacc2016.Value)/Sum(Fields!paysumacc2016Tota
                                     </ChartDataPointValues>
                                     <ChartDataLabel>
                                       <Style />
-                                      <Label>=IIF(Fields!fulldate.Value = Today,
+                                      <Label>=IIF(
+	Fields!fulldate.Value=Today 
+		or 
+	Fields!fulldate.Value = CDate(
+								DateAdd(DateInterval.Day, 
+										-1, 
+										DateAdd(DateInterval.Quarter, DATEPART(DateInterval.Quarter, Today), 
+								DateSerial(Parameters!yearnum.Value, 3*(Parameters!quarternum.Value-1)+1, 1)))), 
 FormatPercent((Sum(Fields!paysumacc2017.Value)/Sum(Fields!paysumacc2017Total.Value)),2),
 Nothing)</Label>
                                       <Visible>true</Visible>
@@ -1355,6 +1405,7 @@ CStr(FormatPercent((Sum(Fields!paysumacc2017.Value)/Sum(Fields!paysumacc2017Tota
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
+            <KeepTogether>true</KeepTogether>
             <DataSetName>DSt_SalesForecastAndProgress</DataSetName>
             <PageBreak>
               <BreakLocation>End</BreakLocation>
@@ -1527,7 +1578,16 @@ CStr(FormatPercent((Sum(Fields!paysumacc2017.Value)/Sum(Fields!paysumacc2017Tota
                                       <Style>
                                         <Format>0;(0)</Format>
                                       </Style>
-                                      <Label>=IIF(Fields!fulldate.Value = Today, Sum(Fields!paysumacc.Value), "")</Label>
+                                      <Label>=IIF(
+	Fields!fulldate.Value=Today 
+		or 
+	Fields!fulldate.Value = CDate(
+								DateAdd(DateInterval.Day, 
+										-1, 
+										DateAdd(DateInterval.Quarter, DATEPART(DateInterval.Quarter, Today), 
+								DateSerial(Parameters!yearnum.Value, 3*(Parameters!quarternum.Value-1)+1, 1)))), 
+Sum(Fields!paysumacc.Value), 
+"")</Label>
                                       <Visible>true</Visible>
                                     </ChartDataLabel>
                                     <Style>
@@ -1573,7 +1633,16 @@ CStr(FormatPercent((Sum(Fields!paysumacc2017.Value)/Sum(Fields!paysumacc2017Tota
                                       <Style>
                                         <Format>0.00%</Format>
                                       </Style>
-                                      <Label>=IIF(Fields!fulldate.Value = Today, Sum(Fields!planSumDayacc.Value) / IIF(Sum(Fields!planSumEnd.Value) = 0, 1, Sum(Fields!planSumEnd.Value)), "")</Label>
+                                      <Label>=IIF(
+	Fields!fulldate.Value=Today 
+		or 
+	Fields!fulldate.Value = CDate(
+								DateAdd(DateInterval.Day, 
+										-1, 
+										DateAdd(DateInterval.Quarter, DATEPART(DateInterval.Quarter, Today), 
+								DateSerial(Parameters!yearnum.Value, 3*(Parameters!quarternum.Value-1)+1, 1)))), 
+Sum(Fields!planSumDayacc.Value) / IIF(Sum(Fields!planSumEnd.Value) = 0, 1, Sum(Fields!planSumEnd.Value)), 
+"")</Label>
                                       <Visible>true</Visible>
                                     </ChartDataLabel>
                                     <Style>
@@ -1617,7 +1686,16 @@ CStr(FormatPercent((Sum(Fields!paysumacc2017.Value)/Sum(Fields!paysumacc2017Tota
                                     </ChartDataPointValues>
                                     <ChartDataLabel>
                                       <Style />
-                                      <Label>=IIF(Fields!fulldate.Value = Today,Sum(Fields!paysumacc2017.Value), Nothing)</Label>
+                                      <Label>=IIF(
+	Fields!fulldate.Value=Today 
+		or 
+	Fields!fulldate.Value = CDate(
+								DateAdd(DateInterval.Day, 
+										-1, 
+										DateAdd(DateInterval.Quarter, DATEPART(DateInterval.Quarter, Today), 
+								DateSerial(Parameters!yearnum.Value, 3*(Parameters!quarternum.Value-1)+1, 1)))), 
+Sum(Fields!paysumacc2017.Value), 
+Nothing)</Label>
                                       <Visible>true</Visible>
                                     </ChartDataLabel>
                                     <Style>
@@ -2097,9 +2175,9 @@ CStr(FormatPercent((Sum(Fields!paysumacc2017.Value)/Sum(Fields!paysumacc2017Tota
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
+            <KeepTogether>true</KeepTogether>
             <DataSetName>Dst_TS_SalesForecastAndProgress</DataSetName>
             <Top>21.2632cm</Top>
-            <Left>0cm</Left>
             <Height>10.6cm</Height>
             <Width>31.99729cm</Width>
             <ZIndex>3</ZIndex>
