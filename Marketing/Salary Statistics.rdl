@@ -128,14 +128,36 @@ FROM SRV16.RabotaUA2.dbo.ProfLevel</CommandText>
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="DStSalaryStatsShared">
-      <SharedDataSet>
-        <SharedDataSetReference>DStSalaryStatsShared</SharedDataSetReference>
-      </SharedDataSet>
+    <DataSet Name="DStSalaryStats">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@YearNum">
+            <Value>=Parameters!YearNum.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@QuarterNum">
+            <Value>=Parameters!QuarterNum.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@RubricId1">
+            <Value>=Parameters!RubricId1.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@RubricId2">
+            <Value>=Parameters!RubricId2.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@CityId">
+            <Value>=Parameters!CityId.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ProfLevelId">
+            <Value>=Parameters!ProfLevelId.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_SalaryStatistics</CommandText>
+      </Query>
       <Fields>
         <Field Name="SalarySource">
           <DataField>SalarySource</DataField>
-          <rd:TypeName>System.Byte</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="YearNum">
           <DataField>YearNum</DataField>
@@ -1085,7 +1107,7 @@ FROM SRV16.RabotaUA2.dbo.ProfLevel</CommandText>
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
-            <DataSetName>DStSalaryStatsShared</DataSetName>
+            <DataSetName>DStSalaryStats</DataSetName>
             <Filters>
               <Filter>
                 <FilterExpression>=Fields!YearNum.Value</FilterExpression>
@@ -1250,6 +1272,10 @@ FROM SRV16.RabotaUA2.dbo.ProfLevel</CommandText>
           <ParameterValue>
             <Value>2019</Value>
             <Label>2019</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>2020</Value>
+            <Label>2020</Label>
           </ParameterValue>
         </ParameterValues>
       </ValidValues>
