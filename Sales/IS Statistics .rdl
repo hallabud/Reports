@@ -13,13 +13,14 @@
     <DataSet Name="DSt_Rep_IS_AM">
       <Query>
         <DataSourceName>Reporting</DataSourceName>
-        <CommandText>select 
+        <CommandText>
+select 
 k.*, 
 TeamGroup  = case when SM_name in ('Александр Новиков','Вадим Горянский') then 1 
                   when SM_name in ('Виталий Мандзяк', 'Давид Пограрян') then 2 
               end
-, isnull(t.PercentLoyaltyCmp,t1.PercentLoyaltyCmp) as TeamPercentLoyaltyCmp
-, X = ((K.ActiveCompanyCnt * isnull(t.PercentLoyaltyCmp,t1.PercentLoyaltyCmp)) - K.LoyalCompanyCnt) + 1   -- (194 * 0.50) - 93
+, isnull(t.AvgPercentLoyalty_CurrentMonth,t1.AvgPercentLoyalty_CurrentMonth) as TeamPercentLoyaltyCmp
+, X = ((K.ActiveCompanyCnt * isnull(t.AvgPercentLoyalty_CurrentMonth,t1.AvgPercentLoyalty_CurrentMonth)) - K.LoyalCompanyCnt) + 1   -- (194 * 0.50) - 93
 from [dbo].[Rep_KPI_IS_AM] k with(nolock)
 join SRV16.RabotaUA2.dbo.Manager M with(nolock) on m.id = k.managerid
 left join [dbo].[Rep_KPI_IS_Teams] t with(nolock) on k.ReportDate = t.ReportDate and t.Team_name = 'IS_Kiev' and k.SM_name in ('Александр Новиков','Вадим Горянский')
@@ -1190,7 +1191,7 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
             <Top>0.60537cm</Top>
             <Left>0.31432cm</Left>
             <Height>2.49646cm</Height>
-            <Width>36.72734cm</Width>
+            <Width>36.72736cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
