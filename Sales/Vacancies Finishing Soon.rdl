@@ -85,26 +85,14 @@
             <FilterValue>=Parameters!stmid.Value</FilterValue>
           </FilterValues>
         </Filter>
+        <Filter>
+          <FilterExpression>=Fields!managerid.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!managerid.Value</FilterValue>
+          </FilterValues>
+        </Filter>
       </Filters>
-    </DataSet>
-    <DataSet Name="DStSalesTeams">
-      <SharedDataSet>
-        <SharedDataSetReference>DStSalesTeamsDistinct</SharedDataSetReference>
-      </SharedDataSet>
-      <Fields>
-        <Field Name="SalesTeamName">
-          <DataField>SalesTeamName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="SalesManagerID">
-          <DataField>SalesManagerID</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="SalesManagerName">
-          <DataField>SalesManagerName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-      </Fields>
     </DataSet>
     <DataSet Name="DStSTMs">
       <SharedDataSet>
@@ -124,12 +112,51 @@
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
+    </DataSet>
+    <DataSet Name="DStManagers">
+      <SharedDataSet>
+        <SharedDataSetReference>DStManagersDistinct</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="ManagerID">
+          <DataField>ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TeamLead_ManagerID">
+          <DataField>TeamLead_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IsLoyaltyGroup">
+          <DataField>IsLoyaltyGroup</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="Email">
+          <DataField>Email</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DepartmentID">
+          <DataField>DepartmentID</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+        <Field Name="STM_ManagerID">
+          <DataField>STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Real_STM_ManagerID">
+          <DataField>Real_STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
       <Filters>
         <Filter>
-          <FilterExpression>=Fields!TeamLead_ManagerID.Value</FilterExpression>
+          <FilterExpression>=Fields!STM_ManagerID.Value</FilterExpression>
           <Operator>In</Operator>
           <FilterValues>
-            <FilterValue>=Parameters!smid.Value</FilterValue>
+            <FilterValue>=Parameters!stmid.Value</FilterValue>
           </FilterValues>
         </Filter>
       </Filters>
@@ -1015,6 +1042,12 @@
     </ReportParameter>
     <ReportParameter Name="departmentid">
       <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>2</Value>
+          <Value>12</Value>
+        </Values>
+      </DefaultValue>
       <Prompt>Department</Prompt>
       <ValidValues>
         <ParameterValues>
@@ -1030,24 +1063,36 @@
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
-    <ReportParameter Name="smid">
+    <ReportParameter Name="stmid">
       <DataType>Integer</DataType>
-      <Prompt>SM:</Prompt>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStSTMs</DataSetName>
+          <ValueField>ManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>STM/Team Lead:</Prompt>
       <ValidValues>
         <DataSetReference>
-          <DataSetName>DStSalesTeams</DataSetName>
-          <ValueField>SalesManagerID</ValueField>
-          <LabelField>SalesTeamName</LabelField>
+          <DataSetName>DStSTMs</DataSetName>
+          <ValueField>ManagerID</ValueField>
+          <LabelField>ManagerName</LabelField>
         </DataSetReference>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
-    <ReportParameter Name="stmid">
+    <ReportParameter Name="managerid">
       <DataType>Integer</DataType>
-      <Prompt>STM:</Prompt>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStManagers</DataSetName>
+          <ValueField>ManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>АМ:</Prompt>
       <ValidValues>
         <DataSetReference>
-          <DataSetName>DStSTMs</DataSetName>
+          <DataSetName>DStManagers</DataSetName>
           <ValueField>ManagerID</ValueField>
           <LabelField>ManagerName</LabelField>
         </DataSetReference>
@@ -1078,12 +1123,12 @@
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>1</RowIndex>
-          <ParameterName>smid</ParameterName>
+          <ParameterName>stmid</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>2</ColumnIndex>
           <RowIndex>1</RowIndex>
-          <ParameterName>stmid</ParameterName>
+          <ParameterName>managerid</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
