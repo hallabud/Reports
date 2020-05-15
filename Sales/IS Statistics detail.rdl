@@ -13,10 +13,13 @@
     <DataSet Name="DSt_Rep_KPI_IS_AM_Det">
       <Query>
         <DataSourceName>Reporting</DataSourceName>
-        <CommandText>select r.* , dc.CompanyName
-from Rep_KPI_IS_AM_Det r with(nolock)
-join dimcompany dc with(nolock) on dc.notebookid = r.notebookid
-where ReportDate = (select max(ReportDate) from Rep_KPI_IS_AM with(nolock))</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@managerid">
+            <Value>=Parameters!ManagerId.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_ISStatisticsDetail</CommandText>
       </Query>
       <Fields>
         <Field Name="ReportDate">
@@ -65,7 +68,7 @@ where ReportDate = (select max(ReportDate) from Rep_KPI_IS_AM with(nolock))</Com
         </Field>
         <Field Name="isLinkedCompany">
           <DataField>isLinkedCompany</DataField>
-          <rd:TypeName>System.Boolean</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="LoyaltyCategoryName">
           <DataField>LoyaltyCategoryName</DataField>
@@ -80,15 +83,6 @@ where ReportDate = (select max(ReportDate) from Rep_KPI_IS_AM with(nolock))</Com
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
-      <Filters>
-        <Filter>
-          <FilterExpression>=Fields!ManagerID.Value</FilterExpression>
-          <Operator>Equal</Operator>
-          <FilterValues>
-            <FilterValue>=Parameters!ManagerId.Value</FilterValue>
-          </FilterValues>
-        </Filter>
-      </Filters>
     </DataSet>
   </DataSets>
   <ReportSections>
@@ -105,7 +99,7 @@ where ReportDate = (select max(ReportDate) from Rep_KPI_IS_AM with(nolock))</Com
                   <Width>2.5cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>5.14583cm</Width>
+                  <Width>6.08069cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.55292cm</Width>
@@ -650,7 +644,7 @@ where ReportDate = (select max(ReportDate) from Rep_KPI_IS_AM with(nolock))</Com
             <Top>2.06057cm</Top>
             <Left>0.63182cm</Left>
             <Height>1.2cm</Height>
-            <Width>18.77cm</Width>
+            <Width>19.70486cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1563,7 +1557,6 @@ where ReportDate = (select max(ReportDate) from Rep_KPI_IS_AM with(nolock))</Com
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
