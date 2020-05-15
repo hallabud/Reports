@@ -10,75 +10,6 @@
     </DataSource>
   </DataSources>
   <DataSets>
-    <DataSet Name="DSt_connected_vacancy_daily">
-      <Query>
-        <DataSourceName>DSrcReporting</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@db">
-            <Value>=Parameters!db.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@de">
-            <Value>=Parameters!de.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_ssrs_Report_totalAddressableMarket_connected_vacancy_daily</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="FullDate">
-          <DataField>FullDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="department">
-          <DataField>department</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="grouptype">
-          <DataField>grouptype</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="RabotaVacancyNum">
-          <DataField>RabotaVacancyNum</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="WorkVacancyNum">
-          <DataField>WorkVacancyNum</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="RabotaCompaniesNum">
-          <DataField>RabotaCompaniesNum</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="WorkCompaniesNum">
-          <DataField>WorkCompaniesNum</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="gap">
-          <DataField>gap</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="WeekDayNum">
-          <DataField>WeekDayNum</DataField>
-          <rd:TypeName>System.Byte</rd:TypeName>
-        </Field>
-        <Field Name="YearNum">
-          <DataField>YearNum</DataField>
-          <rd:TypeName>System.Int16</rd:TypeName>
-        </Field>
-        <Field Name="WeekNum">
-          <DataField>WeekNum</DataField>
-          <rd:TypeName>System.Byte</rd:TypeName>
-        </Field>
-        <Field Name="WeekName">
-          <DataField>WeekName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="cntTotalCompanies">
-          <DataField>cntTotalCompanies</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
     <DataSet Name="DSt_VacanciesGapBySM">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
@@ -187,13 +118,6 @@
                         <FilterExpression>=Fields!SM_Name.Value</FilterExpression>
                         <Operator>NotEqual</Operator>
                         <FilterValues>
-                          <FilterValue>="Виталий Мандзяк"</FilterValue>
-                        </FilterValues>
-                      </Filter>
-                      <Filter>
-                        <FilterExpression>=Fields!SM_Name.Value</FilterExpression>
-                        <Operator>NotEqual</Operator>
-                        <FilterValues>
                           <FilterValue>="Андрей Лёвин"</FilterValue>
                         </FilterValues>
                       </Filter>
@@ -222,10 +146,10 @@
                         </Style>
                         <UseValueAsLabel>true</UseValueAsLabel>
                       </ChartDataLabel>
-                      <ToolTip>=FormatPercent(IIF(Sum(Fields!WorkVacancyNum.Value) &gt; 0, (Sum(Fields!RabotaVacancyNum.Value) - Sum(Fields!WorkVacancyNum.Value)) / IIF(Sum(Fields!RabotaVacancyNum.Value) &gt; Sum(Fields!WorkVacancyNum.Value), Sum(Fields!WorkVacancyNum.Value), Sum(Fields!RabotaVacancyNum.Value)), 0), 2)</ToolTip>
+                      <ToolTip>=Fields!SM_Name.Value &amp; ": " &amp; FormatPercent(IIF(Sum(Fields!WorkVacancyNum.Value) &gt; 0, (Sum(Fields!RabotaVacancyNum.Value) - Sum(Fields!WorkVacancyNum.Value)) / IIF(Sum(Fields!RabotaVacancyNum.Value) &gt; Sum(Fields!WorkVacancyNum.Value), Sum(Fields!WorkVacancyNum.Value), Sum(Fields!RabotaVacancyNum.Value)), 0), 2)</ToolTip>
                       <Style>
                         <Border>
-                          <Width>2pt</Width>
+                          <Width>1.5pt</Width>
                         </Border>
                         <BackgroundGradientType>None</BackgroundGradientType>
                         <BackgroundHatchType>None</BackgroundHatchType>
@@ -264,8 +188,7 @@
                   <ChartAxis Name="Primary">
                     <Style>
                       <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
+                        <Style>Solid</Style>
                       </Border>
                       <FontSize>8pt</FontSize>
                       <Format>dd.MM.yyyy</Format>
@@ -280,7 +203,7 @@
                     </ChartAxisTitle>
                     <Interval>1</Interval>
                     <ChartMajorGridLines>
-                      <Enabled>False</Enabled>
+                      <Enabled>True</Enabled>
                       <Style>
                         <Border>
                           <Color>Gainsboro</Color>
@@ -298,8 +221,7 @@
                     <ChartMajorTickMarks>
                       <Style>
                         <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
+                          <Style>Solid</Style>
                         </Border>
                       </Style>
                     </ChartMajorTickMarks>
@@ -381,12 +303,10 @@
                   <ChartAxis Name="Primary">
                     <Style>
                       <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
+                        <Style>Solid</Style>
                       </Border>
                       <FontSize>8pt</FontSize>
                       <Format>0%</Format>
-                      <Color>#5c5c5c</Color>
                     </Style>
                     <ChartAxisTitle>
                       <Caption />
@@ -413,8 +333,7 @@
                     <ChartMajorTickMarks>
                       <Style>
                         <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
+                          <Style>Solid</Style>
                         </Border>
                       </Style>
                     </ChartMajorTickMarks>
@@ -516,7 +435,19 @@
                 <ColumnSeparatorColor>Black</ColumnSeparatorColor>
               </ChartLegend>
             </ChartLegends>
-            <Palette>BrightPastel</Palette>
+            <Palette>Custom</Palette>
+            <ChartCustomPaletteColors>
+              <ChartCustomPaletteColor>#ff5252</ChartCustomPaletteColor>
+              <ChartCustomPaletteColor>#050506</ChartCustomPaletteColor>
+              <ChartCustomPaletteColor>#687e88</ChartCustomPaletteColor>
+              <ChartCustomPaletteColor>#fdd835</ChartCustomPaletteColor>
+              <ChartCustomPaletteColor>#00963d</ChartCustomPaletteColor>
+              <ChartCustomPaletteColor>#9b6ec3</ChartCustomPaletteColor>
+              <ChartCustomPaletteColor>#f57f17</ChartCustomPaletteColor>
+              <ChartCustomPaletteColor>#ff9d9d</ChartCustomPaletteColor>
+              <ChartCustomPaletteColor>#b3f6ce</ChartCustomPaletteColor>
+              <ChartCustomPaletteColor>#154cbc</ChartCustomPaletteColor>
+            </ChartCustomPaletteColors>
             <ChartBorderSkin>
               <Style>
                 <BackgroundColor>Gray</BackgroundColor>
@@ -534,13 +465,12 @@
               </Style>
             </ChartNoDataMessage>
             <DataSetName>DSt_VacanciesGapBySM</DataSetName>
-            <Top>0.36469in</Top>
-            <Height>3.73101in</Height>
-            <Width>11.03633in</Width>
+            <Top>0.30566in</Top>
+            <Height>5in</Height>
+            <Width>12in</Width>
             <Style>
               <Border>
-                <Color>LightGrey</Color>
-                <Style>Solid</Style>
+                <Style>None</Style>
               </Border>
               <BackgroundColor>White</BackgroundColor>
               <BackgroundGradientType>None</BackgroundGradientType>
@@ -553,7 +483,7 @@
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Vacancies GAP by SF Teams, %</Value>
+                    <Value>Vacancies GAP by Teams, %</Value>
                     <Style>
                       <FontWeight>Bold</FontWeight>
                     </Style>
@@ -565,8 +495,6 @@
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox4</rd:DefaultName>
-            <Top>0cm</Top>
-            <Left>0cm</Left>
             <Height>0.6cm</Height>
             <Width>30.5323cm</Width>
             <ZIndex>1</ZIndex>
@@ -580,425 +508,8 @@
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
-          <Chart Name="Chart15">
-            <ChartCategoryHierarchy>
-              <ChartMembers>
-                <ChartMember>
-                  <Group Name="Chart9_CategoryGroup5">
-                    <GroupExpressions>
-                      <GroupExpression>=Fields!FullDate.Value</GroupExpression>
-                    </GroupExpressions>
-                  </Group>
-                  <SortExpressions>
-                    <SortExpression>
-                      <Value>=Fields!FullDate.Value</Value>
-                    </SortExpression>
-                  </SortExpressions>
-                  <Label>=Fields!FullDate.Value</Label>
-                </ChartMember>
-              </ChartMembers>
-            </ChartCategoryHierarchy>
-            <ChartSeriesHierarchy>
-              <ChartMembers>
-                <ChartMember>
-                  <Group Name="Chart14_SeriesGroup2">
-                    <GroupExpressions>
-                      <GroupExpression>=Fields!SM_Name.Value</GroupExpression>
-                    </GroupExpressions>
-                    <Filters>
-                      <Filter>
-                        <FilterExpression>=Fields!SM_Name.Value</FilterExpression>
-                        <Operator>Equal</Operator>
-                        <FilterValues>
-                          <FilterValue>Виталий Мандзяк</FilterValue>
-                        </FilterValues>
-                      </Filter>
-                    </Filters>
-                  </Group>
-                  <SortExpressions>
-                    <SortExpression>
-                      <Value>=Fields!SM_Name.Value</Value>
-                    </SortExpression>
-                  </SortExpressions>
-                  <Label>=Fields!SM_Name.Value</Label>
-                </ChartMember>
-              </ChartMembers>
-            </ChartSeriesHierarchy>
-            <ChartData>
-              <ChartSeriesCollection>
-                <ChartSeries Name="gap">
-                  <ChartDataPoints>
-                    <ChartDataPoint>
-                      <ChartDataPointValues>
-                        <Y>=IIF(Sum(Fields!WorkVacancyNum.Value) &gt; 0, (Sum(Fields!RabotaVacancyNum.Value) - Sum(Fields!WorkVacancyNum.Value)) / IIF(Sum(Fields!RabotaVacancyNum.Value) &gt; Sum(Fields!WorkVacancyNum.Value), Sum(Fields!WorkVacancyNum.Value), Sum(Fields!RabotaVacancyNum.Value)), 0)</Y>
-                      </ChartDataPointValues>
-                      <ChartDataLabel>
-                        <Style>
-                          <Format>0.0%</Format>
-                        </Style>
-                        <UseValueAsLabel>true</UseValueAsLabel>
-                      </ChartDataLabel>
-                      <ToolTip>=FormatPercent(IIF(Sum(Fields!WorkVacancyNum.Value) &gt; 0, (Sum(Fields!RabotaVacancyNum.Value) - Sum(Fields!WorkVacancyNum.Value)) / IIF(Sum(Fields!RabotaVacancyNum.Value) &gt; Sum(Fields!WorkVacancyNum.Value), Sum(Fields!WorkVacancyNum.Value), Sum(Fields!RabotaVacancyNum.Value)), 0), 2)</ToolTip>
-                      <Style>
-                        <Border>
-                          <Width>2pt</Width>
-                        </Border>
-                        <BackgroundGradientType>None</BackgroundGradientType>
-                        <BackgroundHatchType>None</BackgroundHatchType>
-                      </Style>
-                      <ChartMarker>
-                        <Type>Diamond</Type>
-                        <Size>7pt</Size>
-                        <Style />
-                      </ChartMarker>
-                      <DataElementOutput>Output</DataElementOutput>
-                    </ChartDataPoint>
-                  </ChartDataPoints>
-                  <Type>Line</Type>
-                  <Style />
-                  <ChartEmptyPoints>
-                    <Style />
-                    <ChartMarker>
-                      <Style />
-                    </ChartMarker>
-                    <ChartDataLabel>
-                      <Style />
-                    </ChartDataLabel>
-                  </ChartEmptyPoints>
-                  <ValueAxisName>Primary</ValueAxisName>
-                  <CategoryAxisName>Primary</CategoryAxisName>
-                  <ChartSmartLabel>
-                    <CalloutLineColor>Black</CalloutLineColor>
-                    <MinMovingDistance>0pt</MinMovingDistance>
-                  </ChartSmartLabel>
-                </ChartSeries>
-              </ChartSeriesCollection>
-            </ChartData>
-            <ChartAreas>
-              <ChartArea Name="Default">
-                <ChartCategoryAxes>
-                  <ChartAxis Name="Primary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Format>dd.MM.yyyy</Format>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <Interval>1</Interval>
-                    <ChartMajorGridLines>
-                      <Enabled>False</Enabled>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>NaN</Maximum>
-                    <Angle>90</Angle>
-                    <LabelsAutoFitDisabled>true</LabelsAutoFitDisabled>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                  <ChartAxis Name="Secondary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <ChartMajorGridLines>
-                      <Enabled>False</Enabled>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Location>Opposite</Location>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>NaN</Maximum>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                </ChartCategoryAxes>
-                <ChartValueAxes>
-                  <ChartAxis Name="Primary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Format>0%</Format>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <ChartMajorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>NaN</Maximum>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                  <ChartAxis Name="Secondary">
-                    <Style>
-                      <Border>
-                        <Color>Gainsboro</Color>
-                        <Style>None</Style>
-                      </Border>
-                      <FontSize>8pt</FontSize>
-                      <Format>0%</Format>
-                      <Color>#5c5c5c</Color>
-                    </Style>
-                    <ChartAxisTitle>
-                      <Caption />
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                        <Color>#5c5c5c</Color>
-                      </Style>
-                    </ChartAxisTitle>
-                    <ChartMajorGridLines>
-                      <Enabled>True</Enabled>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                    </ChartMajorGridLines>
-                    <ChartMinorGridLines>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>Dotted</Style>
-                        </Border>
-                      </Style>
-                    </ChartMinorGridLines>
-                    <ChartMajorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                          <Style>None</Style>
-                        </Border>
-                      </Style>
-                    </ChartMajorTickMarks>
-                    <ChartMinorTickMarks>
-                      <Style>
-                        <Border>
-                          <Color>Gainsboro</Color>
-                        </Border>
-                      </Style>
-                      <Length>0.5</Length>
-                    </ChartMinorTickMarks>
-                    <CrossAt>NaN</CrossAt>
-                    <Location>Opposite</Location>
-                    <Minimum>NaN</Minimum>
-                    <Maximum>NaN</Maximum>
-                    <ChartAxisScaleBreak>
-                      <Style />
-                    </ChartAxisScaleBreak>
-                  </ChartAxis>
-                </ChartValueAxes>
-                <Style>
-                  <BackgroundColor>#00ffffff</BackgroundColor>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                </Style>
-              </ChartArea>
-            </ChartAreas>
-            <ChartLegends>
-              <ChartLegend Name="Legend1">
-                <Style>
-                  <BackgroundGradientType>None</BackgroundGradientType>
-                  <FontSize>8pt</FontSize>
-                </Style>
-                <Position>BottomCenter</Position>
-                <ChartLegendTitle>
-                  <Caption />
-                  <Style>
-                    <FontSize>8pt</FontSize>
-                    <FontWeight>Bold</FontWeight>
-                    <TextAlign>Center</TextAlign>
-                  </Style>
-                </ChartLegendTitle>
-                <HeaderSeparatorColor>Black</HeaderSeparatorColor>
-                <ColumnSeparatorColor>Black</ColumnSeparatorColor>
-              </ChartLegend>
-            </ChartLegends>
-            <Palette>BrightPastel</Palette>
-            <ChartBorderSkin>
-              <Style>
-                <BackgroundColor>Gray</BackgroundColor>
-                <BackgroundGradientType>None</BackgroundGradientType>
-                <Color>White</Color>
-              </Style>
-            </ChartBorderSkin>
-            <ChartNoDataMessage Name="NoDataMessage">
-              <Caption>No Data Available</Caption>
-              <Style>
-                <BackgroundGradientType>None</BackgroundGradientType>
-                <FontWeight>Bold</FontWeight>
-                <TextAlign>General</TextAlign>
-                <VerticalAlign>Top</VerticalAlign>
-              </Style>
-            </ChartNoDataMessage>
-            <DataSetName>DSt_VacanciesGapBySM</DataSetName>
-            <Top>4.59711in</Top>
-            <Height>3.73101in</Height>
-            <Width>11.03633in</Width>
-            <ZIndex>2</ZIndex>
-            <Style>
-              <Border>
-                <Color>LightGrey</Color>
-                <Style>Solid</Style>
-              </Border>
-              <BackgroundColor>White</BackgroundColor>
-              <BackgroundGradientType>None</BackgroundGradientType>
-            </Style>
-          </Chart>
-          <Textbox Name="Textbox5">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>Vacancies GAP by TS Team, %</Value>
-                    <Style>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Center</TextAlign>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox4</rd:DefaultName>
-            <Top>10.97083cm</Top>
-            <Left>0cm</Left>
-            <Height>0.6cm</Height>
-            <Width>30.5323cm</Width>
-            <ZIndex>3</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
         </ReportItems>
-        <Height>8.32812in</Height>
+        <Height>5.30566in</Height>
         <Style />
       </Body>
       <Width>12.02059in</Width>
