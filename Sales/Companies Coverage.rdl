@@ -61,19 +61,60 @@
           <DataField>EffectiveCallExistsGroup</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="LoyalCategory">
+          <DataField>LoyalCategory</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="LoyalCategoryRU">
+          <DataField>LoyalCategoryRU</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
       </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!LoyalCategory.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!LoyalCategory.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
     </DataSet>
     <DataSet Name="DStSalesTeams">
-      <SharedDataSet>
-        <SharedDataSetReference>DStSalesTeamsDistinct</SharedDataSetReference>
-      </SharedDataSet>
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>set transaction isolation level read uncommitted;
+
+if object_id('tempdb..#managers','U') is not null drop table #managers;
+select 
+	Id ManagerID,
+	name ManagerName,
+	case when m.id = 212 then 212 else 
+		case when EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.Manager WHERE STM_ManagerID = M.Id AND DepartmentID IN (2,12)) OR (STM_ManagerID = TeamLead_ManagerID AND StatusInTransactionGroup IS NULL) then m.id else 
+			coalesce(M.STM_ManagerID, M.Id) 
+		end
+	end STMid,
+	case when m.id = 212 then 212 else coalesce(TeamLead_ManagerID, Id) end SMid,
+	MMB.LoweredEmail Email
+into #managers
+from SRV16.RabotaUA2.dbo.Manager M join SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON M.aspnet_UserUIN = MMB.UserId
+where ((DepartmentID in (12, 2) and IsForTesting = 0 and IsReportExcluding = 0 and (TeamLead_ManagerID is not null or exists (select * from SRV16.RabotaUA2.dbo.Manager where TeamLead_ManagerID = M.Id))) or m.id in (1, 212))
+
+
+select distinct
+   ('Команда' +  mm.name) as SalesTeamName,
+	m.smid as SalesManagerId,
+	mm.name as SalesManagerName
+from #managers m  join srv16.rabotaua2.dbo.manager mm on m.smid = mm.id
+and m.smid not in (1,313,212) </CommandText>
+      </Query>
       <Fields>
         <Field Name="SalesTeamName">
           <DataField>SalesTeamName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="SalesManagerID">
-          <DataField>SalesManagerID</DataField>
+        <Field Name="SalesManagerId">
+          <DataField>SalesManagerId</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="SalesManagerName">
@@ -99,10 +140,65 @@
           <DataField>TeamLead_ManagerID</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="STM_ManagerID">
+          <DataField>STM_ManagerID</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
-          <FilterExpression>=Fields!TeamLead_ManagerID.Value</FilterExpression>
+          <FilterExpression>=Fields!STM_ManagerID.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!STM.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
+    </DataSet>
+    <DataSet Name="DSt_STM">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandText>set transaction isolation level read uncommitted;
+
+if object_id('tempdb..#managers','U') is not null drop table #managers;
+select 
+	Id ManagerID,
+	name ManagerName,
+	case when m.id = 212 then 212 else 
+		case when EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.Manager WHERE STM_ManagerID = M.Id AND DepartmentID IN (2,12)) OR (STM_ManagerID = TeamLead_ManagerID AND StatusInTransactionGroup IS NULL) then m.id else 
+			coalesce(M.STM_ManagerID, M.Id) 
+		end
+	end STMid,
+	case when m.id = 212 then 212 else coalesce(TeamLead_ManagerID, Id) end SMid,
+	MMB.LoweredEmail Email
+into #managers
+from SRV16.RabotaUA2.dbo.Manager M join SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON M.aspnet_UserUIN = MMB.UserId
+where ((DepartmentID in (12, 2) and IsForTesting = 0 and IsReportExcluding = 0 and (TeamLead_ManagerID is not null or exists (select * from SRV16.RabotaUA2.dbo.Manager where TeamLead_ManagerID = M.Id))) or m.id in (1, 212))
+
+select distinct
+	m.stmid,
+	mm.name,
+	m.SMid
+from #managers m join srv16.rabotaua2.dbo.manager mm on m.stmid = mm.id
+and m.smid not in (1,313,212) </CommandText>
+      </Query>
+      <Fields>
+        <Field Name="stmid">
+          <DataField>stmid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="name">
+          <DataField>name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SMid">
+          <DataField>SMid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!SMid.Value</FilterExpression>
           <Operator>In</Operator>
           <FilterValues>
             <FilterValue>=Parameters!SalesTeam.Value</FilterValue>
@@ -785,7 +881,7 @@
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>3.02917cm</Width>
+                  <Width>2.3148cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>9.81667cm</Width>
@@ -800,12 +896,15 @@
                   <Width>2.5cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>4.37854cm</Width>
+                  <Width>3.00271cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.6cm</Height>
+                  <Height>0.9175cm</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1011,6 +1110,40 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox4">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Лояльность</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox4</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -1203,12 +1336,43 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="LoyalCategoryRU">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!LoyalCategoryRU.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>LoyalCategoryRU</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -1229,8 +1393,8 @@
             </TablixRowHierarchy>
             <DataSetName>DStMain</DataSetName>
             <Top>3.429cm</Top>
-            <Height>1.2cm</Height>
-            <Width>26.41771cm</Width>
+            <Height>1.5175cm</Height>
+            <Width>26.82751cm</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -1274,7 +1438,7 @@
         <Height>2.12811in</Height>
         <Style />
       </Body>
-      <Width>10.40067in</Width>
+      <Width>12.14373in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
@@ -1310,25 +1474,43 @@
     </ReportParameter>
     <ReportParameter Name="SalesTeam">
       <DataType>Integer</DataType>
-      <DefaultValue>
-        <DataSetReference>
-          <DataSetName>DStSalesTeams</DataSetName>
-          <ValueField>SalesManagerID</ValueField>
-        </DataSetReference>
-      </DefaultValue>
-      <Prompt>Sales-команда</Prompt>
+      <Prompt>SM</Prompt>
       <ValidValues>
         <DataSetReference>
           <DataSetName>DStSalesTeams</DataSetName>
-          <ValueField>SalesManagerID</ValueField>
-          <LabelField>SalesTeamName</LabelField>
+          <ValueField>SalesManagerId</ValueField>
+          <LabelField>SalesManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="STM">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DSt_STM</DataSetName>
+          <ValueField>stmid</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>TeamLead</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DSt_STM</DataSetName>
+          <ValueField>stmid</ValueField>
+          <LabelField>name</LabelField>
         </DataSetReference>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
     <ReportParameter Name="ManagerIDs">
       <DataType>Integer</DataType>
-      <Prompt>Менеджер</Prompt>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DStManagers</DataSetName>
+          <ValueField>ManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>AM</Prompt>
       <ValidValues>
         <DataSetReference>
           <DataSetName>DStManagers</DataSetName>
@@ -1367,7 +1549,7 @@
           <Value>Без действия</Value>
         </Values>
       </DefaultValue>
-      <Prompt>Есть действие</Prompt>
+      <Prompt>Наличие действия</Prompt>
       <ValidValues>
         <ParameterValues>
           <ParameterValue>
@@ -1382,6 +1564,34 @@
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="LoyalCategory">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>Loyal</Value>
+          <Value>NonLoyal</Value>
+          <Value>Neutral</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Лояльность</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>Loyal</Value>
+            <Label>Лояльная</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>NonLoyal</Value>
+            <Label>Нелояльная</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Neutral</Value>
+            <Label>Нейтральная</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
     <ReportParameter Name="EffectiveCallExistsGroup">
       <DataType>String</DataType>
       <DefaultValue>
@@ -1390,7 +1600,7 @@
           <Value>Без звонка</Value>
         </Values>
       </DefaultValue>
-      <Prompt>Есть эффективный звонок</Prompt>
+      <Prompt>Наличие звонка</Prompt>
       <ValidValues>
         <ParameterValues>
           <ParameterValue>
@@ -1408,7 +1618,7 @@
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>2</NumberOfColumns>
+      <NumberOfColumns>3</NumberOfColumns>
       <NumberOfRows>4</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
@@ -1427,7 +1637,7 @@
           <ParameterName>SalesTeam</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
+          <ColumnIndex>2</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>ManagerIDs</ParameterName>
         </CellDefinition>
@@ -1442,9 +1652,19 @@
           <ParameterName>ActionExistsGroup</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>3</RowIndex>
           <ParameterName>EffectiveCallExistsGroup</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>STM</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>3</RowIndex>
+          <ParameterName>LoyalCategory</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
