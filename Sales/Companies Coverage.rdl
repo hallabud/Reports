@@ -69,6 +69,10 @@
           <DataField>LoyalCategoryRU</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="activity_pub_status_name">
+          <DataField>activity_pub_status_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
@@ -99,7 +103,7 @@ select
 into #managers
 from SRV16.RabotaUA2.dbo.Manager M join SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON M.aspnet_UserUIN = MMB.UserId
 where ((DepartmentID in (12, 2) and IsForTesting = 0 and IsReportExcluding = 0 and (TeamLead_ManagerID is not null or exists (select * from SRV16.RabotaUA2.dbo.Manager where TeamLead_ManagerID = M.Id))) or m.id in (1, 212))
-
+and DepartmentID = 12
 
 select distinct
    ('Команда' +  mm.name) as SalesTeamName,
@@ -170,7 +174,7 @@ select
 		end
 	end STMid,
 	case when m.id = 212 then 212 else coalesce(TeamLead_ManagerID, Id) end SMid,
-	MMB.LoweredEmail Email
+	MMB.LoweredEmail Email, m.DepartmentID 
 into #managers
 from SRV16.RabotaUA2.dbo.Manager M join SRV16.RabotaUA2.dbo.aspnet_Membership MMB ON M.aspnet_UserUIN = MMB.UserId
 where ((DepartmentID in (12, 2) and IsForTesting = 0 and IsReportExcluding = 0 and (TeamLead_ManagerID is not null or exists (select * from SRV16.RabotaUA2.dbo.Manager where TeamLead_ManagerID = M.Id))) or m.id in (1, 212))
@@ -178,9 +182,11 @@ where ((DepartmentID in (12, 2) and IsForTesting = 0 and IsReportExcluding = 0 a
 select distinct
 	m.stmid,
 	mm.name,
-	m.SMid
+	m.SMid,
+                m.DepartmentID 
 from #managers m join srv16.rabotaua2.dbo.manager mm on m.stmid = mm.id
-and m.smid not in (1,313,212) </CommandText>
+and m.smid not in (1,313,212) 
+and m.stmid not in (select smid from #managers)</CommandText>
       </Query>
       <Fields>
         <Field Name="stmid">
@@ -195,13 +201,17 @@ and m.smid not in (1,313,212) </CommandText>
           <DataField>SMid</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="DepartmentID">
+          <DataField>DepartmentID</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
-          <FilterExpression>=Fields!SMid.Value</FilterExpression>
+          <FilterExpression>=Fields!DepartmentID.Value</FilterExpression>
           <Operator>In</Operator>
           <FilterValues>
-            <FilterValue>=Parameters!SalesTeam.Value</FilterValue>
+            <FilterValue>=Parameters!Department.Value</FilterValue>
           </FilterValues>
         </Filter>
       </Filters>
@@ -1278,21 +1288,23 @@ and m.smid not in (1,313,212) </CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="ActivityExistsGroup1">
+                        <Textbox Name="activity_pub_status_name">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!ActivityExistsGroup.Value</Value>
+                                  <Value>=Fields!activity_pub_status_name.Value</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>ActivityExistsGroup1</rd:DefaultName>
+                          <rd:DefaultName>activity_pub_status_name</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1472,17 +1484,21 @@ and m.smid not in (1,313,212) </CommandText>
       </DefaultValue>
       <Prompt>Конечная дата</Prompt>
     </ReportParameter>
-    <ReportParameter Name="SalesTeam">
+    <ReportParameter Name="Department">
       <DataType>Integer</DataType>
-      <Prompt>SM</Prompt>
+      <Prompt>Department</Prompt>
       <ValidValues>
-        <DataSetReference>
-          <DataSetName>DStSalesTeams</DataSetName>
-          <ValueField>SalesManagerId</ValueField>
-          <LabelField>SalesManagerName</LabelField>
-        </DataSetReference>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>2</Value>
+            <Label>FS</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>12</Value>
+            <Label>IS</Label>
+          </ParameterValue>
+        </ParameterValues>
       </ValidValues>
-      <MultiValue>true</MultiValue>
     </ReportParameter>
     <ReportParameter Name="STM">
       <DataType>Integer</DataType>
@@ -1632,11 +1648,6 @@ and m.smid not in (1,313,212) </CommandText>
           <ParameterName>EndDate</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>SalesTeam</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
           <ColumnIndex>2</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>ManagerIDs</ParameterName>
@@ -1665,6 +1676,11 @@ and m.smid not in (1,313,212) </CommandText>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>3</RowIndex>
           <ParameterName>LoyalCategory</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>Department</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
