@@ -232,8 +232,12 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
       <Query>
         <DataSourceName>Reporting</DataSourceName>
         <CommandText> select distinct
- m.TeamLead_ManagerID as SM, m.STM_ManagerID, m1.name as STM
- from 
+ m.TeamLead_ManagerID as SM, m.STM_ManagerID, m1.name as STM,
+ TeamGroup  = case when  m.STM_ManagerID in (496, 586, 552, 453, 471, 504) then 2 
+                                 else 1 
+                       end 
+
+from 
  SRV16.RabotaUA2.dbo.Manager M with(nolock)
  join SRV16.RabotaUA2.dbo.Manager M1 with(nolock) on m1.id = m.STM_ManagerID
  where m.departmentid = 12
@@ -254,13 +258,17 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
           <DataField>STM</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="TeamGroup">
+          <DataField>TeamGroup</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
-          <FilterExpression>=Fields!SM.Value</FilterExpression>
+          <FilterExpression>=Fields!TeamGroup.Value</FilterExpression>
           <Operator>In</Operator>
           <FilterValues>
-            <FilterValue>=Parameters!SM.Value()</FilterValue>
+            <FilterValue>=Parameters!Team.Value()</FilterValue>
           </FilterValues>
         </Filter>
       </Filters>
@@ -278,9 +286,6 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>4.20026cm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>3.69063cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.5cm</Width>
@@ -370,42 +375,6 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox5</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>WhiteSmoke</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox7">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>SM </Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox7</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -808,38 +777,6 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="SM_name">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!SM_name.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>SM_name</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="ActiveCompanyCnt">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -1165,7 +1102,6 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
-                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -1191,7 +1127,7 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
             <Top>0.60537cm</Top>
             <Left>0.31432cm</Left>
             <Height>2.49646cm</Height>
-            <Width>36.72736cm</Width>
+            <Width>33.03673cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1261,12 +1197,6 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
   <ReportParameters>
     <ReportParameter Name="Team">
       <DataType>Integer</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>1</Value>
-          <Value>2</Value>
-        </Values>
-      </DefaultValue>
       <Prompt>Team</Prompt>
       <ValidValues>
         <ParameterValues>
@@ -1279,24 +1209,6 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
             <Label>Чернигов</Label>
           </ParameterValue>
         </ParameterValues>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-    <ReportParameter Name="SM">
-      <DataType>Integer</DataType>
-      <DefaultValue>
-        <DataSetReference>
-          <DataSetName>DSt_SM</DataSetName>
-          <ValueField>TeamLead_ManagerID</ValueField>
-        </DataSetReference>
-      </DefaultValue>
-      <Prompt>SM</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>DSt_SM</DataSetName>
-          <ValueField>TeamLead_ManagerID</ValueField>
-          <LabelField>SM</LabelField>
-        </DataSetReference>
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
@@ -1353,11 +1265,6 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>SM</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>STM</ParameterName>
         </CellDefinition>
