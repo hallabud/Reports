@@ -13,21 +13,8 @@
     <DataSet Name="DSt_Rep_IS_AM">
       <Query>
         <DataSourceName>Reporting</DataSourceName>
-        <CommandText>
-select 
-k.*, 
-TeamGroup  = case when SM_name in ('Александр Новиков','Вадим Горянский') then 1 
-                  when SM_name in ('Виталий Мандзяк', 'Давид Пограрян') then 2 
-              end
-, isnull(t.AvgPercentLoyalty_CurrentMonth,t1.AvgPercentLoyalty_CurrentMonth) as TeamPercentLoyaltyCmp
-, X = ((K.ActiveCompanyCnt * isnull(t.AvgPercentLoyalty_CurrentMonth,t1.AvgPercentLoyalty_CurrentMonth)) - K.LoyalCompanyCnt) + 1   -- (194 * 0.50) - 93
-from [dbo].[Rep_KPI_IS_AM] k with(nolock)
-join SRV16.RabotaUA2.dbo.Manager M with(nolock) on m.id = k.managerid
-left join [dbo].[Rep_KPI_IS_Teams] t with(nolock) on k.ReportDate = t.ReportDate and t.Team_name = 'IS_Kiev' and k.SM_name in ('Александр Новиков','Вадим Горянский')
-left join [dbo].[Rep_KPI_IS_Teams] t1 with(nolock) on k.ReportDate = t1.ReportDate and t1.Team_name = 'IS_Chernigov' and k.SM_name in ('Виталий Мандзяк', 'Давид Пограрян')
-where --k.managername &lt;&gt; k.stm_name
- k.managerName &lt;&gt; SM_name
---and m.DepartmentGroup &lt;&gt; 1</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_IS_Statistics</CommandText>
       </Query>
       <Fields>
         <Field Name="ReportDate">
@@ -134,6 +121,10 @@ where --k.managername &lt;&gt; k.stm_name
           <DataField>DayLoyaltyDelta_link</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="City">
+          <DataField>City</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="AddDate">
           <DataField>AddDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
@@ -232,7 +223,8 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
       <Query>
         <DataSourceName>Reporting</DataSourceName>
         <CommandText> select distinct
- m.TeamLead_ManagerID as SM, m.STM_ManagerID, m1.name as STM,
+ --m.TeamLead_ManagerID as SM,
+ m.STM_ManagerID, m1.name as STM,
  TeamGroup  = case when  m.STM_ManagerID in (496, 586, 552, 453, 471, 504) then 2 
                                  else 1 
                        end 
@@ -246,10 +238,6 @@ from
  order by m1.name</CommandText>
       </Query>
       <Fields>
-        <Field Name="SM">
-          <DataField>SM</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
         <Field Name="STM_ManagerID">
           <DataField>STM_ManagerID</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
