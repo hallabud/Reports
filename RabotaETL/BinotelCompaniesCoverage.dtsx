@@ -11,8 +11,8 @@
   DTS:LocaleID="1058"
   DTS:ObjectName="Load_DM_Resume_Daily"
   DTS:PackageType="5"
-  DTS:VersionBuild="42"
-  DTS:VersionGUID="{1D716292-EC77-4870-8253-FE9C5B240315}">
+  DTS:VersionBuild="48"
+  DTS:VersionGUID="{7B0074DE-F6BE-4CFF-9FD8-98FA0E402EA1}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
@@ -27,7 +27,7 @@
           <DTS:Password
             DTS:Name="Password"
             Sensitive="1"
-            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAgcscifpv7kqLgM7C9xMUKAAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAACuqvtd1m1tYdANreRUYWCgAAAAAASAAACgAAAAEAAAAGO0rVL2RXyWbrVf5hzR8Z0oAAAA9uwZ978Dc4vYIoXxU8pC6n5NFhniuXq/AIBkH5CMIyOQmKrhSe4/9hQAAABgFeyfeZFjCO7i10IMJBFUtQUpOg</DTS:Password>
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAgcscifpv7kqLgM7C9xMUKAAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAACv44cKehsbMk//KfshL7zgAAAAAASAAACgAAAAEAAAAF5sCCfOQwgs1ddi8joDYLsoAAAA/3PHq18xyXIGpwyHBCU+QwYlAK/DVDF8xBCFzWPfgSakgk77Oq8qQBQAAAC0h8ZFnS7ZevsalzRBtY0g9pQVjg</DTS:Password>
         </DTS:ConnectionManager>
       </DTS:ObjectData>
     </DTS:ConnectionManager>
@@ -42,7 +42,7 @@
           <DTS:Password
             DTS:Name="Password"
             Sensitive="1"
-            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAgcscifpv7kqLgM7C9xMUKAAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAAAR8bqrFFvGSbbiX00B4M/GAAAAAASAAACgAAAAEAAAADCn0Ht3HYisl09LPDE3rtMoAAAAwL1uBJG/T/ekfCP0Qu9XwUgtv3F5guzih0DZRQs6mKn3PybrrMZr3BQAAABZcOtqJQP66cUd01zGpZy2TP42JQ</DTS:Password>
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAgcscifpv7kqLgM7C9xMUKAAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAAB+cdLb+KjVgTmSX02RywLRAAAAAASAAACgAAAAEAAAAHnf93aF7jVjKlZ3Uz7xGtUoAAAAx8y93vnnIU2uFcWdQm05km2+tv75w4VgQUfuTI7H0j6BA3HxGk0qQBQAAACXAc1Re82RKyv/yprEXwHuOV3h3Q</DTS:Password>
         </DTS:ConnectionManager>
       </DTS:ObjectData>
     </DTS:ConnectionManager>
@@ -59,6 +59,23 @@
   </DTS:ConnectionManagers>
   <DTS:Variables />
   <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\exec usp_etl_evn_binotel_client_coverage"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{9852454b-825f-42ed-821e-141f4cc29d51}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="exec usp_etl_evn_binotel_client_coverage"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2017 CTP2.1; © 2017 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{B60605E7-5AC8-4CD2-A9B2-F5828AAC8ECA}"
+          SQLTask:SqlStatementSource="declare @ReportDate datetime&#xA;declare @PrevDate datetime&#xA;&#xA;set @ReportDate = cast(getdate() as date)&#xA;set @PrevDate = dateadd(day,-1, @ReportDate )&#xA;&#xA;exec [dbo].[usp_etl_evn_binotel_client_coverage]  @PrevDate &#xA;exec [dbo].[usp_etl_evn_binotel_client_coverage]  @ReportDate" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
     <DTS:Executable
       DTS:refId="Package\load from Prod to Azure"
       DTS:CreationName="Microsoft.Pipeline"
@@ -404,6 +421,14 @@
       DTS:LogicalAnd="True"
       DTS:ObjectName="Ограничение"
       DTS:To="Package\load from Prod to Azure" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Ограничение 1]"
+      DTS:CreationName=""
+      DTS:DTSID="{5CBB3241-81E3-41A2-8FC0-8F6C0CF10A07}"
+      DTS:From="Package\load from Prod to Azure"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Ограничение 1"
+      DTS:To="Package\exec usp_etl_evn_binotel_client_coverage" />
   </DTS:PrecedenceConstraints>
   <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
 <!--В данном разделе CDATA содержатся сведения о макете пакета. В данном разделе содержатся сведения о координатах (x,y), ширине и высоте.-->
@@ -416,41 +441,67 @@
     design-time-name="Package">
     <LayoutInfo>
       <GraphLayout
-        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
         <NodeLayout
-          Size="285.333333333334,42.6666666666667"
-          Id="Package\truncate CRM_UserCardPhonesWithNotebook"
-          TopLeft="61.2037027916975,59.1629626203025" />
+          Size="281.333333333334,42.6666666666667"
+          Id="Package\exec usp_etl_evn_binotel_client_coverage"
+          TopLeft="56.4417981007505,178.646416505233" />
         <NodeLayout
           Size="288,42.6666666666667"
           Id="Package\load from Prod to Azure"
-          TopLeft="60.7870361312401,121.485180937365" />
+          TopLeft="58.1084647425824,114.208656155457" />
+        <NodeLayout
+          Size="285.333333333334,42.6666666666667"
+          Id="Package\truncate CRM_UserCardPhonesWithNotebook"
+          TopLeft="60.0132266189607,45.4787518364154" />
         <EdgeLayout
           Id="Package.PrecedenceConstraints[Ограничение]"
-          TopLeft="61.2037027916975,80.4962959536358">
+          TopLeft="202.394179014105,88.1454185030821">
           <EdgeLayout.Curve>
             <mssgle:Curve
               StartConnector="{assembly:Null}"
-              EndConnector="-0.416666660457366,62.322218317062"
+              EndConnector="0,26.0632376523748"
               Start="0,0"
-              End="-7.91666666045737,62.322218317062">
+              End="0,18.5632376523748">
               <mssgle:Curve.Segments>
                 <mssgle:SegmentCollection
                   Capacity="5">
                   <mssgle:LineSegment
-                    End="-18.9166666604574,0" />
-                  <mssgle:CubicBezierSegment
-                    Point1="-18.9166666604574,0"
-                    Point2="-22.9166666604574,0"
-                    Point3="-22.9166666604574,4" />
+                    End="0,18.5632376523748" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Ограничение 1]"
+          TopLeft="346.108464742582,135.54198948879">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-8.33333330849854,64.437760349776"
+              Start="0,0"
+              End="-0.833333308498538,64.437760349776">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
                   <mssgle:LineSegment
-                    End="-22.9166666604574,58.322218317062" />
+                    End="18.5,0" />
                   <mssgle:CubicBezierSegment
-                    Point1="-22.9166666604574,58.322218317062"
-                    Point2="-22.9166666604574,62.322218317062"
-                    Point3="-18.9166666604574,62.322218317062" />
+                    Point1="18.5,0"
+                    Point2="22.5,0"
+                    Point3="22.5,4" />
                   <mssgle:LineSegment
-                    End="-7.91666666045737,62.322218317062" />
+                    End="22.5,60.437760349776" />
+                  <mssgle:CubicBezierSegment
+                    Point1="22.5,60.437760349776"
+                    Point2="22.5,64.437760349776"
+                    Point3="18.5,64.437760349776" />
+                  <mssgle:LineSegment
+                    End="-0.833333308498538,64.437760349776" />
                 </mssgle:SegmentCollection>
               </mssgle:Curve.Segments>
             </mssgle:Curve>
@@ -466,7 +517,7 @@
     design-time-name="Package\load from Prod to Azure">
     <LayoutInfo>
       <GraphLayout
-        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mssgm="clr-namespace:Microsoft.SqlServer.Graph.Model;assembly=Microsoft.SqlServer.Graph">
         <NodeLayout
           Size="108,42.6666666666667"
           Id="Package\load from Prod to Azure\Azure"
@@ -506,7 +557,9 @@
             </mssgle:Curve>
           </EdgeLayout.Curve>
           <EdgeLayout.Labels>
-            <EdgeLabelCollection />
+            <mssgm:EdgeLabel
+              BoundingBox="0,0,0,0"
+              RelativePosition="Any" />
           </EdgeLayout.Labels>
         </EdgeLayout>
       </GraphLayout>
