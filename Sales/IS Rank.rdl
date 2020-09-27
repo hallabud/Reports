@@ -23,7 +23,7 @@ SELECT  managerid, managername, city, AvgPercentLoyalty_CurrentMonth,
 rn = ROW_NUMBER() over(partition by city order by AvgPercentLoyalty_CurrentMonth desc)
 FROM [dbo].[Rep_KPI_IS_AM]
 WHERE ReportDate = @ReportDate
-and managerid not in (select stm_id from [dbo].[Rep_KPI_IS_STM] where reportdate = @ReportDate)
+and managerid not in (select isnull(stm_id,1) from [dbo].[Rep_KPI_IS_STM] where reportdate = @ReportDate)
 --and City = 'Kiev'
 order by AvgPercentLoyalty_CurrentMonth desc</CommandText>
       </Query>
