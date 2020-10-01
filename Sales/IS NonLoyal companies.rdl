@@ -124,17 +124,9 @@
       </Fields>
     </DataSet>
     <DataSet Name="DSt_STM">
-      <Query>
-        <DataSourceName>Reporting</DataSourceName>
-        <CommandText> select distinct
- m.TeamLead_ManagerID as SM, m.STM_ManagerID, m1.name as STM
- from 
- SRV16.RabotaUA2.dbo.Manager M with(nolock)
- join SRV16.RabotaUA2.dbo.Manager M1 with(nolock) on m1.id = m.STM_ManagerID
- where m.departmentid = 12
- and m.STM_ManagerID &lt;&gt; m.TeamLead_ManagerID
- order by m1.name</CommandText>
-      </Query>
+      <SharedDataSet>
+        <SharedDataSetReference>DSt_IS_STMs</SharedDataSetReference>
+      </SharedDataSet>
       <Fields>
         <Field Name="SM">
           <DataField>SM</DataField>
@@ -160,27 +152,9 @@
       </Filters>
     </DataSet>
     <DataSet Name="DSt_Manager">
-      <Query>
-        <DataSourceName>Reporting</DataSourceName>
-        <CommandText>  select 
-		Id ManagerID,
-		name ManagerName,
-		case when m.id = 212 then 212 else 
-			case when EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.Manager with(nolock) WHERE STM_ManagerID = M.Id AND DepartmentID IN (2,12)) OR (STM_ManagerID = TeamLead_ManagerID AND StatusInTransactionGroup IS NULL) then m.id else 
-				coalesce(M.STM_ManagerID, M.Id) 
-			end
-		end STMid,
-		case when m.id = 212 then 1 else 
-		case when coalesce(M.STM_ManagerID, M.Id) = coalesce(TeamLead_ManagerID, Id) and M.StatusInTransactionGroup is null and coalesce(TeamLead_ManagerID, Id) &lt;&gt; M.Id 
-			and exists (select * from SRV16.RabotaUA2.dbo.Manager with(nolock) where STM_ManagerID = M.Id) then 1 else 0 end 
-		end IsSTM,
-		case when m.id = 212 then 212 else coalesce(TeamLead_ManagerID, Id) end SMid
-
-	from SRV16.RabotaUA2.dbo.Manager M with(nolock)  join SRV16.RabotaUA2.dbo.aspnet_Membership MMB with(nolock) ON M.aspnet_UserUIN = MMB.UserId
-	where ((IsForTesting = 0 and IsReportExcluding = 0 and (TeamLead_ManagerID is not null or exists (select * from SRV16.RabotaUA2.dbo.Manager with(nolock) where TeamLead_ManagerID = M.Id))) or m.id in (1, 212))
-	and m.departmentid = 12
-	and TeamLead_ManagerID &lt;&gt; id</CommandText>
-      </Query>
+      <SharedDataSet>
+        <SharedDataSetReference>DSt_IS_Managers</SharedDataSetReference>
+      </SharedDataSet>
       <Fields>
         <Field Name="ManagerID">
           <DataField>ManagerID</DataField>
