@@ -17,6 +17,9 @@
           <QueryParameter Name="@d">
             <Value>=Parameters!d.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@manager">
+            <Value>=Parameters!manager.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_WorkVacancyDifference</CommandText>
@@ -59,6 +62,61 @@
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
+    </DataSet>
+    <DataSet Name="DSt_STM">
+      <SharedDataSet>
+        <SharedDataSetReference>DSt_IS_STMs</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="SM">
+          <DataField>SM</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="STM_ManagerID">
+          <DataField>STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="STM">
+          <DataField>STM</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DSt_Managers">
+      <SharedDataSet>
+        <SharedDataSetReference>DSt_IS_Managers</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="ManagerID">
+          <DataField>ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="STMid">
+          <DataField>STMid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IsSTM">
+          <DataField>IsSTM</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="SMid">
+          <DataField>SMid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!STMid.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!STM.Value</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
     </DataSet>
   </DataSets>
   <ReportSections>
@@ -230,6 +288,7 @@
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -1208,7 +1267,7 @@
             </Style>
           </Textbox>
         </ReportItems>
-        <Height>3.5625in</Height>
+        <Height>3.18463in</Height>
         <Style />
       </Body>
       <Width>9.64567in</Width>
@@ -1234,16 +1293,50 @@
       </DefaultValue>
       <Prompt>Date:</Prompt>
     </ReportParameter>
+    <ReportParameter Name="STM">
+      <DataType>Integer</DataType>
+      <Prompt>Team Lead:</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DSt_STM</DataSetName>
+          <ValueField>STM_ManagerID</ValueField>
+          <LabelField>STM</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="manager">
+      <DataType>Integer</DataType>
+      <Prompt>Manager:</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DSt_Managers</DataSetName>
+          <ValueField>ManagerID</ValueField>
+          <LabelField>ManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
+      <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>d</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>STM</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>manager</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
