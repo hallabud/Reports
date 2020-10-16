@@ -223,19 +223,18 @@ from [dbo].[Rep_KPI_IS_AM] with(nolock)</CommandText>
       <Query>
         <DataSourceName>Reporting</DataSourceName>
         <CommandText> select distinct
- --m.TeamLead_ManagerID as SM,
  m.STM_ManagerID, m1.name as STM,
- TeamGroup  = case when  m.STM_ManagerID in (496, 586, 552, 453, 471, 504) then 2 
+ TeamGroup  = case when  m.STM_ManagerID in (select tl_id from IS_TL_Chernigov) then 2 
                                  else 1 
                        end 
-
 from 
  SRV16.RabotaUA2.dbo.Manager M with(nolock)
  join SRV16.RabotaUA2.dbo.Manager M1 with(nolock) on m1.id = m.STM_ManagerID
  where m.departmentid = 12
  and m.STM_ManagerID &lt;&gt; m.TeamLead_ManagerID
  and m.DepartmentGroup &lt;&gt; 1
- order by m1.name</CommandText>
+ order by m1.name
+</CommandText>
       </Query>
       <Fields>
         <Field Name="STM_ManagerID">
