@@ -19,7 +19,7 @@
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_ssrs_Report_IS_KPI</CommandText>
+        <CommandText>usp_ssrs_Report_IS_KPI_v1</CommandText>
       </Query>
       <Fields>
         <Field Name="ReportDate">
@@ -58,24 +58,8 @@
           <DataField>CmpCntWithVac</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
-        <Field Name="CmpWithAction">
-          <DataField>CmpWithAction</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ActiveCmpWithAction">
-          <DataField>ActiveCmpWithAction</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ActiveCmp">
-          <DataField>ActiveCmp</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="CmpWithCall">
-          <DataField>CmpWithCall</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ActiveCmpWithCall">
-          <DataField>ActiveCmpWithCall</DataField>
+        <Field Name="CmpCntWithVacWithCall">
+          <DataField>CmpCntWithVacWithCall</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="CmpCntWithVacWithAction">
@@ -2010,24 +1994,24 @@
                           <ChartSeriesHierarchy>
                             <ChartMembers>
                               <ChartMember>
-                                <Label>Active Cmp With Action</Label>
+                                <Label>Cmp Cnt With Vac With Action</Label>
                               </ChartMember>
                               <ChartMember>
-                                <Label>Cmp Cnt With Vac With Action</Label>
+                                <Label>Cmp Cnt With Vac With Call</Label>
                               </ChartMember>
                             </ChartMembers>
                           </ChartSeriesHierarchy>
                           <ChartData>
                             <ChartSeriesCollection>
-                              <ChartSeries Name="CmpCntWithVac">
+                              <ChartSeries Name="CmpCntWithVacWithAction">
                                 <ChartDataPoints>
                                   <ChartDataPoint>
                                     <ChartDataPointValues>
-                                      <Y>=Sum(Fields!ActiveCmpWithAction.Value)</Y>
+                                      <Y>=Sum(Fields!CmpCntWithVacWithAction.Value)</Y>
                                     </ChartDataPointValues>
                                     <ChartDataLabel>
                                       <Style />
-                                      <Label>= FormatPercent(Sum(Fields!ActiveCmpWithAction.Value)/Sum(Fields!ActiveCmp.Value),1) &amp; " от " &amp; CStr(Sum(Fields!ActiveCmp.Value)) &amp; " компаний (" &amp; CStr(Sum(Fields!ActiveCmp.Value) - Sum(Fields!ActiveCmpWithAction.Value)) &amp; " компаний без контакта)"</Label>
+                                      <Label>= FormatPercent(Sum(Fields!CmpCntWithVacWithAction.Value)/Sum(Fields!CmpCntWithVac.Value),1) &amp; " от " &amp; CStr(Sum(Fields!CmpCntWithVac.Value)) &amp; " компаний (" &amp; CStr(Sum(Fields!CmpCntWithVac.Value) - Sum(Fields!CmpCntWithVacWithAction.Value)) &amp; " компаний без контакта)"</Label>
                                       <Visible>true</Visible>
                                       <ActionInfo>
                                         <Actions>
@@ -2047,7 +2031,6 @@
                                         </Actions>
                                       </ActionInfo>
                                     </ChartDataLabel>
-                                    <ToolTip>Активные компаний с действием</ToolTip>
                                     <Style>
                                       <Color>#00963d</Color>
                                     </Style>
@@ -2069,7 +2052,7 @@
                                   </ChartDataLabel>
                                 </ChartEmptyPoints>
                                 <ChartItemInLegend>
-                                  <LegendText>Активные компаний с действием</LegendText>
+                                  <LegendText>Компании с действиями</LegendText>
                                 </ChartItemInLegend>
                                 <ValueAxisName>Primary</ValueAxisName>
                                 <CategoryAxisName>Primary</CategoryAxisName>
@@ -2078,17 +2061,35 @@
                                   <MinMovingDistance>0pt</MinMovingDistance>
                                 </ChartSmartLabel>
                               </ChartSeries>
-                              <ChartSeries Name="CmpCntWithVacWithAction">
+                              <ChartSeries Name="CmpCntWithVac">
                                 <ChartDataPoints>
                                   <ChartDataPoint>
                                     <ChartDataPointValues>
-                                      <Y>=Sum(Fields!CmpCntWithVacWithAction.Value)</Y>
+                                      <Y>=sum(Fields!CmpCntWithVacWithCall.Value)</Y>
                                     </ChartDataPointValues>
                                     <ChartDataLabel>
                                       <Style />
-                                      <Label>= FormatPercent(Sum(Fields!CmpCntWithVacWithAction.Value)/Sum(Fields!CmpCntWithVac.Value),1) &amp; " от " &amp; CStr(Sum(Fields!CmpCntWithVac.Value)) &amp; " компаний (" &amp; CStr(Sum(Fields!CmpCntWithVac.Value) - Sum(Fields!CmpCntWithVacWithAction.Value)) &amp; " компаний без контакта)"</Label>
+                                      <Label>= FormatPercent(Sum(Fields!CmpCntWithVacWithCall.Value)/Sum(Fields!CmpCntWithVac.Value),1) &amp; " от " &amp; CStr(Sum(Fields!CmpCntWithVac.Value)) &amp; " компаний (" &amp; CStr(Sum(Fields!CmpCntWithVac.Value) - Sum(Fields!CmpCntWithVacWithCall.Value)) &amp; " компаний без контакта)"</Label>
                                       <Visible>true</Visible>
+                                      <ActionInfo>
+                                        <Actions>
+                                          <Action>
+                                            <Drillthrough>
+                                              <ReportName>BinotelCompaniesCoverage</ReportName>
+                                              <Parameters>
+                                                <Parameter Name="ReportDate">
+                                                  <Value>=Parameters!ReportDate.Value</Value>
+                                                </Parameter>
+                                                <Parameter Name="Managerid">
+                                                  <Value>=Fields!managerid.Value</Value>
+                                                </Parameter>
+                                              </Parameters>
+                                            </Drillthrough>
+                                          </Action>
+                                        </Actions>
+                                      </ActionInfo>
                                     </ChartDataLabel>
+                                    <ToolTip>Компании со звонками</ToolTip>
                                     <Style>
                                       <Color>#ff5252</Color>
                                     </Style>
@@ -2110,7 +2111,7 @@
                                   </ChartDataLabel>
                                 </ChartEmptyPoints>
                                 <ChartItemInLegend>
-                                  <LegendText>Компании с вакансиями с действиями</LegendText>
+                                  <LegendText>Компании с вакансиями со звонками</LegendText>
                                 </ChartItemInLegend>
                                 <ValueAxisName>Primary</ValueAxisName>
                                 <CategoryAxisName>Primary</CategoryAxisName>
@@ -2399,6 +2400,7 @@
                             <BackgroundGradientType>None</BackgroundGradientType>
                           </Style>
                         </Chart>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                   </TablixCells>
@@ -2423,7 +2425,7 @@
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value EvaluationMode="Constant">Месячный охват компаний, %</Value>
+                                <Value>Месячный охват компаний с вакансиями, %</Value>
                                 <Style>
                                   <FontWeight>Bold</FontWeight>
                                 </Style>
