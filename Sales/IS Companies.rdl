@@ -93,6 +93,14 @@
           <DataField>PageLogDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
+        <Field Name="MaxCompleteDate">
+          <DataField>MaxCompleteDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="ActionComment">
+          <DataField>ActionComment</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
@@ -107,13 +115,11 @@
     <DataSet Name="DSt_Team">
       <Query>
         <DataSourceName>Reporting</DataSourceName>
-        <CommandText> select distinct
- m.TeamLead_ManagerID, m1.name as SM
-
- from 
- SRV16.RabotaUA2.dbo.Manager M with(nolock)
- join SRV16.RabotaUA2.dbo.Manager M1 with(nolock) on m1.id = m.TeamLead_ManagerID
- where m.departmentid = 12
+        <CommandText>select distinct
+	m.TeamLead_ManagerID, 
+	m1.name as SM
+from mx.Manager M join mx.Manager M1 on m1.id = m.TeamLead_ManagerID
+where m.departmentid = 12
  </CommandText>
       </Query>
       <Fields>
@@ -131,13 +137,12 @@
       <Query>
         <DataSourceName>Reporting</DataSourceName>
         <CommandText> select distinct
- m.TeamLead_ManagerID as SM, m.STM_ManagerID, m1.name as STM
- from 
- SRV16.RabotaUA2.dbo.Manager M with(nolock)
- join SRV16.RabotaUA2.dbo.Manager M1 with(nolock) on m1.id = m.STM_ManagerID
- where m.departmentid = 12
- and m.STM_ManagerID &lt;&gt; m.TeamLead_ManagerID
- order by m1.name</CommandText>
+	m.TeamLead_ManagerID as SM, 
+	m.STM_ManagerID, 
+	m1.name as STM
+from mx.Manager M join mx.Manager M1 on m1.id = m.STM_ManagerID
+where m.departmentid = 12 and m.STM_ManagerID &lt;&gt; m.TeamLead_ManagerID
+order by m1.name</CommandText>
       </Query>
       <Fields>
         <Field Name="SM">
@@ -170,18 +175,17 @@
 		Id ManagerID,
 		name ManagerName,
 		case when m.id = 212 then 212 else 
-			case when EXISTS (SELECT * FROM SRV16.RabotaUA2.dbo.Manager with(nolock) WHERE STM_ManagerID = M.Id AND DepartmentID IN (2,12)) OR (STM_ManagerID = TeamLead_ManagerID AND StatusInTransactionGroup IS NULL) then m.id else 
+			case when EXISTS (SELECT * FROM mx.Manager with(nolock) WHERE STM_ManagerID = M.Id AND DepartmentID IN (2,12)) OR (STM_ManagerID = TeamLead_ManagerID AND StatusInTransactionGroup IS NULL) then m.id else 
 				coalesce(M.STM_ManagerID, M.Id) 
 			end
 		end STMid,
 		case when m.id = 212 then 1 else 
 		case when coalesce(M.STM_ManagerID, M.Id) = coalesce(TeamLead_ManagerID, Id) and M.StatusInTransactionGroup is null and coalesce(TeamLead_ManagerID, Id) &lt;&gt; M.Id 
-			and exists (select * from SRV16.RabotaUA2.dbo.Manager with(nolock) where STM_ManagerID = M.Id) then 1 else 0 end 
+			and exists (select * from mx.Manager with(nolock) where STM_ManagerID = M.Id) then 1 else 0 end 
 		end IsSTM,
 		case when m.id = 212 then 212 else coalesce(TeamLead_ManagerID, Id) end SMid
-
-	from SRV16.RabotaUA2.dbo.Manager M with(nolock)  join SRV16.RabotaUA2.dbo.aspnet_Membership MMB with(nolock) ON M.aspnet_UserUIN = MMB.UserId
-	where ((IsForTesting = 0 and IsReportExcluding = 0 and (TeamLead_ManagerID is not null or exists (select * from SRV16.RabotaUA2.dbo.Manager with(nolock) where TeamLead_ManagerID = M.Id))) or m.id in (1, 212))
+	from mx.Manager M 
+	where ((IsForTesting = 0 and IsReportExcluding = 0 and (TeamLead_ManagerID is not null or exists (select * from mx.Manager with(nolock) where TeamLead_ManagerID = M.Id))) or m.id in (1, 212))
 	and m.departmentid = 12
 	and TeamLead_ManagerID &lt;&gt; id</CommandText>
       </Query>
@@ -272,6 +276,12 @@
                 </TablixColumn>
                 <TablixColumn>
                   <Width>3.11736cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>5cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -847,6 +857,72 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox14">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Дата последнего действия</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox14</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>WhiteSmoke</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox20">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Комментарий</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox20</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>WhiteSmoke</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -1390,12 +1466,84 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="MaxCompleteDate">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!MaxCompleteDate.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <Format>dd.MM.yyyy</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>MaxCompleteDate</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <rd:Selected>true</rd:Selected>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ActionComment">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!ActionComment.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ActionComment</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -1428,7 +1576,7 @@
             <Top>0.3937cm</Top>
             <Left>0.35842cm</Left>
             <Height>2.23449cm</Height>
-            <Width>56.20071cm</Width>
+            <Width>63.70071cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1439,7 +1587,7 @@
         <Height>1.36805in</Height>
         <Style />
       </Body>
-      <Width>22.26737in</Width>
+      <Width>25.22013in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
