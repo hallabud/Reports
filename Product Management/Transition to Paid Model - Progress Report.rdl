@@ -36,6 +36,7 @@ Rabota_PublicationsSpentCurrentTrial,
 	OpenedContacts_Count,
 Rabota_PublicationsSpent_Bonus1Business_ToAll,
 Rabota_PublicationsSpent_Auto_ReCharge,
+Rabota_PublicationsSpent_FreeBusiness,
 	row_number() over(order by YearNum desc, WeekNum desc) RowNum
 from AggrManagementMetrics
  )
@@ -100,6 +101,10 @@ select * from c where RowNum between 1 and @weeksCount</CommandText>
         </Field>
         <Field Name="Rabota_PublicationsSpent_Bonus1Business_ToAll">
           <DataField>Rabota_PublicationsSpent_Bonus1Business_ToAll</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Rabota_PublicationsSpent_FreeBusiness">
+          <DataField>Rabota_PublicationsSpent_FreeBusiness</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="Rabota_PublicationsSpent_Auto_ReCharge">
@@ -240,6 +245,14 @@ select * from c where RowNum between 1 and @weeksCount</CommandText>
           <DataField>PublishedVacancy_Auto_ReCharge</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="PublishedVacancy_FreeBusiness">
+          <DataField>PublishedVacancy_FreeBusiness</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PublishedVacancyCompanies_FreeBusiness">
+          <DataField>PublishedVacancyCompanies_FreeBusiness</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="DStAttractedCompaniesDaily">
@@ -292,6 +305,7 @@ Rabota_PublicationsSpentCurrentTrial,
 	OpenedContacts_Count,
 Rabota_PublicationsSpent_Bonus1Business_ToAll,
 Rabota_PublicationsSpent_Auto_ReCharge,
+Rabota_PublicationsSpent_FreeBusiness,
 	row_number() over(order by FullDate desc) RowNum
 from AggrManagementMetricsDaily
  )
@@ -354,6 +368,10 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
           <DataField>Rabota_PublicationsSpent_Auto_ReCharge</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="Rabota_PublicationsSpent_FreeBusiness">
+          <DataField>Rabota_PublicationsSpent_FreeBusiness</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="DStVacanciesDaily">
@@ -386,6 +404,8 @@ PublishedVacancy_newTrial,
 PublishedVacancyCompanies_Bonus,
 PublishedVacancy_Bonus1Business_ToAll,
 		PublishedVacancy_Auto_ReCharge,
+PublishedVacancy_FreeBusiness,
+		PublishedVacancyCompanies_FreeBusiness,
 	row_number() over(order by Fulldate desc) RowNum
 from dailyVacancyStat dvs)
 
@@ -472,6 +492,14 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
           <DataField>PublishedVacancy_Auto_ReCharge</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="PublishedVacancy_FreeBusiness">
+          <DataField>PublishedVacancy_FreeBusiness</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PublishedVacancyCompanies_FreeBusiness">
+          <DataField>PublishedVacancyCompanies_FreeBusiness</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
   </DataSets>
@@ -537,6 +565,9 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                 </ChartMember>
                 <ChartMember>
                   <Label>Rabota Publications Spent Bonus1Business To All</Label>
+                </ChartMember>
+                <ChartMember>
+                  <Label>Rabota Publications Spent Free Business</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
@@ -864,6 +895,46 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                   </ChartEmptyPoints>
                   <ChartItemInLegend>
                     <LegendText>Free APR-20</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="Rabota_PublicationsSpent_FreeBusiness">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!Rabota_PublicationsSpent_FreeBusiness.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!Rabota_PublicationsSpent_FreeBusiness.Value)</ToolTip>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Subtype>Stacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Freemium 2.0</LegendText>
                   </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
@@ -2401,6 +2472,9 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                 <ChartMember>
                   <Label>Published Vacancy Bonus1Business To All</Label>
                 </ChartMember>
+                <ChartMember>
+                  <Label>Published Vacancy Free Business</Label>
+                </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
             <ChartData>
@@ -2719,6 +2793,46 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                   </ChartEmptyPoints>
                   <ChartItemInLegend>
                     <LegendText>Free APR-20</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="PublishedVacancy_FreeBusiness">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PublishedVacancy_FreeBusiness.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!PublishedVacancy_FreeBusiness.Value)</ToolTip>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Subtype>Stacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Freemium 2.0</LegendText>
                   </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
@@ -3084,6 +3198,9 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                 <ChartMember>
                   <Label>Published Vacancy Companies Bonus</Label>
                 </ChartMember>
+                <ChartMember>
+                  <Label>Published Vacancy Companies Free Business</Label>
+                </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
             <ChartData>
@@ -3410,6 +3527,46 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                   </ChartEmptyPoints>
                   <ChartItemInLegend>
                     <LegendText>Bonus</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="PublishedVacancyCompanies_FreeBusiness">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PublishedVacancyCompanies_FreeBusiness.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!PublishedVacancyCompanies_FreeBusiness.Value)</ToolTip>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Subtype>Stacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Freemium 2.0</LegendText>
                   </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
@@ -4167,6 +4324,9 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                 <ChartMember>
                   <Label>Rabota Publications Spent Bonus1Business To All</Label>
                 </ChartMember>
+                <ChartMember>
+                  <Label>Rabota Publications Spent Free Business</Label>
+                </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
             <ChartData>
@@ -4493,6 +4653,46 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                   </ChartEmptyPoints>
                   <ChartItemInLegend>
                     <LegendText>Free APR-20</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="Rabota_PublicationsSpent_FreeBusiness">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!Rabota_PublicationsSpent_FreeBusiness.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!Rabota_PublicationsSpent_FreeBusiness.Value)</ToolTip>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Subtype>Stacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Freemium 2.0</LegendText>
                   </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
@@ -4854,6 +5054,9 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                 <ChartMember>
                   <Label>Published Vacancy Bonus1Business To All</Label>
                 </ChartMember>
+                <ChartMember>
+                  <Label>Published Vacancy Free Business</Label>
+                </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
             <ChartData>
@@ -5179,6 +5382,46 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                   </ChartEmptyPoints>
                   <ChartItemInLegend>
                     <LegendText>Free APR-20</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="PublishedVacancy_FreeBusiness">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PublishedVacancy_FreeBusiness.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                        <Label>=IIF(Sum(Fields!PublishedVacancy_FreeBusiness.Value) &gt; 300, Sum(Fields!PublishedVacancy_FreeBusiness.Value), Nothing)</Label>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!PublishedVacancy_FreeBusiness.Value)</ToolTip>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Subtype>Stacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Freemium 2.0</LegendText>
                   </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
@@ -5530,6 +5773,9 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                 <ChartMember>
                   <Label>Published Vacancy Companies Bonus</Label>
                 </ChartMember>
+                <ChartMember>
+                  <Label>Published Vacancy Companies Free Business</Label>
+                </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
             <ChartData>
@@ -5855,6 +6101,46 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
                   </ChartEmptyPoints>
                   <ChartItemInLegend>
                     <LegendText>Bonus</LegendText>
+                  </ChartItemInLegend>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="PublishedVacancyCompanies_FreeBusiness">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!PublishedVacancyCompanies_FreeBusiness.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                        <Label>=IIF(Sum(Fields!PublishedVacancyCompanies_FreeBusiness.Value) &gt; 300, Sum(Fields!PublishedVacancyCompanies_FreeBusiness.Value), Nothing)</Label>
+                        <Visible>true</Visible>
+                      </ChartDataLabel>
+                      <ToolTip>=Sum(Fields!PublishedVacancyCompanies_FreeBusiness.Value)</ToolTip>
+                      <Style />
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Subtype>Stacked</Subtype>
+                  <Style />
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartItemInLegend>
+                    <LegendText>Freemium 2.0</LegendText>
                   </ChartItemInLegend>
                   <ValueAxisName>Primary</ValueAxisName>
                   <CategoryAxisName>Primary</CategoryAxisName>
@@ -6917,7 +7203,7 @@ select * from c where RowNum between 1 and @daysCount</CommandText>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
+      <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
