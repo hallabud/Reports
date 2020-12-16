@@ -22,6 +22,10 @@
         <CommandText>usp_ssrs_Report_TSCompaniesWithCompletedVacancies</CommandText>
       </Query>
       <Fields>
+        <Field Name="STM_id">
+          <DataField>STM_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="STM">
           <DataField>STM</DataField>
           <rd:TypeName>System.String</rd:TypeName>
@@ -29,6 +33,10 @@
         <Field Name="ManagerName">
           <DataField>ManagerName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="managerid">
+          <DataField>managerid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="NotebookId">
           <DataField>NotebookId</DataField>
@@ -55,6 +63,78 @@
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!managerid.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!Manager.Value()</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
+    </DataSet>
+    <DataSet Name="DSt_TL">
+      <SharedDataSet>
+        <SharedDataSetReference>DSt_IS_STMs</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="SM">
+          <DataField>SM</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="STM_ManagerID">
+          <DataField>STM_ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="STM">
+          <DataField>STM</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DepartmentGroup">
+          <DataField>DepartmentGroup</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DSt_manager">
+      <SharedDataSet>
+        <SharedDataSetReference>DSt_IS_Managers</SharedDataSetReference>
+      </SharedDataSet>
+      <Fields>
+        <Field Name="ManagerID">
+          <DataField>ManagerID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ManagerName">
+          <DataField>ManagerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="STMid">
+          <DataField>STMid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IsSTM">
+          <DataField>IsSTM</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="SMid">
+          <DataField>SMid</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="DepartmentGroup">
+          <DataField>DepartmentGroup</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
+        </Field>
+      </Fields>
+      <Filters>
+        <Filter>
+          <FilterExpression>=Fields!STMid.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!TL.Value()</FilterValue>
+          </FilterValues>
+        </Filter>
+      </Filters>
     </DataSet>
   </DataSets>
   <ReportSections>
@@ -399,6 +479,13 @@
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>NotebookId</rd:DefaultName>
+                          <ActionInfo>
+                            <Actions>
+                              <Action>
+                                <Hyperlink>="javascript:void(window.open('https://admin8.rabota.ua/pages/company/view.aspx?notebookId=" &amp; CStr(Fields!notebookid.Value) &amp; "','_blank'))"</Hyperlink>
+                              </Action>
+                            </Actions>
+                          </ActionInfo>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -431,6 +518,13 @@
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>CompanyName</rd:DefaultName>
+                          <ActionInfo>
+                            <Actions>
+                              <Action>
+                                <Hyperlink>="javascript:void(window.open('https://admin8.rabota.ua/pages/company/view.aspx?notebookId=" &amp; CStr(Fields!notebookid.Value) &amp; "','_blank'))"</Hyperlink>
+                              </Action>
+                            </Actions>
+                          </ActionInfo>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -442,6 +536,7 @@
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -827,7 +922,7 @@
             <Top>0.36724cm</Top>
             <Left>0.47307cm</Left>
             <Height>1.80854cm</Height>
-            <Width>12.01146cm</Width>
+            <Width>12.01145cm</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -857,16 +952,62 @@
       <DataType>DateTime</DataType>
       <Prompt>Начало периода, в котором завершились вакансии</Prompt>
     </ReportParameter>
+    <ReportParameter Name="TL">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DSt_TL</DataSetName>
+          <ValueField>STM_ManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>TL</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DSt_TL</DataSetName>
+          <ValueField>STM_ManagerID</ValueField>
+          <LabelField>STM</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="Manager">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DSt_manager</DataSetName>
+          <ValueField>ManagerID</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Manager</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DSt_manager</DataSetName>
+          <ValueField>ManagerID</ValueField>
+          <LabelField>ManagerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
+      <NumberOfRows>3</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>StartDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>TL</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>Manager</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
