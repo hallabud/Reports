@@ -39,8 +39,11 @@
           <QueryParameter Name="@CommissionLevelid">
             <Value>=Parameters!Level.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
           <QueryParameter Name="@CalcDay">
-            <Value>=Parameters!Day.Value</Value>
+            <Value>=Parameters!CalcDay.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
@@ -61,7 +64,7 @@
         </Field>
         <Field Name="CommissionLevelID">
           <DataField>CommissionLevelID</DataField>
-          <rd:TypeName>System.Int16</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="CommissionLevel">
           <DataField>CommissionLevel</DataField>
@@ -85,6 +88,35 @@
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="DSt_Date">
+      <Query>
+        <DataSourceName>Reports</DataSourceName>
+        <CommandText>select cast(dd.LastMonthDate as date) as LastMonthDate
+from DimDate dd
+where  dd.fulldate = cast(getdate() as date) </CommandText>
+      </Query>
+      <Fields>
+        <Field Name="LastMonthDate">
+          <DataField>LastMonthDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DSt_AllDate">
+      <Query>
+        <DataSourceName>Reports</DataSourceName>
+        <CommandText>select cast(dd.fulldate as date) as fulldate
+from DimDate dd with(nolock)
+where  dd.fulldate between cast(getdate() as date)  and (select LastMonthDate from dimdate with(nolock) where fulldate = cast(getdate() as date))
+order by dd.fulldate</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="fulldate">
+          <DataField>fulldate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -99,12 +131,12 @@
                       <GroupExpression>=Fields!Reportdate.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
-                  <Label>=Fields!Reportdate.Value</Label>
                   <SortExpressions>
                     <SortExpression>
                       <Value>=Fields!Reportdate.Value</Value>
                     </SortExpression>
                   </SortExpressions>
+                  <Label>=Fields!Reportdate.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartCategoryHierarchy>
@@ -116,13 +148,13 @@
                       <GroupExpression>=Fields!CommissionLevel.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
-                  <Label>=Fields!CommissionLevel.Value</Label>
                   <SortExpressions>
                     <SortExpression>
                       <Value>=Fields!CommissionLevelID.Value</Value>
                       <Direction>Descending</Direction>
                     </SortExpression>
                   </SortExpressions>
+                  <Label>=Fields!CommissionLevel.Value</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
@@ -444,8 +476,8 @@
             </ChartNoDataMessage>
             <DataSetName>DSt_GapForecast</DataSetName>
             <Top>2.52884cm</Top>
-            <Height>9.33862cm</Height>
-            <Width>32.23667cm</Width>
+            <Height>12.47834cm</Height>
+            <Width>38.02222cm</Width>
             <Style>
               <Border>
                 <Color>LightGrey</Color>
@@ -694,7 +726,7 @@
         <Height>7.43495in</Height>
         <Style />
       </Body>
-      <Width>12.83271in</Width>
+      <Width>15.55493in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
@@ -720,6 +752,23 @@
       </ValidValues>
       <MultiValue>true</MultiValue>
     </ReportParameter>
+    <ReportParameter Name="EndDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DSt_Date</DataSetName>
+          <ValueField>LastMonthDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Дата перехода</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DSt_AllDate</DataSetName>
+          <ValueField>fulldate</ValueField>
+          <LabelField>fulldate</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
     <ReportParameter Name="Level">
       <DataType>Integer</DataType>
       <Prompt>Level</Prompt>
@@ -744,18 +793,18 @@
         </ParameterValues>
       </ValidValues>
     </ReportParameter>
-    <ReportParameter Name="Day">
-      <DataType>String</DataType>
-      <Prompt>Расчитать значения начиная с </Prompt>
+    <ReportParameter Name="CalcDay">
+      <DataType>Integer</DataType>
+      <Prompt>Рассчитать от </Prompt>
       <ValidValues>
         <ParameterValues>
           <ParameterValue>
-            <Value>1</Value>
-            <Label>завтра</Label>
+            <Value>2</Value>
+            <Label>Сегодня</Label>
           </ParameterValue>
           <ParameterValue>
-            <Value>2</Value>
-            <Label>сегодня</Label>
+            <Value>1</Value>
+            <Label>Завтра</Label>
           </ParameterValue>
         </ParameterValues>
       </ValidValues>
@@ -772,14 +821,19 @@
           <ParameterName>TL</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
           <ParameterName>Level</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>Day</ParameterName>
+          <ParameterName>EndDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>CalcDay</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

@@ -115,6 +115,9 @@
           <QueryParameter Name="@managerid">
             <Value>=Parameters!managerid.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@managerid_new">
+            <Value>=Parameters!ManagerNew.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>usp_ssrs_Report_CompanyLinking_changedManager</CommandText>
@@ -230,6 +233,23 @@
         <Field Name="TeamLead_ManagerID">
           <DataField>TeamLead_ManagerID</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DSt_Manager_new">
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_Report_CompanyLinking_manager_new</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="id">
+          <DataField>id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="managername">
+          <DataField>managername</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -2243,6 +2263,22 @@
       </DefaultValue>
       <Prompt>End date</Prompt>
     </ReportParameter>
+    <ReportParameter Name="ManagerNew">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>0</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Manager new</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DSt_Manager_new</DataSetName>
+          <ValueField>id</ValueField>
+          <LabelField>managername</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -2268,6 +2304,11 @@
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>de</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ManagerNew</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
