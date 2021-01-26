@@ -747,19 +747,40 @@ select * from c where RowNum between 1 and @weeksCount
 	*
 from (
 select
+	YearNum,
+	WeekNum,
+	WeekName,
+	sum(Rabota_SumRecognizedRevenue) Rabota_SumRecognizedRevenue,
+	dense_rank () over(order by YearNum desc, WeekNum desc) rn
+from (
+select
 	dd.YearNum,
 	dd.WeekNum,
 	dd.WeekName,
-	sum(frrop.RecognizedRevenue) Rabota_SumRecognizedRevenue,
-	dense_rank () over(order by dd.YearNum desc, dd.WeekNum desc) rn
+	sum(frrop.RecognizedRevenue) Rabota_SumRecognizedRevenue
 from FactRecognizedRevenueOrderProduct frrop join DimDate dd on frrop.Date_key = dd.Date_key
 											 join DimProduct dp on frrop.Product_key = dp.Product_key
 											 join DimService ds on dp.Service_key = ds.Service_key
 											 left join NotebookCompany_forTest ft on frrop.notebookid = ft.notebookid
-where ft.notebookid is null and dd.FullDate &gt;= dateadd(week, -cast(@Period as int)-1, cast(getdate() as date))
-group by dd.YearNum, dd.WeekNum, dd.WeekName) x
-where rn between 1 and @Period
-order by 1 desc ,2 desc</CommandText>
+where ft.notebookid is null and dd.FullDate between dateadd(week, -cast(@Period as int)-1, cast(getdate() as date)) and cast(getdate()-1 as date)
+group by dd.YearNum, dd.WeekNum, dd.WeekName
+
+union all
+
+select
+	dd.YearNum,
+	dd.WeekNum,
+	dd.WeekName,
+	sum(frrop.RecognizedRevenueCorrection) Rabota_SumRecognizedRevenue
+from FactRecognizedRevenueOrderCorrection frrop join DimDate dd on frrop.Date_key = dd.Date_key
+											 left join NotebookCompany_forTest ft on frrop.notebookid = ft.notebookid
+where ft.notebookid is null and dd.FullDate between dateadd(week, -cast(@Period as int)-1, cast(getdate() as date)) and cast(getdate()-1 as date)
+group by dd.YearNum, dd.WeekNum, dd.WeekName
+
+) x
+group by YearNum, WeekNum, WeekName
+) y
+where rn between 1 and @Period</CommandText>
       </Query>
       <Fields>
         <Field Name="YearNum">
