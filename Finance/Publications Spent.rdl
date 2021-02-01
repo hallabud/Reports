@@ -20,10 +20,10 @@
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>WITH C_TicketsSpent (FullDate, SpentType, PaidType, PubType, SpentCount, VacancyId) AS
+        <CommandText>;WITH C_TicketsSpent (FullDate, SpentType, PaidType, PubType, SpentCount, VacancyId) AS
  (
 SELECT
-   Reporting.dbo.fnGetDatePart(TA.AddDate)
+   cast(TA.AddDate as date)
  , 'Сгоревшие'
  , CASE
     WHEN COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID) IN (1,2,3,4) THEN 'Платные'
@@ -42,15 +42,15 @@ SELECT
    END
  , TA.TicketAwayCount
  , NULL 
-FROM SRV16.RabotaUA2.dbo.TicketAway TA WITH (NOLOCK)
- LEFT JOIN SRV16.RabotaUA2.dbo.TicketPayment TP WITH (NOLOCK) ON TA.TicketPaymentID = TP.Id AND TA.RegionalPackageID IS NULL
- LEFT JOIN SRV16.RabotaUA2.dbo.RegionalTicketPayment RTP WITH (NOLOCK) ON TA.TicketPaymentID = RTP.ID AND TA.RegionalPackageID IS NOT NULL
-WHERE TA.IsFire = 1
+FROM mx.TicketAway TA WITH (NOLOCK)
+ LEFT JOIN mx.TicketPayment TP WITH (NOLOCK) ON TA.TicketPaymentID = TP.Id AND TA.RegionalPackageID IS NULL
+ LEFT JOIN mx.RegionalTicketPayment RTP WITH (NOLOCK) ON TA.TicketPaymentID = RTP.ID AND TA.RegionalPackageID IS NOT NULL
+WHERE TA.IsFire = 1 and ta.AddDate between @StartDate and @EndDate + 1
 
 UNION ALL
 
 SELECT
-   Reporting.dbo.fnGetDatePart(NCS.AddDate)
+   cast(NCS.AddDate as date)
  , 'Потраченные'
  , CASE
     WHEN COALESCE(TP.TicketPaymentTypeID, RTP.TicketPaymentTypeID) IN (1,2,3,4) THEN 'Платные'
@@ -69,9 +69,10 @@ SELECT
    END
  , NCS.SpendCount
  , NCS.VacancyID
-FROM SRV16.RabotaUA2.dbo.NotebookCompany_Spent NCS WITH (NOLOCK)
- LEFT JOIN SRV16.RabotaUA2.dbo.TicketPayment TP WITH (NOLOCK) ON NCS.TicketPaymentID = TP.Id AND NCS.RegionalPackageID IS NULL
- LEFT JOIN SRV16.RabotaUA2.dbo.RegionalTicketPayment RTP WITH (NOLOCK) ON NCS.TicketPaymentID = RTP.ID AND NCS.RegionalPackageID IS NOT NULL
+FROM mx.NotebookCompany_Spent NCS WITH (NOLOCK)
+ LEFT JOIN mx.TicketPayment TP WITH (NOLOCK) ON NCS.TicketPaymentID = TP.Id AND NCS.RegionalPackageID IS NULL
+ LEFT JOIN mx.RegionalTicketPayment RTP WITH (NOLOCK) ON NCS.TicketPaymentID = RTP.ID AND NCS.RegionalPackageID IS NOT NULL
+ where ncs.AddDate between @StartDate and @EndDate + 1
  )
 
 SELECT 
@@ -85,8 +86,7 @@ SELECT
  , PubType
  , SUM(SpentCount) AS PubsSpent
  , COUNT(DISTINCT VacancyId) AS VacNum
-FROM C_TicketsSpent C
- JOIN Reporting.dbo.DimDate D ON C.FullDate = D.FullDate
+FROM C_TicketsSpent C JOIN DimDate D ON C.FullDate = D.FullDate
 WHERE D.FullDate BETWEEN @StartDate AND @EndDate
 GROUP BY 
 --   D.FullDate

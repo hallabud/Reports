@@ -53,16 +53,16 @@
  , D2.Name AS OrderType
  , SUM(OD.CatalogPrice) AS CatalogPrice
  , SUM(OD.ClientPrice) AS ClientPrice
-FROM SRV16.RabotaUA2.dbo.Orders O WITH (NOLOCK)
- JOIN SRV16.RabotaUA2.dbo.OrderDetail OD WITH (NOLOCK) ON O.ID = OD.OrderID
- JOIN SRV16.RabotaUA2.dbo.Directory D1 WITH (NOLOCK) ON O.State = D1.ID AND D1.Type = 'OrderState'
- JOIN SRV16.RabotaUA2.dbo.Directory D2 WITH (NOLOCK) ON O.Type = D2.ID AND D2.Type = 'OrderType'
- JOIN SRV16.RabotaUA2.dbo.Order_ActivationBasis AB WITH (NOLOCK) ON O.ActivationBasisID = AB.ID
- JOIN SRV16.RabotaUA2.dbo.OrderService AS OS WITH (NOLOCK) ON OD.ServiceID = OS.ID
- JOIN SRV16.RabotaUA2.dbo.OrderService_Group AS OSG WITH (NOLOCK) ON OS.GroupID = OSG.ID
- JOIN SRV16.RabotaUA2.dbo.OrderService_Unit AS OSU WITH (NOLOCK) ON OD.UnitID = OSU.ID 
- JOIN SRV16.RabotaUA2.dbo.NotebookCompany NC WITH (NOLOCK) ON O.NotebookID = NC.NotebookID
- JOIN SRV16.RabotaUA2.dbo.Manager M WITH (NOLOCK) ON NC.ManagerID = M.ID
+FROM mx.Orders O WITH (NOLOCK)
+ JOIN mx.OrderDetail OD WITH (NOLOCK) ON O.ID = OD.OrderID
+ JOIN mx.Directory D1 WITH (NOLOCK) ON O.State = D1.ID AND D1.Type = 'OrderState'
+ JOIN mx.Directory D2 WITH (NOLOCK) ON O.Type = D2.ID AND D2.Type = 'OrderType'
+ JOIN mx.Order_ActivationBasis AB WITH (NOLOCK) ON O.ActivationBasisID = AB.ID
+ JOIN mx.OrderService AS OS WITH (NOLOCK) ON OD.ServiceID = OS.ID
+ JOIN mx.OrderService_Group AS OSG WITH (NOLOCK) ON OS.GroupID = OSG.ID
+ JOIN mx.OrderService_Unit AS OSU WITH (NOLOCK) ON OD.UnitID = OSU.ID 
+ JOIN mx.NotebookCompany NC WITH (NOLOCK) ON O.NotebookID = NC.NotebookID
+ JOIN mx.Manager M WITH (NOLOCK) ON NC.ManagerID = M.ID
  JOIN Reporting.dbo.DimDate DD ON OD.ActivationStartDate = DD.FullDate
 WHERE O.NotebookID NOT IN (853455, 1448295) /*не включаем тестовые компании*/
  AND O.State IN (4,5) /*выбираем только активированные или выполненные заказы*/ 
@@ -146,7 +146,7 @@ GROUP BY
     <DataSet Name="DStOrderTypes">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>SELECT ID, Name FROM SRV16.RabotaUA2.dbo.Directory WITH (NOLOCK) WHERE Type = 'OrderType'</CommandText>
+        <CommandText>SELECT ID, Name FROM mx.Directory WITH (NOLOCK) WHERE Type = 'OrderType'</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -163,7 +163,7 @@ GROUP BY
     <DataSet Name="DStActivationBasis">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>SELECT * FROM SRV16.RabotaUA2.dbo.Order_ActivationBasis WITH (NOLOCK)</CommandText>
+        <CommandText>SELECT * FROM mx.Order_ActivationBasis WITH (NOLOCK)</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -173,6 +173,10 @@ GROUP BY
         </Field>
         <Field Name="Name">
           <DataField>Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="NameUkr">
+          <DataField>NameUkr</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
