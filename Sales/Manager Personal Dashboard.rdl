@@ -132,17 +132,21 @@
             <Value>=Parameters!Manager.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+        <CommandText>select
+	m.id,
+	U.Email
+into #manager
+from mx.Manager m join SRV16.RabotaUA2.dbo.aspnet_Membership U with(nolock) ON U.UserId = M.aspnet_UserUIN
+where U.LoweredEmail IN (@Manager)
 
 SELECT FCS.VacancyDiffGroup, COUNT(*) AS ActionNum, COUNT(DISTINCT A.NotebookID) AS NotebookNum
-FROM SRV16.RabotaUA2.dbo.CRM_Action A
- JOIN SRV16.RabotaUA2.dbo.aspnet_Membership U ON A.Responsible = U.Email
- JOIN SRV16.RabotaUA2.dbo.Manager M ON U.UserId = M.aspnet_UserUIN
+FROM mx.CRM_Action A join #manager m on a.Responsible = m.Email
+ --JOIN SRV16.RabotaUA2.dbo.aspnet_Membership U with(nolock) ON A.Responsible = U.Email
+ --JOIN mx.Manager M ON U.UserId = M.aspnet_UserUIN
  JOIN dbo.DimDate D ON dbo.fnGetDatePart(A.CompleteDate) = D.FullDate
  JOIN dbo.DimCompany C ON A.NotebookID = C.NotebookId
  JOIN dbo.FactCompanyStatuses FCS ON D.Date_key = FCS.Date_key AND C.Company_key = FCS.Company_key
 WHERE A.CompleteDate BETWEEN @StartDate AND @EndDate
- AND U.LoweredEmail IN (@Manager)
 GROUP BY FCS.VacancyDiffGroup;</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
@@ -164,13 +168,11 @@ GROUP BY FCS.VacancyDiffGroup;</CommandText>
     <DataSet Name="DStManagers">
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
-        <CommandText>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
-
-SELECT M.Name, D.Name AS DepartmentName, AM.LoweredEmail AS Email,
+        <CommandText>SELECT M.Name, D.Name AS DepartmentName, AM.LoweredEmail AS Email,
  'RABOTA\' + LEFT(AM.EMail, CHARINDEX('@', AM.Email) - 1) AS UserID
-FROM SRV16.RabotaUA2.dbo.Manager M
- JOIN SRV16.RabotaUA2.dbo.Departments D ON M.DepartmentId = D.ID
- JOIN SRV16.RabotaUA2.dbo.aspnet_Membership AM ON M.aspnet_UserUIN = AM.UserID
+FROM mx.Manager M
+ JOIN mx.Departments D ON M.DepartmentId = D.ID
+ JOIN SRV16.RabotaUA2.dbo.aspnet_Membership AM with(nolock) ON M.aspnet_UserUIN = AM.UserID
 WHERE D.Name IN ('Sales Force','Telesales','Teleinfo')
  AND M.IsForTesting = 0
 ORDER BY Name</CommandText>
@@ -208,7 +210,7 @@ ORDER BY Name</CommandText>
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
         <CommandText>SELECT Name 
-FROM SRV16.RabotaUA2.dbo.Departments  WITH (NOLOCK)
+FROM mx.Departments
 WHERE Name IN ('Sales Force','Telesales','Teleinfo')
 ORDER BY Name</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
