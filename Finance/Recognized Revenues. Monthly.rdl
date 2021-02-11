@@ -75,20 +75,22 @@
       </Fields>
     </DataSet>
     <DataSet Name="DStSalesTeams">
-      <SharedDataSet>
-        <SharedDataSetReference>DStSalesTeams</SharedDataSetReference>
-      </SharedDataSet>
+      <Query>
+        <DataSourceName>DSrcReporting</DataSourceName>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_ssrs_DataSet_SM_struct</CommandText>
+      </Query>
       <Fields>
-        <Field Name="SalesTeamName">
-          <DataField>SalesTeamName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="SalesManagerID">
-          <DataField>SalesManagerID</DataField>
+        <Field Name="smid">
+          <DataField>smid</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
-        <Field Name="SalesManagerName">
-          <DataField>SalesManagerName</DataField>
+        <Field Name="name">
+          <DataField>name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="team">
+          <DataField>team</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -97,7 +99,7 @@
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_ssrs_DataSet_ManagersWithSTM</CommandText>
+        <CommandText>usp_ssrs_DataSet_Managers_struct</CommandText>
       </Query>
       <Fields>
         <Field Name="ManagerID">
@@ -108,20 +110,12 @@
           <DataField>ManagerName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="TeamLead_ManagerID">
-          <DataField>TeamLead_ManagerID</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="IsLoyaltyGroup">
-          <DataField>IsLoyaltyGroup</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="IsSTM">
-          <DataField>IsSTM</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+        <Field Name="stmname">
+          <DataField>stmname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="STMid">
-          <DataField>STMid</DataField>
+          <DataField>stmid</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
@@ -139,25 +133,29 @@
       <Query>
         <DataSourceName>DSrcReporting</DataSourceName>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_ssrs_DataSet_STMs_RecognizedRevenuesMonthlyReport</CommandText>
+        <CommandText>usp_ssrs_DataSet_STM_struct</CommandText>
       </Query>
       <Fields>
-        <Field Name="ManagerID">
-          <DataField>ManagerID</DataField>
+        <Field Name="stmid">
+          <DataField>stmid</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="ManagerName">
           <DataField>ManagerName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="TeamLead_ManagerID">
-          <DataField>TeamLead_ManagerID</DataField>
+        <Field Name="SMid">
+          <DataField>SMid</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="smName">
+          <DataField>smName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
       <Filters>
         <Filter>
-          <FilterExpression>=Fields!TeamLead_ManagerID.Value</FilterExpression>
+          <FilterExpression>=Fields!SMid.Value</FilterExpression>
           <Operator>In</Operator>
           <FilterValues>
             <FilterValue>=Parameters!SalesTeam.Value</FilterValue>
@@ -2698,17 +2696,12 @@
     </ReportParameter>
     <ReportParameter Name="SalesTeam">
       <DataType>Integer</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>0</Value>
-        </Values>
-      </DefaultValue>
       <Prompt>Sales-команда</Prompt>
       <ValidValues>
         <DataSetReference>
           <DataSetName>DStSalesTeams</DataSetName>
-          <ValueField>SalesManagerID</ValueField>
-          <LabelField>SalesTeamName</LabelField>
+          <ValueField>smid</ValueField>
+          <LabelField>name</LabelField>
         </DataSetReference>
       </ValidValues>
       <MultiValue>true</MultiValue>
@@ -2718,14 +2711,14 @@
       <DefaultValue>
         <DataSetReference>
           <DataSetName>DStSTMs</DataSetName>
-          <ValueField>ManagerID</ValueField>
+          <ValueField>stmid</ValueField>
         </DataSetReference>
       </DefaultValue>
       <Prompt>STM</Prompt>
       <ValidValues>
         <DataSetReference>
           <DataSetName>DStSTMs</DataSetName>
-          <ValueField>ManagerID</ValueField>
+          <ValueField>stmid</ValueField>
           <LabelField>ManagerName</LabelField>
         </DataSetReference>
       </ValidValues>
