@@ -92,13 +92,24 @@
           <DataField>adddate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
+        <Field Name="updatedate">
+          <DataField>updatedate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
       </Fields>
       <Filters>
         <Filter>
-          <FilterExpression>=Fields!ReanimationManagerId.Value</FilterExpression>
-          <Operator>Equal</Operator>
+          <FilterExpression>=Fields!ActivityStatusName.Value</FilterExpression>
+          <Operator>In</Operator>
           <FilterValues>
-            <FilterValue>=Parameters!Manager.Value()</FilterValue>
+            <FilterValue>=Parameters!ActivityStatus.Value()</FilterValue>
+          </FilterValues>
+        </Filter>
+        <Filter>
+          <FilterExpression>=Fields!ReanimationManagerId.Value</FilterExpression>
+          <Operator>In</Operator>
+          <FilterValues>
+            <FilterValue>=Parameters!Manager.Value</FilterValue>
           </FilterValues>
         </Filter>
       </Filters>
@@ -138,10 +149,10 @@
                   <Width>3.98167cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.5cm</Width>
+                  <Width>2.1825cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>5.25167cm</Width>
+                  <Width>7.42125cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.04139cm</Width>
@@ -495,6 +506,9 @@
                       <CellContents>
                         <Textbox Name="Textbox19">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!MaxCompleteDate.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -667,10 +681,19 @@
                                   <Style />
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>NotebookId</rd:DefaultName>
+                          <ActionInfo>
+                            <Actions>
+                              <Action>
+                                <Hyperlink>="javascript:void(window.open('https://admin8.rabota.ua/pages/company/view.aspx?notebookId=" &amp; CStr(Fields!NotebookId.Value) &amp; "','_blank'))"</Hyperlink>
+                              </Action>
+                            </Actions>
+                          </ActionInfo>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -994,7 +1017,7 @@
             <Top>2.08703cm</Top>
             <Left>0.30551cm</Left>
             <Height>2.1525cm</Height>
-            <Width>56.21139cm</Width>
+            <Width>58.06348cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1038,7 +1061,7 @@
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!adddate.Value, "DSt_IS_Reanimation")</Value>
+                    <Value>=First(Fields!updatedate.Value, "DSt_IS_Reanimation")</Value>
                     <Style>
                       <Format>dd.MM.yyyy</Format>
                     </Style>
@@ -1072,7 +1095,7 @@
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Данные сформированы:</Value>
+                    <Value>Данные обновлены:</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                     </Style>
@@ -1151,7 +1174,7 @@
     <ReportParameter Name="Manager">
       <DataType>Integer</DataType>
       <Nullable>true</Nullable>
-      <Prompt>Manager</Prompt>
+      <Prompt>Менеджер</Prompt>
       <ValidValues>
         <DataSetReference>
           <DataSetName>DSt_Managers</DataSetName>
@@ -1159,6 +1182,34 @@
           <LabelField>ManagerName</LabelField>
         </DataSetReference>
       </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="ActivityStatus">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>Silent2M</Value>
+          <Value>Silent3M</Value>
+          <Value>Silent3M+</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Статус активности</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>Silent2M</Value>
+            <Label>Silent2M</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Silent3M</Value>
+            <Label>Silent3M</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Silent3M+</Value>
+            <Label>Silent3M+</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
@@ -1170,6 +1221,11 @@
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>Manager</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ActivityStatus</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
