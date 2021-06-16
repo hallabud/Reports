@@ -93,6 +93,10 @@
           <DataField>AvgCompanyNum</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="total_companies">
+          <DataField>total_companies</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="DStSalesTeams">
@@ -165,117 +169,6 @@
           </FilterValues>
         </Filter>
       </Filters>
-    </DataSet>
-    <DataSet Name="DStSalesSupport">
-      <Query>
-        <DataSourceName>DSrcReporting</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@StartDate">
-            <Value>=Parameters!StartDate.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@EndDate">
-            <Value>=Parameters!EndDate.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_ssrs_Report_ManagerStandards_salesSupport</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="managerid">
-          <DataField>managerid</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="manager_name">
-          <DataField>manager_name</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="segment">
-          <DataField>segment</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="interviewed_clients">
-          <DataField>interviewed_clients</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="interviewed_companies">
-          <DataField>interviewed_companies</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="calls_after30">
-          <DataField>calls_after30</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="calls_before30">
-          <DataField>calls_before30</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="calls_unsuccessful_in">
-          <DataField>calls_unsuccessful_in</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="calls_unsuccessful_out">
-          <DataField>calls_unsuccessful_out</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="billSec">
-          <DataField>billSec</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="videocalls_cnt">
-          <DataField>videocalls_cnt</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="actions_cnt">
-          <DataField>actions_cnt</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="DSt_MultiuserCoverage">
-      <Query>
-        <DataSourceName>DSrcReporting</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@EndDate">
-            <Value>=Parameters!EndDate.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_ssrs_Report_ManagerStandards_salesSupportMultiuserCoverage</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="managerid">
-          <DataField>managerid</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="managername">
-          <DataField>managername</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="UserCnt">
-          <DataField>UserCnt</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="CoverageUserCnt">
-          <DataField>CoverageUserCnt</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="CallsCnt">
-          <DataField>CallsCnt</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="VideoCallsCnt">
-          <DataField>VideoCallsCnt</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="Mail">
-          <DataField>Mail</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="Messenger">
-          <DataField>Messenger</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-      </Fields>
     </DataSet>
   </DataSets>
   <ReportSections>
@@ -1028,7 +921,7 @@
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>119.1616cm</Top>
+            <Top>97.09639cm</Top>
             <Height>34cm</Height>
             <Width>26cm</Width>
             <ZIndex>1</ZIndex>
@@ -2046,7 +1939,7 @@
                 <Value>=Fields!Manager.Value</Value>
               </SortExpression>
             </SortExpressions>
-            <Top>153.72604cm</Top>
+            <Top>131.66083cm</Top>
             <Height>2.09958cm</Height>
             <Width>30.20688cm</Width>
             <ZIndex>3</ZIndex>
@@ -2073,7 +1966,7 @@
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox4</rd:DefaultName>
-            <Top>156.3155cm</Top>
+            <Top>134.25029cm</Top>
             <Height>0.6cm</Height>
             <Width>2.5cm</Width>
             <ZIndex>4</ZIndex>
@@ -2111,7 +2004,7 @@
                       </Group>
                       <SortExpressions>
                         <SortExpression>
-                          <Value>=Fields!MeetingsCountMonth.Value</Value>
+                          <Value>=Sum(Fields!MeetingsCountThreeMonth.Value)/Sum(Fields!total_companies.Value)</Value>
                         </SortExpression>
                       </SortExpressions>
                       <Label>=Fields!Manager.Value</Label>
@@ -2124,7 +2017,7 @@
             <ChartSeriesHierarchy>
               <ChartMembers>
                 <ChartMember>
-                  <Label>Company Num</Label>
+                  <Label>total companies</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
@@ -2134,15 +2027,16 @@
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=IIF(Sum(Fields!CompanyNum.Value) = 0, 0,
-Sum(Fields!MeetingsCountThreeMonth.Value)/Sum(Fields!CompanyNum.Value)
+                        <Y>=IIF(Sum(Fields!total_companies.Value) = 0, 0,
+Sum(Fields!MeetingsCountThreeMonth.Value)/Sum(Fields!total_companies.Value)
 )</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
                         <Style>
                           <Format>0.00%</Format>
                         </Style>
-                        <UseValueAsLabel>true</UseValueAsLabel>
+                        <Label>= FormatPercent(Fields!MeetingsCountThreeMonth.Value/Fields!total_companies.Value, 1) &amp; " от " 
+&amp; CStr(Fields!total_companies.Value) &amp; " компаний"</Label>
                         <Visible>true</Visible>
                       </ChartDataLabel>
                       <Style />
@@ -2153,7 +2047,6 @@ Sum(Fields!MeetingsCountThreeMonth.Value)/Sum(Fields!CompanyNum.Value)
                     </ChartDataPoint>
                   </ChartDataPoints>
                   <Type>Bar</Type>
-                  <Subtype>Stacked</Subtype>
                   <Style />
                   <ChartEmptyPoints>
                     <Style />
@@ -2256,6 +2149,7 @@ Sum(Fields!MeetingsCountThreeMonth.Value)/Sum(Fields!CompanyNum.Value)
                   <ChartAxis Name="Primary">
                     <Style>
                       <FontSize>8pt</FontSize>
+                      <Format>0.00%</Format>
                     </Style>
                     <ChartAxisTitle>
                       <Caption />
@@ -2263,7 +2157,6 @@ Sum(Fields!MeetingsCountThreeMonth.Value)/Sum(Fields!CompanyNum.Value)
                         <FontSize>8pt</FontSize>
                       </Style>
                     </ChartAxisTitle>
-                    <Interval>1</Interval>
                     <ChartMajorGridLines>
                       <Style>
                         <Border>
@@ -2287,22 +2180,6 @@ Sum(Fields!MeetingsCountThreeMonth.Value)/Sum(Fields!CompanyNum.Value)
                       <ChartStripLine>
                         <Style>
                           <Border>
-                            <Color>#5389d6</Color>
-                            <Style>Dashed</Style>
-                            <Width>2pt</Width>
-                          </Border>
-                          <BackgroundGradientType>None</BackgroundGradientType>
-                          <FontSize>8pt</FontSize>
-                          <TextAlign>General</TextAlign>
-                          <VerticalAlign>Bottom</VerticalAlign>
-                        </Style>
-                        <Title>Цель: 20 в месяц</Title>
-                        <TextOrientation>Horizontal</TextOrientation>
-                        <IntervalOffset>20</IntervalOffset>
-                      </ChartStripLine>
-                      <ChartStripLine>
-                        <Style>
-                          <Border>
                             <Color>Gold</Color>
                             <Style>Solid</Style>
                             <Width>2pt</Width>
@@ -2314,11 +2191,13 @@ Sum(Fields!MeetingsCountThreeMonth.Value)/Sum(Fields!CompanyNum.Value)
                         </Style>
                         <Title>среднее</Title>
                         <TextOrientation>Horizontal</TextOrientation>
-                        <IntervalOffset>=Avg(IIf(Fields!Manager.Value = "Все", Nothing, Fields!MeetingsCountMonth.Value))</IntervalOffset>
+                        <IntervalOffset>=Sum(IIf(Fields!Manager.Value = "Все", Nothing, Fields!MeetingsCountThreeMonth.Value))
+/
+Sum(IIf(Fields!Manager.Value = "Все", Nothing, Fields!total_companies.Value))</IntervalOffset>
                       </ChartStripLine>
                     </ChartStripLines>
                     <Minimum>NaN</Minimum>
-                    <Maximum>21</Maximum>
+                    <Maximum>NaN</Maximum>
                     <ChartAxisScaleBreak>
                       <Style />
                     </ChartAxisScaleBreak>
@@ -2409,7 +2288,7 @@ Sum(Fields!MeetingsCountThreeMonth.Value)/Sum(Fields!CompanyNum.Value)
                 </FilterValues>
               </Filter>
             </Filters>
-            <Top>64.68389cm</Top>
+            <Top>64.54278cm</Top>
             <Height>32.27139cm</Height>
             <Width>26cm</Width>
             <ZIndex>5</ZIndex>
@@ -2423,7 +2302,7 @@ Sum(Fields!MeetingsCountThreeMonth.Value)/Sum(Fields!CompanyNum.Value)
             </Style>
           </Chart>
         </ReportItems>
-        <Height>61.77776in</Height>
+        <Height>53.09067in</Height>
         <Style />
       </Body>
       <Width>14.05286in</Width>
